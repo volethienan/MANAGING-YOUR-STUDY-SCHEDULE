@@ -27,6 +27,7 @@ public class WeekCalendarView extends View {
 
     private static final int START_HOUR = 6;
     private static final int END_HOUR = 22;
+    private static final long DAY_MS = 24L * 60L * 60L * 1000L;
 
     private final List<StudyEvent> events = new ArrayList<>();
     private final List<EventHitBox> hitBoxes = new ArrayList<>();
@@ -34,7 +35,8 @@ public class WeekCalendarView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
-    private long weekStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
+    private long rangeStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
+    private int visibleDayCount = 7;
     private OnEventClickListener listener;
 
     public WeekCalendarView(Context context) {
@@ -53,7 +55,14 @@ public class WeekCalendarView extends View {
     }
 
     public void setWeekStartMillis(long weekStartMillis) {
-        this.weekStartMillis = DateTimeUtils.startOfWeek(weekStartMillis);
+        setRange(weekStartMillis, 7);
+    }
+
+    public void setRange(long startMillis, int dayCount) {
+        this.visibleDayCount = Math.max(1, Math.min(7, dayCount));
+        this.rangeStartMillis = this.visibleDayCount == 7
+                ? DateTimeUtils.startOfWeek(startMillis)
+                : DateTimeUtils.startOfDay(startMillis);
         invalidate();
     }
 
@@ -78,7 +87,7 @@ public class WeekCalendarView extends View {
         int headerHeight = dp(58);
         int width = getWidth();
         int height = Math.max(getHeight(), dp(860));
-        float colWidth = (width - leftGutter - dp(8)) / 7f;
+        float colWidth = (width - leftGutter - dp(8)) / (float) visibleDayCount;
         float hourHeight = (height - headerHeight - dp(22)) / (float) (END_HOUR - START_HOUR);
 
         paint.setColor(color(R.color.paper_light));
@@ -108,13 +117,14 @@ public class WeekCalendarView extends View {
         Calendar calendar = Calendar.getInstance();
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setTextSize(sp(12));
-        for (int i = 0; i < 7; i++) {
-            calendar.setTimeInMillis(DateTimeUtils.addDays(weekStartMillis, i));
+        for (int i = 0; i < visibleDayCount; i++) {
+            calendar.setTimeInMillis(DateTimeUtils.addDays(rangeStartMillis, i));
             float cx = leftGutter + i * colWidth + colWidth / 2f;
+            float chipHalf = Math.min(dp(28), colWidth / 2f - dp(4));
             paint.setColor(isToday(calendar.getTimeInMillis()) ? color(R.color.yellow) : color(R.color.paper));
-            canvas.drawRoundRect(new RectF(cx - dp(22), dp(12), cx + dp(22), headerHeight - dp(8)), dp(14), dp(14), paint);
+            canvas.drawRoundRect(new RectF(cx - chipHalf, dp(12), cx + chipHalf, headerHeight - dp(8)), dp(14), dp(14), paint);
             textPaint.setColor(color(R.color.ink));
-            canvas.drawText(dayNames[i], cx, dp(29), textPaint);
+            canvas.drawText(dayNames[normalizedDayIndex(calendar.get(Calendar.DAY_OF_WEEK))], cx, dp(29), textPaint);
             textPaint.setColor(color(R.color.muted));
             canvas.drawText(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)), cx, dp(47), textPaint);
         }
@@ -133,10 +143,11 @@ public class WeekCalendarView extends View {
                 canvas.drawText(String.format(Locale.getDefault(), "%02d:00", hour), leftGutter - dp(6), y + dp(4), textPaint);
             }
         }
-        for (int day = 0; day <= 7; day++) {
+        for (int day = 0; day <= visibleDayCount; day++) {
             float x = leftGutter + day * colWidth;
             canvas.drawLine(x, headerHeight, x, headerHeight + (END_HOUR - START_HOUR) * hourHeight, paint);
         }
+        drawNowLine(canvas, leftGutter, headerHeight, colWidth, hourHeight);
     }
 
     private void drawEvents(Canvas canvas, int leftGutter, int headerHeight, float colWidth, float hourHeight) {
@@ -144,19 +155,22 @@ public class WeekCalendarView extends View {
         textPaint.setTextAlign(Paint.Align.LEFT);
         textPaint.setTextSize(sp(10));
         for (StudyEvent event : events) {
-            if (!DateTimeUtils.isSameWeek(event.getStartAt(), weekStartMillis)) {
+            int dayIndex = dayIndexOf(event.getStartAt());
+            if (dayIndex < 0 || dayIndex >= visibleDayCount) {
                 continue;
             }
             calendar.setTimeInMillis(event.getStartAt());
-            int dayIndex = normalizedDayIndex(calendar.get(Calendar.DAY_OF_WEEK));
             float startHour = calendar.get(Calendar.HOUR_OF_DAY) + calendar.get(Calendar.MINUTE) / 60f;
             calendar.setTimeInMillis(event.getEndAt());
             float endHour = calendar.get(Calendar.HOUR_OF_DAY) + calendar.get(Calendar.MINUTE) / 60f;
             if (endHour <= startHour) {
                 endHour = startHour + 1f;
             }
-            float left = leftGutter + dayIndex * colWidth + dp(3);
-            float right = left + colWidth - dp(6);
+            int laneCount = Math.max(1, overlapCount(event));
+            int laneIndex = overlapIndex(event);
+            float laneWidth = (colWidth - dp(6)) / laneCount;
+            float left = leftGutter + dayIndex * colWidth + dp(3) + laneIndex * laneWidth;
+            float right = left + laneWidth - dp(3);
             float top = headerHeight + Math.max(0, startHour - START_HOUR) * hourHeight + dp(2);
             float bottom = headerHeight + Math.min(END_HOUR - START_HOUR, endHour - START_HOUR) * hourHeight - dp(2);
             if (bottom <= top) {
@@ -172,11 +186,67 @@ public class WeekCalendarView extends View {
             paint.setStyle(Paint.Style.FILL);
 
             textPaint.setColor(color(R.color.ink));
-            canvas.drawText(trim(event.getTitle(), 12), left + dp(6), top + dp(16), textPaint);
+            canvas.drawText(trim(event.getTitle(), Math.max(8, (int) (laneWidth / dp(7)))), left + dp(6), top + dp(16), textPaint);
             textPaint.setColor(conflictIds.contains(event.getId()) ? color(R.color.rose) : color(R.color.muted));
-            canvas.drawText(DateTimeUtils.formatTime(event.getStartAt()), left + dp(6), top + dp(31), textPaint);
+            String timeText = visibleDayCount == 1
+                    ? DateTimeUtils.formatTime(event.getStartAt()) + " - " + DateTimeUtils.formatTime(event.getEndAt())
+                    : DateTimeUtils.formatTime(event.getStartAt());
+            canvas.drawText(trim(timeText, Math.max(8, (int) (laneWidth / dp(7)))), left + dp(6), top + dp(31), textPaint);
             hitBoxes.add(new EventHitBox(rect, event));
         }
+    }
+
+    private void drawNowLine(Canvas canvas, int leftGutter, int headerHeight, float colWidth, float hourHeight) {
+        long now = System.currentTimeMillis();
+        int todayIndex = dayIndexOf(now);
+        if (todayIndex < 0 || todayIndex >= visibleDayCount) {
+            return;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(now);
+        float currentHour = calendar.get(Calendar.HOUR_OF_DAY) + calendar.get(Calendar.MINUTE) / 60f;
+        if (currentHour < START_HOUR || currentHour > END_HOUR) {
+            return;
+        }
+        float y = headerHeight + (currentHour - START_HOUR) * hourHeight;
+        float left = leftGutter + todayIndex * colWidth;
+        float right = left + colWidth;
+        paint.setColor(color(R.color.rose));
+        paint.setStrokeWidth(dp(2));
+        canvas.drawLine(left + dp(4), y, right - dp(4), y, paint);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(left + dp(5), y, dp(4), paint);
+    }
+
+    private int dayIndexOf(long millis) {
+        long dayStart = DateTimeUtils.startOfDay(millis);
+        long start = DateTimeUtils.startOfDay(rangeStartMillis);
+        return (int) ((dayStart - start) / DAY_MS);
+    }
+
+    private int overlapCount(StudyEvent target) {
+        int count = 0;
+        for (StudyEvent event : events) {
+            if (DateTimeUtils.isSameDay(event.getStartAt(), target.getStartAt())
+                    && DateTimeUtils.rangesOverlap(target.getStartAt(), target.getEndAt(), event.getStartAt(), event.getEndAt())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int overlapIndex(StudyEvent target) {
+        int index = 0;
+        for (StudyEvent event : events) {
+            if (event.getId().equals(target.getId())) {
+                return index;
+            }
+            if (DateTimeUtils.isSameDay(event.getStartAt(), target.getStartAt())
+                    && DateTimeUtils.rangesOverlap(target.getStartAt(), target.getEndAt(), event.getStartAt(), event.getEndAt())) {
+                index++;
+            }
+        }
+        return 0;
     }
 
     private int normalizedDayIndex(int dayOfWeek) {

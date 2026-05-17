@@ -75,7 +75,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
             android:backgroundTint="@color/ink"
-            android:text="Đăng ký"
+            android:text="Đăng ký + xác thực email"
             android:textColor="@color/white"
             android:textStyle="bold"
             app:cornerRadius="18dp" />

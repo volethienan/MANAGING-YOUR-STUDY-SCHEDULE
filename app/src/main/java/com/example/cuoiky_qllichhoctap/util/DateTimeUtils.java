@@ -53,6 +53,25 @@ public final class DateTimeUtils {
                 && current.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR);
     }
 
+    public static boolean isSameDay(long firstMillis, long secondMillis) {
+        Calendar first = Calendar.getInstance();
+        Calendar second = Calendar.getInstance();
+        first.setTimeInMillis(firstMillis);
+        second.setTimeInMillis(secondMillis);
+        return first.get(Calendar.YEAR) == second.get(Calendar.YEAR)
+                && first.get(Calendar.DAY_OF_YEAR) == second.get(Calendar.DAY_OF_YEAR);
+    }
+
+    public static long startOfDay(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
+
     public static long startOfWeek(long millis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(millis);
@@ -81,6 +100,19 @@ public final class DateTimeUtils {
 
     public static String formatWeekRange(long weekStartMillis) {
         return DATE.format(new Date(weekStartMillis)) + " - " + DATE.format(new Date(addDays(weekStartMillis, 6)));
+    }
+
+    public static String formatDayRange(long startMillis, int dayCount) {
+        if (dayCount <= 1) {
+            return DAY_LABEL.format(new Date(startMillis));
+        }
+        return DATE.format(new Date(startMillis)) + " - " + DATE.format(new Date(addDays(startMillis, dayCount - 1)));
+    }
+
+    public static boolean isInDayRange(long millis, long rangeStartMillis, int dayCount) {
+        long start = startOfDay(rangeStartMillis);
+        long end = addDays(start, dayCount);
+        return millis >= start && millis < end;
     }
 
     public static boolean isSoon(long millis) {

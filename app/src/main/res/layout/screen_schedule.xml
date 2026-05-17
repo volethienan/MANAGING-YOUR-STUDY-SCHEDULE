@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lịch tuần"
+        android:text="Lịch học"
         android:textColor="@color/rose"
         android:textSize="29sp"
         android:textStyle="bold" />
@@ -19,14 +19,57 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Tuần này"
+        android:text="Hôm nay"
         android:textColor="@color/muted"
         android:textSize="13sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginTop="12dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/modeDay"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_outline_pill"
+            android:gravity="center"
+            android:text="Ngày"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/modeThreeDays"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_outline_pill"
+            android:gravity="center"
+            android:text="3 ngày"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/modeWeek"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_selected_pill"
+            android:gravity="center"
+            android:text="Tuần"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="44dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="6dp"
         android:baselineAligned="false"
         android:orientation="horizontal">
 
@@ -49,7 +92,7 @@
             android:layout_weight="1"
             android:background="@drawable/bg_selected_pill"
             android:gravity="center"
-            android:text="Tuần hiện tại"
+            android:text="Hôm nay"
             android:textColor="@color/ink"
             android:textStyle="bold" />
 

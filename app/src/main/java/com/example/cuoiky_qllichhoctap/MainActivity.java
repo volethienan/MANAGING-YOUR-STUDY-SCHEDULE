@@ -31,16 +31,27 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.cuoiky_qllichhoctap.data.AuthRepository;
 import com.example.cuoiky_qllichhoctap.data.GeminiScheduleExtractor;
 import com.example.cuoiky_qllichhoctap.data.StudyRepository;
-import com.example.cuoiky_qllichhoctap.model.AuthUser;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
 import com.example.cuoiky_qllichhoctap.model.StudyTask;
 import com.example.cuoiky_qllichhoctap.model.UserProfile;
 import com.example.cuoiky_qllichhoctap.util.DateTimeUtils;
+import com.example.cuoiky_qllichhoctap.ui.SwipeActionLayout;
 import com.example.cuoiky_qllichhoctap.ui.WeekCalendarView;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserInfo;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,9 +68,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int SCREEN_TASKS = 2;
     private static final int SCREEN_POMODORO = 3;
     private static final int SCREEN_STATS = 4;
+    private static final String CALENDAR_DAY = "Ngày";
+    private static final String CALENDAR_THREE_DAYS = "3 ngày";
+    private static final String CALENDAR_WEEK = "Tuần";
 
     private StudyRepository repository;
-    private AuthRepository authRepository;
+    private FirebaseAuth firebaseAuth;
+    private GoogleSignInClient googleSignInClient;
     private FrameLayout contentFrame;
     private LinearLayout bottomNav;
     private CountDownTimer pomodoroTimer;
@@ -67,9 +82,11 @@ public class MainActivity extends AppCompatActivity {
     private boolean pomodoroRunning;
     private long scheduleWeekStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
     private String scheduleFilter = "Tất cả";
+    private String scheduleViewMode = CALENDAR_WEEK;
     private Uri pendingCameraUri;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> galleryLauncher;
+    private ActivityResultLauncher<Intent> googleSignInLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,16 +100,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         repository = new StudyRepository(this);
-        authRepository = new AuthRepository(this);
+        firebaseAuth = FirebaseAuth.getInstance();
         contentFrame = findViewById(R.id.contentFrame);
         bottomNav = findViewById(R.id.bottomNav);
+        setupGoogleSignIn();
         setupImageLaunchers();
         setupBottomNav();
 
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         if (repository.isFirstOpen()) {
             showOnboarding();
-        } else if (authRepository.isLoggedIn()) {
-            syncProfileFromAuth(authRepository.getCurrentUser());
+        } else if (canEnterWithFirebaseUser(firebaseUser)) {
+            syncProfileFromFirebase(firebaseUser);
+            repository.setLoggedIn(true);
             showDashboard();
         } else {
             showLogin();
@@ -124,6 +144,21 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.navTasks).setOnClickListener(v -> showTasks("Tất cả"));
         findViewById(R.id.navPomodoro).setOnClickListener(v -> showPomodoro());
         findViewById(R.id.navStats).setOnClickListener(v -> showStats());
+    }
+
+    private void setupGoogleSignIn() {
+        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, options);
+        googleSignInLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() != RESULT_OK || result.getData() == null) {
+                toast("Bạn đã hủy đăng nhập Google");
+                return;
+            }
+            handleGoogleSignInResult(result.getData());
+        });
     }
 
     private void setupImageLaunchers() {
@@ -159,10 +194,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void showLogin() {
         View screen = inflateScreen(R.layout.screen_login, false, SCREEN_DASHBOARD);
-        AuthUser currentUser = authRepository.getCurrentUser();
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         EditText email = screen.findViewById(R.id.inputEmail);
         EditText password = screen.findViewById(R.id.inputPassword);
-        if (currentUser != null) {
+        if (currentUser != null && !TextUtils.isEmpty(currentUser.getEmail())) {
             email.setText(currentUser.getEmail());
         }
 
@@ -179,17 +214,10 @@ public class MainActivity extends AppCompatActivity {
                 toast("Mật khẩu cần ít nhất 6 ký tự");
                 return;
             }
-            try {
-                AuthUser user = authRepository.login(textOf(email), textOf(password));
-                syncProfileFromAuth(user);
-                repository.setLoggedIn(true);
-                showDashboard();
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
+            signInWithEmail(textOf(email), textOf(password));
         };
         screen.findViewById(R.id.btnLogin).setOnClickListener(login);
-        screen.findViewById(R.id.btnGoogleLogin).setOnClickListener(v -> showGoogleSetupDialog());
+        screen.findViewById(R.id.btnGoogleLogin).setOnClickListener(v -> startGoogleSignIn());
         screen.findViewById(R.id.textForgotPassword).setOnClickListener(v -> showForgotPassword());
         screen.findViewById(R.id.textGoRegister).setOnClickListener(v -> showRegister());
     }
@@ -223,49 +251,9 @@ public class MainActivity extends AppCompatActivity {
                 toast("Bạn cần đồng ý điều khoản sử dụng");
                 return;
             }
-            try {
-                String otp = authRepository.beginRegistration(textOf(name), textOf(email), textOf(password));
-                showRegisterOtp(textOf(email), textOf(name), textOf(password), otp);
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
+            registerWithEmailVerification(textOf(name), textOf(email), textOf(password));
         });
         screen.findViewById(R.id.textGoLogin).setOnClickListener(v -> showLogin());
-    }
-
-    private void showRegisterOtp(String email, String name, String password, String otp) {
-        View screen = inflateScreen(R.layout.screen_otp, false, SCREEN_DASHBOARD);
-        setText(screen, R.id.textOtpSubtitle, "Nhập mã 6 số để kích hoạt tài khoản");
-        setText(screen, R.id.textOtpEmail, email);
-        EditText inputOtp = screen.findViewById(R.id.inputOtp);
-        showDemoOtpDialog(otp, "đăng ký");
-
-        screen.findViewById(R.id.btnVerifyOtp).setOnClickListener(v -> {
-            if (isBlank(inputOtp) || textOf(inputOtp).length() != 6) {
-                toast("Vui lòng nhập đủ 6 số OTP");
-                return;
-            }
-            try {
-                AuthUser user = authRepository.verifyRegistrationOtp(email, textOf(inputOtp));
-                syncProfileFromAuth(user);
-                repository.finishOnboarding();
-                repository.setLoggedIn(true);
-                toast("Đăng ký thành công");
-                showDashboard();
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
-        });
-
-        screen.findViewById(R.id.btnResendOtp).setOnClickListener(v -> {
-            try {
-                String newOtp = authRepository.beginRegistration(name, email, password);
-                showDemoOtpDialog(newOtp, "đăng ký");
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
-        });
-        screen.findViewById(R.id.textBack).setOnClickListener(v -> showRegister());
     }
 
     private void showForgotPassword() {
@@ -280,46 +268,124 @@ public class MainActivity extends AppCompatActivity {
                 toast("Email chưa đúng định dạng");
                 return;
             }
-            try {
-                String otp = authRepository.beginPasswordReset(textOf(email));
-                showResetPassword(textOf(email), otp);
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
+            sendPasswordResetEmail(textOf(email));
         });
         screen.findViewById(R.id.textBackLogin).setOnClickListener(v -> showLogin());
     }
 
-    private void showResetPassword(String email, String otp) {
-        View screen = inflateScreen(R.layout.screen_reset_password, false, SCREEN_DASHBOARD);
-        setText(screen, R.id.textResetEmail, email);
-        EditText inputOtp = screen.findViewById(R.id.inputOtp);
-        EditText password = screen.findViewById(R.id.inputPassword);
-        EditText confirm = screen.findViewById(R.id.inputConfirmPassword);
-        showDemoOtpDialog(otp, "đặt lại mật khẩu");
+    private void signInWithEmail(String email, String password) {
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        showAuthTaskError(task, "Không đăng nhập được");
+                        return;
+                    }
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (!canEnterWithFirebaseUser(user)) {
+                        showEmailVerificationRequired(user);
+                        return;
+                    }
+                    syncProfileFromFirebase(user);
+                    repository.finishOnboarding();
+                    repository.setLoggedIn(true);
+                    showDashboard();
+                });
+    }
 
-        screen.findViewById(R.id.btnResetPassword).setOnClickListener(v -> {
-            if (isBlank(inputOtp) || isBlank(password) || isBlank(confirm)) {
-                toast("Vui lòng nhập đủ OTP và mật khẩu mới");
+    private void registerWithEmailVerification(String name, String email, String password) {
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        showAuthTaskError(task, "Không tạo được tài khoản");
+                        return;
+                    }
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user == null) {
+                        toast("Không lấy được tài khoản Firebase");
+                        return;
+                    }
+                    UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(name)
+                            .build();
+                    user.updateProfile(profileUpdate)
+                            .addOnCompleteListener(profileTask -> sendRegistrationVerification(user, name, email));
+                });
+    }
+
+    private void sendRegistrationVerification(FirebaseUser user, String name, String email) {
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        showAuthTaskError(task, "Không gửi được email xác thực");
+                        return;
+                    }
+                    repository.saveProfile(new UserProfile(name, email, repository.getProfile().getGoal()));
+                    repository.finishOnboarding();
+                    firebaseAuth.signOut();
+                    new AlertDialog.Builder(this)
+                            .setTitle("Kiểm tra email")
+                            .setMessage("Firebase đã gửi link xác thực đến " + email + ". Hãy mở email, bấm link xác thực rồi quay lại đăng nhập.")
+                            .setPositiveButton("Về đăng nhập", (dialog, which) -> showLogin())
+                            .show();
+                });
+    }
+
+    private void sendPasswordResetEmail(String email) {
+        firebaseAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        showAuthTaskError(task, "Không gửi được email đặt lại mật khẩu");
+                        return;
+                    }
+                    new AlertDialog.Builder(this)
+                            .setTitle("Đã gửi email")
+                            .setMessage("Firebase đã gửi link đặt lại mật khẩu đến " + email + ". Hãy kiểm tra hộp thư rồi quay lại đăng nhập.")
+                            .setPositiveButton("Về đăng nhập", (dialog, which) -> showLogin())
+                            .show();
+                });
+    }
+
+    private void startGoogleSignIn() {
+        if (googleSignInClient == null || googleSignInLauncher == null) {
+            toast("Google Sign-In chưa sẵn sàng");
+            return;
+        }
+        toast("Đang mở đăng nhập Google...");
+        googleSignInLauncher.launch(googleSignInClient.getSignInIntent());
+    }
+
+    private void handleGoogleSignInResult(Intent data) {
+        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            if (account == null || TextUtils.isEmpty(account.getIdToken())) {
+                toast("Google không trả về ID token");
                 return;
             }
-            if (textOf(password).length() < 6) {
-                toast("Mật khẩu cần ít nhất 6 ký tự");
-                return;
-            }
-            if (!textOf(password).equals(textOf(confirm))) {
-                toast("Mật khẩu xác nhận chưa khớp");
-                return;
-            }
-            try {
-                authRepository.resetPassword(email, textOf(inputOtp), textOf(password));
-                toast("Đã cập nhật mật khẩu");
-                showLogin();
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
-        });
-        screen.findViewById(R.id.textBackLogin).setOnClickListener(v -> showLogin());
+            firebaseAuthWithGoogle(account.getIdToken());
+        } catch (ApiException exception) {
+            toast("Đăng nhập Google lỗi: " + exception.getStatusCode());
+        }
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        String message = task.getException() == null
+                                ? "Không đăng nhập được bằng Google"
+                                : task.getException().getMessage();
+                        toast(message);
+                        return;
+                    }
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    syncProfileFromFirebase(user);
+                    repository.finishOnboarding();
+                    repository.setLoggedIn(true);
+                    toast("Đăng nhập Google thành công");
+                    showDashboard();
+                });
     }
 
     private void showDashboard() {
@@ -368,24 +434,29 @@ public class MainActivity extends AppCompatActivity {
     private void showSchedule(String filter) {
         scheduleFilter = filter;
         View screen = inflateScreen(R.layout.screen_schedule, true, SCREEN_SCHEDULE);
+        normalizeScheduleStart();
+        setupScheduleViewModes(screen);
         setupScheduleFilters(screen, filter);
-        setText(screen, R.id.textWeekRange, DateTimeUtils.formatWeekRange(scheduleWeekStartMillis));
+        int visibleDays = scheduleVisibleDays();
+        setText(screen, R.id.textWeekRange, DateTimeUtils.formatDayRange(scheduleWeekStartMillis, visibleDays));
         screen.findViewById(R.id.btnPrevWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = DateTimeUtils.addDays(scheduleWeekStartMillis, -7);
+            scheduleWeekStartMillis = DateTimeUtils.addDays(scheduleWeekStartMillis, -visibleDays);
             showSchedule(scheduleFilter);
         });
         screen.findViewById(R.id.btnThisWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
+            scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
+                    ? DateTimeUtils.startOfWeek(System.currentTimeMillis())
+                    : DateTimeUtils.startOfDay(System.currentTimeMillis());
             showSchedule(scheduleFilter);
         });
         screen.findViewById(R.id.btnNextWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = DateTimeUtils.addDays(scheduleWeekStartMillis, 7);
+            scheduleWeekStartMillis = DateTimeUtils.addDays(scheduleWeekStartMillis, visibleDays);
             showSchedule(scheduleFilter);
         });
 
-        List<StudyEvent> visibleEvents = visibleWeekEvents(filter);
+        List<StudyEvent> visibleEvents = visibleRangeEvents(filter);
         WeekCalendarView weekCalendar = screen.findViewById(R.id.weekCalendar);
-        weekCalendar.setWeekStartMillis(scheduleWeekStartMillis);
+        weekCalendar.setRange(scheduleWeekStartMillis, visibleDays);
         weekCalendar.setEvents(visibleEvents, conflictIds(visibleEvents));
         weekCalendar.setOnEventClickListener(this::showEventActions);
 
@@ -404,6 +475,26 @@ public class MainActivity extends AppCompatActivity {
         screen.findViewById(R.id.btnImportImage).setOnClickListener(v -> showImageImportOptions());
     }
 
+    private void setupScheduleViewModes(View screen) {
+        bindCalendarMode(screen, R.id.modeDay, CALENDAR_DAY);
+        bindCalendarMode(screen, R.id.modeThreeDays, CALENDAR_THREE_DAYS);
+        bindCalendarMode(screen, R.id.modeWeek, CALENDAR_WEEK);
+    }
+
+    private void bindCalendarMode(View screen, int id, String mode) {
+        TextView view = screen.findViewById(id);
+        view.setBackgroundResource(mode.equals(scheduleViewMode) ? R.drawable.bg_selected_pill : R.drawable.bg_outline_pill);
+        view.setOnClickListener(v -> {
+            if (mode.equals(scheduleViewMode)) {
+                return;
+            }
+            long focusedDay = DateTimeUtils.startOfDay(scheduleWeekStartMillis);
+            scheduleViewMode = mode;
+            scheduleWeekStartMillis = CALENDAR_WEEK.equals(mode) ? DateTimeUtils.startOfWeek(focusedDay) : focusedDay;
+            showSchedule(scheduleFilter);
+        });
+    }
+
     private void setupScheduleFilters(View screen, String active) {
         bindFilter(screen, R.id.filterAll, "Tất cả", active, () -> showSchedule("Tất cả"));
         bindFilter(screen, R.id.filterStudy, StudyEvent.TYPE_STUDY, active, () -> showSchedule(StudyEvent.TYPE_STUDY));
@@ -411,10 +502,11 @@ public class MainActivity extends AppCompatActivity {
         bindFilter(screen, R.id.filterDeadline, StudyEvent.TYPE_DEADLINE, active, () -> showSchedule(StudyEvent.TYPE_DEADLINE));
     }
 
-    private List<StudyEvent> visibleWeekEvents(String filter) {
+    private List<StudyEvent> visibleRangeEvents(String filter) {
         List<StudyEvent> result = new ArrayList<>();
+        int visibleDays = scheduleVisibleDays();
         for (StudyEvent event : repository.getEvents()) {
-            if (!DateTimeUtils.isSameWeek(event.getStartAt(), scheduleWeekStartMillis)) {
+            if (!DateTimeUtils.isInDayRange(event.getStartAt(), scheduleWeekStartMillis, visibleDays)) {
                 continue;
             }
             if (!"Tất cả".equals(filter) && !event.getType().equals(filter)) {
@@ -423,6 +515,22 @@ public class MainActivity extends AppCompatActivity {
             result.add(event);
         }
         return result;
+    }
+
+    private int scheduleVisibleDays() {
+        if (CALENDAR_DAY.equals(scheduleViewMode)) {
+            return 1;
+        }
+        if (CALENDAR_THREE_DAYS.equals(scheduleViewMode)) {
+            return 3;
+        }
+        return 7;
+    }
+
+    private void normalizeScheduleStart() {
+        scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
+                ? DateTimeUtils.startOfWeek(scheduleWeekStartMillis)
+                : DateTimeUtils.startOfDay(scheduleWeekStartMillis);
     }
 
     private Set<String> conflictIds(List<StudyEvent> events) {
@@ -445,8 +553,16 @@ public class MainActivity extends AppCompatActivity {
             if (!matchesTaskFilter(task, filter)) {
                 continue;
             }
-            View row = createTaskRow(task, true, taskList);
-            row.setOnClickListener(v -> showTaskActions(task));
+            Runnable refreshTasks = () -> showTasks(filter);
+            View row = createTaskRow(task, true, taskList, refreshTasks);
+            View foreground = row.findViewById(R.id.taskForeground);
+            foreground.setOnClickListener(v -> {
+                if (row instanceof SwipeActionLayout && ((SwipeActionLayout) row).isOpen()) {
+                    ((SwipeActionLayout) row).close();
+                    return;
+                }
+                showTaskActions(task, refreshTasks);
+            });
             taskList.addView(row);
         }
         if (taskList.getChildCount() == 0) {
@@ -549,7 +665,10 @@ public class MainActivity extends AppCompatActivity {
         sync.setOnCheckedChangeListener((buttonView, isChecked) -> repository.setSyncEnabled(isChecked));
         screen.findViewById(R.id.btnEditProfile).setOnClickListener(v -> showProfileDialog());
         screen.findViewById(R.id.btnLogout).setOnClickListener(v -> {
-            authRepository.logout();
+            firebaseAuth.signOut();
+            if (googleSignInClient != null) {
+                googleSignInClient.signOut();
+            }
             repository.setLoggedIn(false);
             resetPomodoro();
             showLogin();
@@ -704,20 +823,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showTaskActions(StudyTask task) {
+        showTaskActions(task, () -> showTasks("Tất cả"));
+    }
+
+    private void showTaskActions(StudyTask task, Runnable onChanged) {
         String[] actions = {"Sửa", task.isCompleted() ? "Đánh dấu chưa xong" : "Đánh dấu hoàn thành", "Xóa"};
         new AlertDialog.Builder(this)
                 .setTitle(task.getTitle())
                 .setItems(actions, (dialog, which) -> {
                     if (which == 0) {
-                        showTaskDialog(task, () -> showTasks("Tất cả"));
+                        showTaskDialog(task, onChanged);
                     } else if (which == 1) {
                         task.setCompleted(!task.isCompleted());
                         repository.saveTask(task);
-                        showTasks("Tất cả");
+                        onChanged.run();
                     } else {
                         confirmDelete("Xóa công việc?", task.getTitle(), () -> {
                             repository.deleteTask(task.getId());
-                            showTasks("Tất cả");
+                            onChanged.run();
                         });
                     }
                 })
@@ -820,8 +943,12 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingCameraUri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            if (intent.resolveActivity(getPackageManager()) == null) {
+                toast("Thiết bị chưa có ứng dụng camera phù hợp");
+                return;
+            }
             cameraLauncher.launch(intent);
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             toast("Không mở được camera: " + exception.getMessage());
         }
     }
@@ -864,7 +991,7 @@ public class MainActivity extends AppCompatActivity {
         StringBuilder preview = new StringBuilder();
         List<StudyEvent> conflictEvents = new ArrayList<>();
         for (StudyEvent event : events) {
-            List<StudyEvent> conflicts = repository.getConflicts(event);
+            List<StudyEvent> conflicts = importConflicts(event, events);
             if (!conflicts.isEmpty()) {
                 conflictEvents.add(event);
             }
@@ -874,7 +1001,13 @@ public class MainActivity extends AppCompatActivity {
                     .append(DateTimeUtils.formatDateTime(event.getStartAt()))
                     .append(" - ")
                     .append(DateTimeUtils.formatTime(event.getEndAt()))
-                    .append("\n\n");
+                    .append("\n");
+            if (!conflicts.isEmpty()) {
+                preview.append("Trùng với: ")
+                        .append(eventTitles(conflicts))
+                        .append("\n");
+            }
+            preview.append("\n");
         }
         String title = conflictEvents.isEmpty()
                 ? "Tạo " + events.size() + " lịch từ ảnh?"
@@ -887,23 +1020,65 @@ public class MainActivity extends AppCompatActivity {
                     for (StudyEvent event : events) {
                         repository.saveEvent(event);
                     }
-                    scheduleWeekStartMillis = DateTimeUtils.startOfWeek(events.get(0).getStartAt());
+                    scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
+                            ? DateTimeUtils.startOfWeek(events.get(0).getStartAt())
+                            : DateTimeUtils.startOfDay(events.get(0).getStartAt());
                     toast("Đã tạo " + events.size() + " lịch từ ảnh");
                     showSchedule("Tất cả");
                 })
                 .show();
     }
 
+    private List<StudyEvent> importConflicts(StudyEvent candidate, List<StudyEvent> importedEvents) {
+        List<StudyEvent> conflicts = new ArrayList<>(repository.getConflicts(candidate));
+        if (StudyEvent.TYPE_DEADLINE.equals(candidate.getType())) {
+            return conflicts;
+        }
+        for (StudyEvent event : importedEvents) {
+            if (event.getId().equals(candidate.getId()) || StudyEvent.TYPE_DEADLINE.equals(event.getType())) {
+                continue;
+            }
+            if (DateTimeUtils.rangesOverlap(candidate.getStartAt(), candidate.getEndAt(), event.getStartAt(), event.getEndAt())) {
+                conflicts.add(event);
+            }
+        }
+        return conflicts;
+    }
+
+    private String eventTitles(List<StudyEvent> events) {
+        StringBuilder builder = new StringBuilder();
+        for (StudyEvent event : events) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(event.getTitle());
+        }
+        return builder.toString();
+    }
+
     private View createTaskRow(StudyTask task, boolean interactive, ViewGroup parent) {
+        return createTaskRow(task, interactive, parent, null);
+    }
+
+    private View createTaskRow(StudyTask task, boolean interactive, ViewGroup parent, Runnable onChanged) {
         View row = LayoutInflater.from(this).inflate(R.layout.item_task, parent, false);
         TextView title = row.findViewById(R.id.textTitle);
         TextView meta = row.findViewById(R.id.textMeta);
         TextView priority = row.findViewById(R.id.textPriority);
         CheckBox done = row.findViewById(R.id.checkDone);
+        TextView actionDone = row.findViewById(R.id.btnTaskDone);
+        TextView actionEdit = row.findViewById(R.id.btnTaskEdit);
+        TextView actionDelete = row.findViewById(R.id.btnTaskDelete);
+        View taskActions = row.findViewById(R.id.taskActions);
         title.setText(task.getTitle());
         meta.setText(task.getSubject() + " • " + DateTimeUtils.formatDateTime(task.getDueAt()));
         priority.setText(task.getPriority());
         priority.setBackgroundResource(priorityBackground(task.getPriority()));
+        if (row instanceof SwipeActionLayout) {
+            ((SwipeActionLayout) row).setSwipeEnabled(interactive);
+        }
+        taskActions.setVisibility(interactive ? View.VISIBLE : View.GONE);
+        actionDone.setText(task.isCompleted() ? "Mở lại" : "Xong");
         done.setChecked(task.isCompleted());
         done.setEnabled(interactive);
         done.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -912,7 +1087,25 @@ public class MainActivity extends AppCompatActivity {
             }
             task.setCompleted(isChecked);
             repository.saveTask(task);
+            if (onChanged != null) {
+                onChanged.run();
+            }
         });
+        actionDone.setOnClickListener(v -> {
+            task.setCompleted(!task.isCompleted());
+            repository.saveTask(task);
+            if (onChanged != null) {
+                onChanged.run();
+            }
+        });
+        actionEdit.setOnClickListener(v -> showTaskDialog(task, onChanged == null ? () -> {
+        } : onChanged));
+        actionDelete.setOnClickListener(v -> confirmDelete("Xóa công việc?", task.getTitle(), () -> {
+            repository.deleteTask(task.getId());
+            if (onChanged != null) {
+                onChanged.run();
+            }
+        }));
         if (task.isCompleted()) {
             title.setAlpha(0.55f);
             meta.setAlpha(0.55f);
@@ -1147,28 +1340,68 @@ public class MainActivity extends AppCompatActivity {
         ((TextView) root.findViewById(id)).setText(text);
     }
 
-    private void syncProfileFromAuth(AuthUser user) {
+    private boolean canEnterWithFirebaseUser(FirebaseUser user) {
+        if (user == null) {
+            return false;
+        }
+        return user.isEmailVerified() || isGoogleUser(user);
+    }
+
+    private boolean isGoogleUser(FirebaseUser user) {
+        for (UserInfo info : user.getProviderData()) {
+            if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void showEmailVerificationRequired(FirebaseUser user) {
+        String email = user == null || TextUtils.isEmpty(user.getEmail()) ? "email của bạn" : user.getEmail();
+        new AlertDialog.Builder(this)
+                .setTitle("Cần xác thực email")
+                .setMessage("Tài khoản " + email + " chưa bấm link xác thực. Hãy mở email từ Firebase rồi đăng nhập lại.")
+                .setNegativeButton("Đã hiểu", null)
+                .setPositiveButton("Gửi lại link", (dialog, which) -> resendEmailVerification(user))
+                .show();
+    }
+
+    private void resendEmailVerification(FirebaseUser user) {
+        if (user == null) {
+            toast("Không tìm thấy tài khoản để gửi lại link");
+            return;
+        }
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        toast("Đã gửi lại email xác thực");
+                    } else {
+                        showAuthTaskError(task, "Không gửi lại được email xác thực");
+                    }
+                });
+    }
+
+    private void showAuthTaskError(Task<?> task, String fallback) {
+        String message = task.getException() == null ? fallback : task.getException().getMessage();
+        toast(TextUtils.isEmpty(message) ? fallback : message);
+    }
+
+    private void syncProfileFromFirebase(FirebaseUser user) {
         if (user == null) {
             return;
         }
         UserProfile current = repository.getProfile();
-        repository.saveProfile(new UserProfile(user.getName(), user.getEmail(), current.getGoal()));
+        String name = TextUtils.isEmpty(user.getDisplayName()) ? firstNameFromEmail(user.getEmail()) : user.getDisplayName();
+        String email = TextUtils.isEmpty(user.getEmail()) ? "google-user@firebase.local" : user.getEmail();
+        repository.saveProfile(new UserProfile(name, email, current.getGoal()));
     }
 
-    private void showDemoOtpDialog(String otp, String purpose) {
-        new AlertDialog.Builder(this)
-                .setTitle("OTP " + purpose)
-                .setMessage("Mã OTP thử nghiệm: " + otp + "\n\nTrong bản production, mã này sẽ được gửi qua Email/SMS backend hoặc Firebase.")
-                .setPositiveButton("Đã hiểu", null)
-                .show();
-    }
-
-    private void showGoogleSetupDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Google Sign-In cần cấu hình Firebase")
-                .setMessage("Mình đã bỏ cơ chế đăng nhập Google giả. Để bật đăng nhập Google thật cần thêm google-services.json, SHA-1 của máy build và OAuth client trong Firebase Console.")
-                .setPositiveButton("OK", null)
-                .show();
+    private String firstNameFromEmail(String email) {
+        if (TextUtils.isEmpty(email)) {
+            return "Google User";
+        }
+        int at = email.indexOf("@");
+        return at > 0 ? email.substring(0, at) : email;
     }
 
     private int dp(int value) {

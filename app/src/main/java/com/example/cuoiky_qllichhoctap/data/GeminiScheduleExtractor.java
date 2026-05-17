@@ -97,7 +97,8 @@ public class GeminiScheduleExtractor {
         JSONObject inlineData = new JSONObject()
                 .put("mime_type", "image/jpeg")
                 .put("data", imageBase64);
-        String prompt = "Bạn là hệ thống OCR lịch học. Hãy đọc ảnh thời khóa biểu/lịch học/lịch thi/deadline và chỉ trả về JSON thuần, không markdown. "
+        String prompt = "Bạn là hệ thống OCR lịch học. Ngày hiện tại là " + DateTimeUtils.formatDate(System.currentTimeMillis()) + ". "
+                + "Hãy đọc ảnh thời khóa biểu/lịch học/lịch thi/deadline và chỉ trả về JSON thuần, không markdown. "
                 + "Schema bắt buộc: {\"events\":[{\"title\":\"...\",\"type\":\"Lịch học|Lịch thi|Deadline\",\"subject\":\"...\",\"date\":\"dd/MM/yyyy\",\"startTime\":\"HH:mm\",\"endTime\":\"HH:mm\",\"room\":\"...\",\"note\":\"...\",\"confidence\":0.0}]}. "
                 + "Nếu thiếu năm, dùng năm hiện tại. Nếu thiếu giờ kết thúc, suy luận kéo dài 60 phút. Nếu không thấy lịch, trả {\"events\":[]}.";
         JSONObject body = new JSONObject()
