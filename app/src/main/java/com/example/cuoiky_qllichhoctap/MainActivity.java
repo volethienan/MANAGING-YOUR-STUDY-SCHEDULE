@@ -31,8 +31,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.cuoiky_qllichhoctap.data.AuthRepository;
 import com.example.cuoiky_qllichhoctap.data.GeminiScheduleExtractor;
 import com.example.cuoiky_qllichhoctap.data.StudyRepository;
+import com.example.cuoiky_qllichhoctap.model.AuthUser;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
 import com.example.cuoiky_qllichhoctap.model.StudyTask;
 import com.example.cuoiky_qllichhoctap.model.UserProfile;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int SCREEN_STATS = 4;
 
     private StudyRepository repository;
+    private AuthRepository authRepository;
     private FrameLayout contentFrame;
     private LinearLayout bottomNav;
     private CountDownTimer pomodoroTimer;
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         repository = new StudyRepository(this);
+        authRepository = new AuthRepository(this);
         contentFrame = findViewById(R.id.contentFrame);
         bottomNav = findViewById(R.id.bottomNav);
         setupImageLaunchers();
@@ -87,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (repository.isFirstOpen()) {
             showOnboarding();
-        } else if (repository.isLoggedIn()) {
+        } else if (authRepository.isLoggedIn()) {
+            syncProfileFromAuth(authRepository.getCurrentUser());
             showDashboard();
         } else {
             showLogin();
@@ -154,10 +159,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void showLogin() {
         View screen = inflateScreen(R.layout.screen_login, false, SCREEN_DASHBOARD);
-        UserProfile profile = repository.getProfile();
+        AuthUser currentUser = authRepository.getCurrentUser();
         EditText email = screen.findViewById(R.id.inputEmail);
         EditText password = screen.findViewById(R.id.inputPassword);
-        email.setText(profile.getEmail());
+        if (currentUser != null) {
+            email.setText(currentUser.getEmail());
+        }
 
         View.OnClickListener login = v -> {
             if (isBlank(email) || isBlank(password)) {
@@ -172,14 +179,18 @@ public class MainActivity extends AppCompatActivity {
                 toast("Mật khẩu cần ít nhất 6 ký tự");
                 return;
             }
-            repository.setLoggedIn(true);
-            showDashboard();
+            try {
+                AuthUser user = authRepository.login(textOf(email), textOf(password));
+                syncProfileFromAuth(user);
+                repository.setLoggedIn(true);
+                showDashboard();
+            } catch (IllegalArgumentException exception) {
+                toast(exception.getMessage());
+            }
         };
         screen.findViewById(R.id.btnLogin).setOnClickListener(login);
-        screen.findViewById(R.id.btnFakeGoogle).setOnClickListener(v -> {
-            repository.setLoggedIn(true);
-            showDashboard();
-        });
+        screen.findViewById(R.id.btnGoogleLogin).setOnClickListener(v -> showGoogleSetupDialog());
+        screen.findViewById(R.id.textForgotPassword).setOnClickListener(v -> showForgotPassword());
         screen.findViewById(R.id.textGoRegister).setOnClickListener(v -> showRegister());
     }
 
@@ -212,12 +223,103 @@ public class MainActivity extends AppCompatActivity {
                 toast("Bạn cần đồng ý điều khoản sử dụng");
                 return;
             }
-            repository.saveProfile(new UserProfile(textOf(name), textOf(email), "Quản lý lịch học và deadline"));
-            repository.finishOnboarding();
-            repository.setLoggedIn(true);
-            showDashboard();
+            try {
+                String otp = authRepository.beginRegistration(textOf(name), textOf(email), textOf(password));
+                showRegisterOtp(textOf(email), textOf(name), textOf(password), otp);
+            } catch (IllegalArgumentException exception) {
+                toast(exception.getMessage());
+            }
         });
         screen.findViewById(R.id.textGoLogin).setOnClickListener(v -> showLogin());
+    }
+
+    private void showRegisterOtp(String email, String name, String password, String otp) {
+        View screen = inflateScreen(R.layout.screen_otp, false, SCREEN_DASHBOARD);
+        setText(screen, R.id.textOtpSubtitle, "Nhập mã 6 số để kích hoạt tài khoản");
+        setText(screen, R.id.textOtpEmail, email);
+        EditText inputOtp = screen.findViewById(R.id.inputOtp);
+        showDemoOtpDialog(otp, "đăng ký");
+
+        screen.findViewById(R.id.btnVerifyOtp).setOnClickListener(v -> {
+            if (isBlank(inputOtp) || textOf(inputOtp).length() != 6) {
+                toast("Vui lòng nhập đủ 6 số OTP");
+                return;
+            }
+            try {
+                AuthUser user = authRepository.verifyRegistrationOtp(email, textOf(inputOtp));
+                syncProfileFromAuth(user);
+                repository.finishOnboarding();
+                repository.setLoggedIn(true);
+                toast("Đăng ký thành công");
+                showDashboard();
+            } catch (IllegalArgumentException exception) {
+                toast(exception.getMessage());
+            }
+        });
+
+        screen.findViewById(R.id.btnResendOtp).setOnClickListener(v -> {
+            try {
+                String newOtp = authRepository.beginRegistration(name, email, password);
+                showDemoOtpDialog(newOtp, "đăng ký");
+            } catch (IllegalArgumentException exception) {
+                toast(exception.getMessage());
+            }
+        });
+        screen.findViewById(R.id.textBack).setOnClickListener(v -> showRegister());
+    }
+
+    private void showForgotPassword() {
+        View screen = inflateScreen(R.layout.screen_forgot_password, false, SCREEN_DASHBOARD);
+        EditText email = screen.findViewById(R.id.inputEmail);
+        screen.findViewById(R.id.btnSendOtp).setOnClickListener(v -> {
+            if (isBlank(email)) {
+                toast("Vui lòng nhập email");
+                return;
+            }
+            if (!isValidEmail(textOf(email))) {
+                toast("Email chưa đúng định dạng");
+                return;
+            }
+            try {
+                String otp = authRepository.beginPasswordReset(textOf(email));
+                showResetPassword(textOf(email), otp);
+            } catch (IllegalArgumentException exception) {
+                toast(exception.getMessage());
+            }
+        });
+        screen.findViewById(R.id.textBackLogin).setOnClickListener(v -> showLogin());
+    }
+
+    private void showResetPassword(String email, String otp) {
+        View screen = inflateScreen(R.layout.screen_reset_password, false, SCREEN_DASHBOARD);
+        setText(screen, R.id.textResetEmail, email);
+        EditText inputOtp = screen.findViewById(R.id.inputOtp);
+        EditText password = screen.findViewById(R.id.inputPassword);
+        EditText confirm = screen.findViewById(R.id.inputConfirmPassword);
+        showDemoOtpDialog(otp, "đặt lại mật khẩu");
+
+        screen.findViewById(R.id.btnResetPassword).setOnClickListener(v -> {
+            if (isBlank(inputOtp) || isBlank(password) || isBlank(confirm)) {
+                toast("Vui lòng nhập đủ OTP và mật khẩu mới");
+                return;
+            }
+            if (textOf(password).length() < 6) {
+                toast("Mật khẩu cần ít nhất 6 ký tự");
+                return;
+            }
+            if (!textOf(password).equals(textOf(confirm))) {
+                toast("Mật khẩu xác nhận chưa khớp");
+                return;
+            }
+            try {
+                authRepository.resetPassword(email, textOf(inputOtp), textOf(password));
+                toast("Đã cập nhật mật khẩu");
+                showLogin();
+            } catch (IllegalArgumentException exception) {
+                toast(exception.getMessage());
+            }
+        });
+        screen.findViewById(R.id.textBackLogin).setOnClickListener(v -> showLogin());
     }
 
     private void showDashboard() {
@@ -447,6 +549,7 @@ public class MainActivity extends AppCompatActivity {
         sync.setOnCheckedChangeListener((buttonView, isChecked) -> repository.setSyncEnabled(isChecked));
         screen.findViewById(R.id.btnEditProfile).setOnClickListener(v -> showProfileDialog());
         screen.findViewById(R.id.btnLogout).setOnClickListener(v -> {
+            authRepository.logout();
             repository.setLoggedIn(false);
             resetPomodoro();
             showLogin();
@@ -1042,6 +1145,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void setText(View root, int id, String text) {
         ((TextView) root.findViewById(id)).setText(text);
+    }
+
+    private void syncProfileFromAuth(AuthUser user) {
+        if (user == null) {
+            return;
+        }
+        UserProfile current = repository.getProfile();
+        repository.saveProfile(new UserProfile(user.getName(), user.getEmail(), current.getGoal()));
+    }
+
+    private void showDemoOtpDialog(String otp, String purpose) {
+        new AlertDialog.Builder(this)
+                .setTitle("OTP " + purpose)
+                .setMessage("Mã OTP thử nghiệm: " + otp + "\n\nTrong bản production, mã này sẽ được gửi qua Email/SMS backend hoặc Firebase.")
+                .setPositiveButton("Đã hiểu", null)
+                .show();
+    }
+
+    private void showGoogleSetupDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Google Sign-In cần cấu hình Firebase")
+                .setMessage("Mình đã bỏ cơ chế đăng nhập Google giả. Để bật đăng nhập Google thật cần thêm google-services.json, SHA-1 của máy build và OAuth client trong Firebase Console.")
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     private int dp(int value) {
