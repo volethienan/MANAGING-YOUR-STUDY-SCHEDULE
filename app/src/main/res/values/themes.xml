@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Base.Theme.CUOIKY_QLLICHHOCTAP" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:fontFamily">casual</item>
+        <item name="android:windowBackground">@color/paper</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@color/paper</item>
         <item name="android:statusBarColor">@color/paper</item>

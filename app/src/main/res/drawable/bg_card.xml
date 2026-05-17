@@ -8,7 +8,7 @@
     </item>
     <item android:right="5dp" android:bottom="5dp">
         <shape>
-            <solid android:color="@color/paper_light" />
+            <solid android:color="@color/white" />
             <stroke android:width="2dp" android:color="@color/ink" />
             <corners android:topLeftRadius="24dp" android:topRightRadius="12dp" android:bottomLeftRadius="14dp" android:bottomRightRadius="22dp" />
             <padding android:left="16dp" android:top="14dp" android:right="16dp" android:bottom="14dp" />

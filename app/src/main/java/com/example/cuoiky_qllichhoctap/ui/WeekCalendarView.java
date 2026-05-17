@@ -173,8 +173,10 @@ public class WeekCalendarView extends View {
             float right = left + laneWidth - dp(3);
             float top = headerHeight + Math.max(0, startHour - START_HOUR) * hourHeight + dp(2);
             float bottom = headerHeight + Math.min(END_HOUR - START_HOUR, endHour - START_HOUR) * hourHeight - dp(2);
-            if (bottom <= top) {
-                bottom = top + dp(34);
+            boolean hasRoom = event.getRoom() != null && !event.getRoom().trim().isEmpty();
+            float minBottom = top + (hasRoom ? dp(51) : dp(36));
+            if (bottom < minBottom) {
+                bottom = minBottom;
             }
             RectF rect = new RectF(left, top, right, bottom);
             paint.setColor(eventColor(event));
@@ -192,6 +194,9 @@ public class WeekCalendarView extends View {
                     ? DateTimeUtils.formatTime(event.getStartAt()) + " - " + DateTimeUtils.formatTime(event.getEndAt())
                     : DateTimeUtils.formatTime(event.getStartAt());
             canvas.drawText(trim(timeText, Math.max(8, (int) (laneWidth / dp(7)))), left + dp(6), top + dp(31), textPaint);
+            if (hasRoom) {
+                canvas.drawText(trim(event.getRoom(), Math.max(8, (int) (laneWidth / dp(7)))), left + dp(6), top + dp(46), textPaint);
+            }
             hitBoxes.add(new EventHitBox(rect, event));
         }
     }
