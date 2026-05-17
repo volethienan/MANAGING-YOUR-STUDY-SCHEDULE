@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Tạo trang vở mới"
+            android:textColor="@color/rose"
+            android:textSize="29sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/inputName"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_input"
+            android:autofillHints="name"
+            android:hint="Họ tên"
+            android:inputType="textPersonName" />
+
+        <EditText
+            android:id="@+id/inputEmail"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_input"
+            android:autofillHints="emailAddress"
+            android:hint="Email / số điện thoại"
+            android:inputType="textEmailAddress" />
+
+        <EditText
+            android:id="@+id/inputPassword"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_input"
+            android:autofillHints="newPassword"
+            android:hint="Mật khẩu"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/inputConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_input"
+            android:autofillHints="newPassword"
+            android:hint="Xác nhận mật khẩu"
+            android:inputType="textPassword" />
+
+        <CheckBox
+            android:id="@+id/checkTerms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:buttonTint="@color/mint"
+            android:text="Đồng ý điều khoản sử dụng"
+            android:textColor="@color/muted" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="18dp"
+            android:backgroundTint="@color/ink"
+            android:text="Đăng ký"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:cornerRadius="18dp" />
+
+        <TextView
+            android:id="@+id/textGoLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="28dp"
+            android:gravity="center"
+            android:text="Đã có tài khoản? Đăng nhập"
+            android:textColor="@color/danger"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1872" height="5986" viewBox="0 0 1872 5986">
+  <defs>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#D3BE9E" flood-opacity=".22"/>
+    </filter>
+    <filter id="frameShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#B69D79" flood-opacity=".28"/>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L6,3 z" fill="#3F3831"/>
+    </marker>
+    <pattern id="paperDots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1" fill="#E7D8BF" opacity=".45"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="1872" height="5986" fill="#F4E7CE"/>
+  <rect x="0" y="0" width="1872" height="5986" fill="url(#paperDots)" opacity="0.48"/>
+  <text x="60" y="34" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0">MANAGING YOUR STUDY SCHEDULE - mobile UI design</text>
+  <text x="60" y="58" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="0">Studygram style • Android frame 390x844 • UI kit + 19 màn hình + prototype flow</text>
+  <g id="UI_Kit_Board">
+    <text x="60" y="85" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">00. UI kit Studygram</text>
+    <rect x="60" y="98" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <text x="84" y="152" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="25" font-weight="900" letter-spacing="0">Study Planner UI Kit</text>
+    <text x="84" y="176" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="700" letter-spacing="0">Màu giấy ngà, pastel note, icon nét mềm</text>
+    <g id="logo" transform="translate(358 133) scale(0.72)">
+    <rect x="0" y="0" width="62" height="62" fill="#FFE8A8" rx="18" filter="url(#softShadow)"/>
+    <rect x="14" y="14" width="34" height="40" fill="#FFF9EA" rx="6" stroke="#3F3831" stroke-width="2"/>
+    <line x1="21" y1="25" x2="41" y2="25" stroke="#A89CE8" stroke-width="3" stroke-linecap="round"/>
+    <line x1="21" y1="34" x2="37" y2="34" stroke="#8ED8B5" stroke-width="3" stroke-linecap="round"/>
+    <path d="M20 45l6 5 15-18" fill="none" stroke="#E96C61" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    <text x="84" y="220" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Color tokens</text>
+    <rect x="84" y="240" width="46" height="46" fill="#FBF3E2" rx="14" stroke="#E4D6BE"/><text x="107" y="300" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Paper</text><rect x="151" y="240" width="46" height="46" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/><text x="174" y="300" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Card</text><rect x="218" y="240" width="46" height="46" fill="#3F3831" rx="14" stroke="#E4D6BE"/><text x="241" y="300" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Ink</text><rect x="285" y="240" width="46" height="46" fill="#FFE8A8" rx="14" stroke="#E4D6BE"/><text x="308" y="300" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Yellow</text><rect x="352" y="240" width="46" height="46" fill="#FFD8DF" rx="14" stroke="#E4D6BE"/><text x="375" y="300" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Pink</text><rect x="84" y="310" width="46" height="46" fill="#CAEEDB" rx="14" stroke="#E4D6BE"/><text x="107" y="370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Mint</text><rect x="151" y="310" width="46" height="46" fill="#DED9FF" rx="14" stroke="#E4D6BE"/><text x="174" y="370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Lavender</text><rect x="218" y="310" width="46" height="46" fill="#CFEAF8" rx="14" stroke="#E4D6BE"/><text x="241" y="370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Blue</text><rect x="285" y="310" width="46" height="46" fill="#FFBCB3" rx="14" stroke="#E4D6BE"/><text x="308" y="370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Coral</text><rect x="352" y="310" width="46" height="46" fill="#E4D6BE" rx="14" stroke="#E4D6BE"/><text x="375" y="370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Line</text>
+    <text x="84" y="404" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Typography</text>
+    <text x="84" y="440" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Heading 1 / Nunito ExtraBold</text>
+    <text x="84" y="468" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="0">Body text / Nunito Medium dễ đọc cho mobile</text>
+    <text x="84" y="512" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Components</text>
+    <rect x="84" y="533" width="160" height="48" fill="#3F3831" rx="24" filter="url(#softShadow)"/><text x="164" y="562" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Bắt đầu</text>
+    <rect x="260" y="533" width="142" height="48" fill="#FFFFFF" rx="24" filter="url(#softShadow)"/><text x="331" y="562" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Google</text>
+    <text x="84" y="608" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Input</text><rect x="84" y="617" width="318" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="100" y="647" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Nhập tên công việc</text>
+    <rect x="84" y="692" width="146" height="92" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><g opacity=".9"><rect x="124" y="682" width="58" height="18" fill="#FFD8DF" rx="4" transform="rotate(-5 153 691)"/></g><text x="102" y="729" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0">Card giấy note</text><text x="102" y="752" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0">Bo góc mềm</text>
+    <rect x="256" y="698" width="54" height="30" fill="#FFBCB3" rx="15" stroke="none"/><text x="283" y="718" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Cao</text><rect x="256" y="738" width="86" height="30" fill="#FFE8A8" rx="15" stroke="none"/><text x="299" y="758" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Trung bình</text><rect x="256" y="778" width="58" height="30" fill="#CAEEDB" rx="15" stroke="none"/><text x="285" y="798" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Thấp</text>
+    <rect x="84" y="828" width="342" height="64" fill="#FFF9EA" rx="25" stroke="#E4D6BE" filter="url(#softShadow)"/>
+    <g><path d="M4 11.5L12 5l8 6.5V20H6V11.5" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(109 848) scale(1)"/></g><g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(179 848) scale(1)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(179 848) scale(1)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(179 848) scale(1)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(179 848) scale(1)"/></g><g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(249 848) scale(1)"/></g><g><circle cx="12" cy="12" r="9" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(319 848) scale(1)"/><path d="M12 7v6l4 2" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(319 848) scale(1)"/></g><g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(389 848) scale(1)"/></g>
+  </g>
+<g id="01._Splash_/_Onboarding">
+    <text x="514" y="85" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">01. Splash / Onboarding</text>
+    <rect x="514" y="98" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="646" y="111" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <rect x="586" y="224" width="242" height="24" fill="#FFE8A8" rx="12" opacity="0.72"/>
+  <g id="logo" transform="translate(659 226) scale(1.6)">
+    <rect x="0" y="0" width="62" height="62" fill="#FFE8A8" rx="18" filter="url(#softShadow)"/>
+    <rect x="14" y="14" width="34" height="40" fill="#FFF9EA" rx="6" stroke="#3F3831" stroke-width="2"/>
+    <line x1="21" y1="25" x2="41" y2="25" stroke="#A89CE8" stroke-width="3" stroke-linecap="round"/>
+    <line x1="21" y1="34" x2="37" y2="34" stroke="#8ED8B5" stroke-width="3" stroke-linecap="round"/>
+    <path d="M20 45l6 5 15-18" fill="none" stroke="#E96C61" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="709" y="382" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">MANAGING YOUR</text>
+  <text x="709" y="416" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="0" text-anchor="middle">STUDY SCHEDULE</text>
+  <text x="569" y="474" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="0" text-anchor="start" leading="24">Quản lý lịch học thông minh,</text><text x="569" y="498" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="0" text-anchor="start" leading="24">học tập tập trung hơn</text>
+  <rect x="560" y="554" width="298" height="158" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <g opacity=".9"><rect x="677" y="542" width="64" height="18" fill="#FFD8DF" rx="4" transform="rotate(-5 709 551)"/></g>
+  <text x="590" y="600" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="20" font-weight="900" letter-spacing="0">Hôm nay học gì?</text>
+  <text x="590" y="632" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Lịch học, deadline, Pomodoro</text>
+  <g id="Weekly_Progress_Chart">
+    <rect x="592" y="668" width="12" height="30" fill="#FFE8A8" rx="6"/><rect x="612" y="650" width="12" height="48" fill="#FFD8DF" rx="6"/><rect x="632" y="660" width="12" height="38" fill="#CAEEDB" rx="6"/><rect x="652" y="643" width="12" height="55" fill="#DED9FF" rx="6"/><rect x="672" y="656" width="12" height="42" fill="#CFEAF8" rx="6"/><rect x="692" y="636" width="12" height="62" fill="#FFBCB3" rx="6"/><rect x="712" y="648" width="12" height="50" fill="#FFF1C8" rx="6"/>
+    <text x="592" y="718" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0">T2  T3  T4  T5  T6  T7  CN</text>
+  </g>
+  <rect x="562" y="802" width="294" height="54" fill="#3F3831" rx="27" filter="url(#softShadow)"/><text x="709" y="834" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Bắt đầu</text>
+
+  </g>
+<g id="02._Đăng_nhập">
+    <text x="968" y="85" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">02. Đăng nhập</text>
+    <rect x="968" y="98" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1100" y="111" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="logo" transform="translate(1125 154) scale(1.22)">
+    <rect x="0" y="0" width="62" height="62" fill="#FFE8A8" rx="18" filter="url(#softShadow)"/>
+    <rect x="14" y="14" width="34" height="40" fill="#FFF9EA" rx="6" stroke="#3F3831" stroke-width="2"/>
+    <line x1="21" y1="25" x2="41" y2="25" stroke="#A89CE8" stroke-width="3" stroke-linecap="round"/>
+    <line x1="21" y1="34" x2="37" y2="34" stroke="#8ED8B5" stroke-width="3" stroke-linecap="round"/>
+    <path d="M20 45l6 5 15-18" fill="none" stroke="#E96C61" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="1163" y="277" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="25" font-weight="900" letter-spacing="0" text-anchor="middle">Chào mừng quay lại</text>
+  <text x="1163" y="304" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0" text-anchor="middle">Đăng nhập để tiếp tục quản lý lịch học của bạn</text>
+  <text x="1000" y="358" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Email / số điện thoại</text><rect x="1000" y="367" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="397" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">student@email.com</text>
+  <text x="1000" y="440" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Mật khẩu</text><rect x="1000" y="449" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="479" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">••••••••</text>
+  <rect x="1000" y="520" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#8ED8B5" stroke-width="1.8"/><path d="M1005 531 L1010 536 L1018 526" fill="none" stroke="#8ED8B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="1030" y="536" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Ghi nhớ đăng nhập</text>
+  <text x="1219" y="536" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Quên mật khẩu?</text>
+  <rect x="1000" y="584" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1163" y="615" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Đăng nhập</text>
+  <rect x="1000" y="654" width="326" height="52" fill="#FFFFFF" rx="26" filter="url(#softShadow)"/><text x="1163" y="685" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Đăng nhập với Google</text>
+  <text x="1163" y="778" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0" text-anchor="middle">Chưa có tài khoản? Đăng ký ngay</text>
+
+  </g>
+<g id="03._Đăng_ký">
+    <text x="1422" y="85" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">03. Đăng ký</text>
+    <rect x="1422" y="98" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1554" y="111" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="1446" y="154" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Tạo tài khoản mới</text>
+    <text x="1446" y="178" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Bắt đầu xây lịch học của riêng bạn</text>
+    <rect x="1750" y="136" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M5 5h9a4 4 0 0 1 4 4v12H9a4 4 0 0 0-4-4V5z" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 143) scale(1)"/><path d="M5 17a4 4 0 0 1 4-4h9" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 143) scale(1)"/></g>
+  </g>
+  <text x="1454" y="226" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Họ tên</text><rect x="1454" y="235" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="265" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Nguyễn Minh Anh</text>
+  <text x="1454" y="302" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Email / số điện thoại</text><rect x="1454" y="311" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="341" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">student@email.com</text>
+  <text x="1454" y="378" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Mật khẩu</text><rect x="1454" y="387" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="417" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">••••••••</text>
+  <text x="1454" y="454" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Xác nhận mật khẩu</text><rect x="1454" y="463" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="493" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">••••••••</text>
+  <rect x="1454" y="536" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#E4D6BE" stroke-width="1.8"/><text x="1484" y="552" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Đồng ý điều khoản sử dụng</text>
+  <rect x="1454" y="598" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1617" y="629" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Đăng ký</text>
+  <rect x="1454" y="666" width="326" height="52" fill="#FFFFFF" rx="26" filter="url(#softShadow)"/><text x="1617" y="697" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Đăng ký với Google</text>
+  <text x="1617" y="800" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0" text-anchor="middle">Đã có tài khoản? Đăng nhập</text>
+
+  </g>
+<g id="04._Quên_mật_khẩu">
+    <text x="60" y="1059" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">04. Quên mật khẩu</text>
+    <rect x="60" y="1072" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="192" y="1085" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="84" y="1128" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Quên mật khẩu</text>
+    <text x="84" y="1152" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Nhập email của bạn để nhận mã xác minh</text>
+    <rect x="388" y="1110" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><circle cx="12" cy="12" r="9" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(395 1117) scale(1)"/><path d="M12 7v6l4 2" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(395 1117) scale(1)"/></g>
+  </g>
+  <rect x="92" y="1232" width="326" height="180" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <g opacity=".9"><rect x="218" y="1221" width="70" height="18" fill="#FFD8DF" rx="4" transform="rotate(-5 253 1230)"/></g>
+  <text x="122" y="1292" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="20" font-weight="900" letter-spacing="0">Kiểm tra hộp thư</text>
+  <text x="122" y="1322" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Mã xác minh sẽ hết hạn sau vài phút.</text>
+  <text x="92" y="1458" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Email</text><rect x="92" y="1467" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="108" y="1497" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">student@email.com</text>
+  <rect x="92" y="1554" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="255" y="1585" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Gửi mã xác minh</text>
+  <text x="255" y="1666" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0" text-anchor="middle">Quay lại đăng nhập</text>
+
+  </g>
+<g id="05._Xác_minh_OTP">
+    <text x="514" y="1059" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">05. Xác minh OTP</text>
+    <rect x="514" y="1072" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="646" y="1085" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="538" y="1128" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Xác minh tài khoản</text>
+    <text x="538" y="1152" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Nhập mã xác minh được gửi đến email của bạn</text>
+    <rect x="842" y="1110" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(849 1117) scale(1)"/></g>
+  </g>
+  <rect x="546" y="1270" width="44" height="56" fill="#FFFFFF" rx="15" stroke="#3F3831" stroke-width="1.8"/><text x="568" y="1306" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0" text-anchor="middle">2</text><rect x="601" y="1270" width="44" height="56" fill="#FFFFFF" rx="15" stroke="#3F3831" stroke-width="1.8"/><text x="623" y="1306" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0" text-anchor="middle">8</text><rect x="656" y="1270" width="44" height="56" fill="#FFFFFF" rx="15" stroke="#3F3831" stroke-width="1.8"/><text x="678" y="1306" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0" text-anchor="middle">4</text><rect x="711" y="1270" width="44" height="56" fill="#FFFFFF" rx="15" stroke="#3F3831" stroke-width="1.8"/><text x="733" y="1306" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0" text-anchor="middle">6</text><rect x="766" y="1270" width="44" height="56" fill="#FFFFFF" rx="15" stroke="#E4D6BE" stroke-width="1.2"/><rect x="821" y="1270" width="44" height="56" fill="#FFFFFF" rx="15" stroke="#E4D6BE" stroke-width="1.2"/>
+  <rect x="572" y="1374" width="274" height="72" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="709" y="1404" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="0" text-anchor="middle">Gửi lại mã sau</text>
+  <text x="709" y="1430" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0" text-anchor="middle">00:42</text>
+  <rect x="546" y="1510" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="709" y="1541" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Xác nhận</text>
+  <text x="709" y="1612" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0" text-anchor="middle">Gửi lại mã</text>
+
+  </g>
+<g id="06._Tạo_mật_khẩu_mới">
+    <text x="968" y="1059" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">06. Tạo mật khẩu mới</text>
+    <rect x="968" y="1072" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1100" y="1085" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="992" y="1128" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Tạo mật khẩu mới</text>
+    <text x="992" y="1152" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Cập nhật mật khẩu an toàn cho tài khoản</text>
+    <rect x="1296" y="1110" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><circle cx="12" cy="12" r="3.4" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(1303 1117) scale(1)"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1303 1117) scale(1)"/></g>
+  </g>
+  <text x="1000" y="1252" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Mật khẩu mới</text><rect x="1000" y="1261" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="1291" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">••••••••</text>
+  <text x="1000" y="1334" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Xác nhận mật khẩu mới</text><rect x="1000" y="1343" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="1373" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">••••••••</text>
+  <rect x="1000" y="1442" width="326" height="92" fill="#CAEEDB" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1028" y="1480" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Gợi ý</text>
+  <text x="1028" y="1506" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Dùng ít nhất 8 ký tự, có số và chữ.</text>
+  <rect x="1000" y="1594" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1163" y="1625" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Cập nhật mật khẩu</text>
+
+  </g>
+<g id="07._Thiết_lập_hồ_sơ">
+    <text x="1422" y="1059" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">07. Thiết lập hồ sơ</text>
+    <rect x="1422" y="1072" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1554" y="1085" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="1446" y="1128" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Thiết lập hồ sơ</text>
+    <text x="1446" y="1152" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Cá nhân hóa lịch học của bạn</text>
+    <rect x="1750" y="1110" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M5 5h9a4 4 0 0 1 4 4v12H9a4 4 0 0 0-4-4V5z" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 1117) scale(1)"/><path d="M5 17a4 4 0 0 1 4-4h9" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 1117) scale(1)"/></g>
+  </g>
+  <text x="1454" y="1188" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Tên hiển thị</text><rect x="1454" y="1197" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="1227" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Minh Anh</text>
+  <text x="1454" y="1292" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Vai trò</text>
+  <rect x="1454" y="1308" width="82" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1495" y="1328" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Học sinh</text><rect x="1544" y="1308" width="88" height="30" fill="#FFE8A8" rx="15" stroke="none"/><text x="1588" y="1328" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Sinh viên</text><rect x="1640" y="1308" width="82" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1681" y="1328" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Tự học</text>
+  <text x="1454" y="1376" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Mục tiêu học tập</text>
+  <rect x="1454" y="1398" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#8ED8B5" stroke-width="1.8"/><path d="M1459 1409 L1464 1414 L1472 1404" fill="none" stroke="#8ED8B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="1488" y="1414" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Quản lý lịch học</text><rect x="1454" y="1440" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#8ED8B5" stroke-width="1.8"/><path d="M1459 1451 L1464 1456 L1472 1446" fill="none" stroke="#8ED8B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="1488" y="1456" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Theo dõi deadline</text><rect x="1454" y="1482" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#8ED8B5" stroke-width="1.8"/><path d="M1459 1493 L1464 1498 L1472 1488" fill="none" stroke="#8ED8B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text x="1488" y="1498" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Pomodoro tập trung</text><rect x="1454" y="1524" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#E4D6BE" stroke-width="1.8"/><text x="1488" y="1540" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Thống kê tiến độ</text>
+  <text x="1454" y="1592" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Khung giờ học thường xuyên</text><rect x="1454" y="1601" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="1631" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">19:00 - 21:30</text>
+  <rect x="1454" y="1748" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1617" y="1779" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Hoàn tất thiết lập</text>
+
+  </g>
+<g id="08._Dashboard_tổng_quan">
+    <text x="60" y="2033" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">08. Dashboard tổng quan</text>
+    <rect x="60" y="2046" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="192" y="2059" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="84" y="2102" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Chào Minh Anh</text>
+    <text x="84" y="2126" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Hôm nay bạn có 3 việc cần ưu tiên</text>
+    <rect x="388" y="2084" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><circle cx="12" cy="12" r="3.4" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(395 2091) scale(1)"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(395 2091) scale(1)"/></g>
+  </g>
+  <rect x="84" y="2152" width="342" height="112" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <g opacity=".9"><rect x="216" y="2142" width="70" height="18" fill="#FFD8DF" rx="4" transform="rotate(-5 251 2151)"/></g>
+  <text x="108" y="2191" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Lịch học tiếp theo</text>
+  <text x="108" y="2220" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0">Toán rời rạc</text>
+  <text x="108" y="2245" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="0">09:30 - 11:30 • P. B203</text>
+  <rect x="84" y="2284" width="162" height="94" fill="#FFD8DF" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="104" y="2321" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Deadline sắp đến</text><text x="104" y="2350" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Báo cáo UX</text>
+  <rect x="264" y="2284" width="162" height="94" fill="#CAEEDB" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="284" y="2321" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Công việc hôm nay</text><text x="284" y="2350" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="19" font-weight="900" letter-spacing="0">5 task</text>
+  <rect x="84" y="2400" width="342" height="114" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="106" y="2430" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Thống kê nhanh</text>
+  <text x="112" y="2471" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">12</text><text x="99" y="2492" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">Hoàn thành</text>
+  <text x="218" y="2471" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">2</text><text x="192" y="2492" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">Quá hạn</text>
+  <text x="320" y="2471" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">8h</text><text x="296" y="2492" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">Tập trung</text>
+  <rect x="84" y="2538" width="342" height="118" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="106" y="2571" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Tiến độ học tập tuần</text><g id="Weekly_Progress_Chart">
+    <rect x="110" y="2604" width="12" height="30" fill="#FFE8A8" rx="6"/><rect x="130" y="2586" width="12" height="48" fill="#FFD8DF" rx="6"/><rect x="150" y="2596" width="12" height="38" fill="#CAEEDB" rx="6"/><rect x="170" y="2579" width="12" height="55" fill="#DED9FF" rx="6"/><rect x="190" y="2592" width="12" height="42" fill="#CFEAF8" rx="6"/><rect x="210" y="2572" width="12" height="62" fill="#FFBCB3" rx="6"/><rect x="230" y="2584" width="12" height="50" fill="#FFF1C8" rx="6"/>
+    <text x="110" y="2654" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0">T2  T3  T4  T5  T6  T7  CN</text>
+  </g>
+  <rect x="84" y="2678" width="105" height="44" fill="#FFE8A8" rx="22" filter="url(#softShadow)"/><text x="136.5" y="2705" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Thêm lịch</text>
+  <rect x="202" y="2678" width="95" height="44" fill="#CAEEDB" rx="22" filter="url(#softShadow)"/><text x="249.5" y="2705" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Thêm việc</text>
+  <rect x="310" y="2678" width="116" height="44" fill="#3F3831" rx="22" filter="url(#softShadow)"/><text x="368" y="2705" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Chụp ảnh</text>
+  <g id="Bottom_Navigation">
+    <rect x="76" y="2806" width="358" height="64" fill="#FFF9EA" rx="25" stroke="#E4D6BE" filter="url(#softShadow)"/>
+    <g id="Tab_Dashboard">
+        <rect x="88" y="2817" width="56" height="42" fill="#FFE8A8" rx="18" opacity="1"/>
+        <g><path d="M4 11.5L12 5l8 6.5V20H6V11.5" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(104 2825) scale(0.8333333333333334)"/></g>
+        <text x="113" y="2854" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text>
+      </g><g id="Tab_Lịch">
+        <rect x="158" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(174 2825) scale(0.8333333333333334)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(174 2825) scale(0.8333333333333334)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(174 2825) scale(0.8333333333333334)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(174 2825) scale(0.8333333333333334)"/></g>
+        <text x="183" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Lịch</text>
+      </g><g id="Tab_To-Do">
+        <rect x="228" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(244 2825) scale(0.8333333333333334)"/></g>
+        <text x="253" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">To-Do</text>
+      </g><g id="Tab_Pomodoro">
+        <rect x="298" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><circle cx="12" cy="12" r="9" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(314 2825) scale(0.8333333333333334)"/><path d="M12 7v6l4 2" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(314 2825) scale(0.8333333333333334)"/></g>
+        <text x="323" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Pomodoro</text>
+      </g><g id="Tab_Thống kê">
+        <rect x="368" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(384 2825) scale(0.8333333333333334)"/></g>
+        <text x="393" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Thống kê</text>
+      </g>
+  </g>
+
+  </g>
+<g id="09._Lịch_học">
+    <text x="514" y="2033" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">09. Lịch học</text>
+    <rect x="514" y="2046" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="646" y="2059" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="538" y="2102" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Lịch học</text>
+    <text x="538" y="2126" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Xem theo ngày, tuần hoặc tháng</text>
+    <rect x="842" y="2084" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#3F3831" stroke-width="2" transform="translate(849 2091) scale(1)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(849 2091) scale(1)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(849 2091) scale(1)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(849 2091) scale(1)"/></g>
+  </g>
+  <rect x="546" y="2150" width="70" height="30" fill="#FFE8A8" rx="15" stroke="none"/><text x="581" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Ngày</text><rect x="626" y="2150" width="70" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="661" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Tuần</text><rect x="706" y="2150" width="76" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="744" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Tháng</text>
+  <rect x="538" y="2198" width="342" height="448" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="568" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">T2</text><text x="613" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">T3</text><text x="658" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">T4</text><text x="703" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">T5</text><text x="748" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">T6</text><text x="793" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">T7</text><text x="838" y="2236" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="900" letter-spacing="0" text-anchor="middle">CN</text>
+  <circle cx="568" cy="2266" r="17" fill="#FFF8E8" stroke="#E4D6BE"/><text x="568" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">18</text><circle cx="613" cy="2266" r="17" fill="#FFF8E8" stroke="#E4D6BE"/><text x="613" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">19</text><circle cx="658" cy="2266" r="17" fill="#FFE8A8" stroke="#E4D6BE"/><text x="658" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">20</text><circle cx="703" cy="2266" r="17" fill="#FFF8E8" stroke="#E4D6BE"/><text x="703" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">21</text><circle cx="748" cy="2266" r="17" fill="#FFF8E8" stroke="#E4D6BE"/><text x="748" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">22</text><circle cx="793" cy="2266" r="17" fill="#FFF8E8" stroke="#E4D6BE"/><text x="793" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">23</text><circle cx="838" cy="2266" r="17" fill="#FFF8E8" stroke="#E4D6BE"/><text x="838" y="2271" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">24</text>
+  <line x1="562" y1="2316" x2="856" y2="2316" stroke="#E4D6BE"/>
+  <g id="Event_Toán rời rạc">
+    <rect x="586" y="2338" width="236" height="64" fill="#CAEEDB" rx="14" stroke="none"/>
+    <text x="598" y="2361" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Toán rời rạc</text>
+    <text x="598" y="2381" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">09:30 - 11:30 • Lịch học</text>
+  </g>
+  <g id="Event_Thi Cấu trúc dữ liệu">
+    <rect x="586" y="2416" width="236" height="64" fill="#FFD8DF" rx="14" stroke="none"/>
+    <text x="598" y="2439" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Thi Cấu trúc dữ liệu</text>
+    <text x="598" y="2459" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">13:00 - 14:30 • Lịch thi</text>
+  </g>
+  <g id="Event_Nộp báo cáo UX">
+    <rect x="586" y="2494" width="236" height="64" fill="#FFF1C8" rx="14" stroke="none"/>
+    <text x="598" y="2517" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Nộp báo cáo UX</text>
+    <text x="598" y="2537" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">20:00 • Deadline</text>
+  </g>
+  <rect x="556" y="2578" width="306" height="48" fill="#FFF0EE" rx="16" stroke="#E96C61"/>
+  <g><path d="M12 4l9 16H3L12 4z" fill="none" stroke="#E96C61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(572 2590) scale(0.8333333333333334)"/><line x1="12" y1="10" x2="12" y2="14" fill="none" stroke="#E96C61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(572 2590) scale(0.8333333333333334)"/><circle cx="12" cy="17" r="0.8" fill="#E96C61" transform="translate(572 2590) scale(0.8333333333333334)"/></g><text x="602" y="2608" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="900" letter-spacing="0">Lịch này bị trùng với sự kiện khác</text>
+  <g id="Floating_Action_Button">
+    <rect x="814" y="2720" width="58" height="58" fill="#3F3831" rx="29" filter="url(#softShadow)"/>
+    <g><line x1="12" y1="5" x2="12" y2="19" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(831 2737) scale(1)"/><line x1="5" y1="12" x2="19" y2="12" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(831 2737) scale(1)"/></g>
+    
+  </g>
+  <g id="Bottom_Navigation">
+    <rect x="530" y="2806" width="358" height="64" fill="#FFF9EA" rx="25" stroke="#E4D6BE" filter="url(#softShadow)"/>
+    <g id="Tab_Dashboard">
+        <rect x="542" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 11.5L12 5l8 6.5V20H6V11.5" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(558 2825) scale(0.8333333333333334)"/></g>
+        <text x="567" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text>
+      </g><g id="Tab_Lịch">
+        <rect x="612" y="2817" width="56" height="42" fill="#FFE8A8" rx="18" opacity="1"/>
+        <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#3F3831" stroke-width="2" transform="translate(628 2825) scale(0.8333333333333334)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(628 2825) scale(0.8333333333333334)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(628 2825) scale(0.8333333333333334)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(628 2825) scale(0.8333333333333334)"/></g>
+        <text x="637" y="2854" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Lịch</text>
+      </g><g id="Tab_To-Do">
+        <rect x="682" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(698 2825) scale(0.8333333333333334)"/></g>
+        <text x="707" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">To-Do</text>
+      </g><g id="Tab_Pomodoro">
+        <rect x="752" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><circle cx="12" cy="12" r="9" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(768 2825) scale(0.8333333333333334)"/><path d="M12 7v6l4 2" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(768 2825) scale(0.8333333333333334)"/></g>
+        <text x="777" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Pomodoro</text>
+      </g><g id="Tab_Thống kê">
+        <rect x="822" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(838 2825) scale(0.8333333333333334)"/></g>
+        <text x="847" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Thống kê</text>
+      </g>
+  </g>
+
+  </g>
+<g id="10._To-Do_List_học_tập">
+    <text x="968" y="2033" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">10. To-Do List học tập</text>
+    <rect x="968" y="2046" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1100" y="2059" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="992" y="2102" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">To-Do List</text>
+    <text x="992" y="2126" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Sắp xếp việc học theo deadline</text>
+    <rect x="1296" y="2084" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1303 2091) scale(1)"/></g>
+  </g>
+  <rect x="992" y="2150" width="72" height="30" fill="#FFE8A8" rx="15" stroke="none"/><text x="1028" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0" text-anchor="middle">Tất cả</text><rect x="1076" y="2150" width="72" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1112" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0" text-anchor="middle">Hôm nay</text><rect x="1160" y="2150" width="78" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1199" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0" text-anchor="middle">Sắp hạn</text><rect x="1244" y="2150" width="72" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1280" y="2170" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0" text-anchor="middle">Quá hạn</text>
+  <g id="Task_Làm bài tập Chương 4">
+    <rect x="992" y="2206" width="342" height="76" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+    <rect x="1008" y="2230" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#E4D6BE" stroke-width="1.8"/>
+    <text x="1042" y="2234" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Làm bài tập Chương 4</text>
+    <text x="1042" y="2256" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0">CSDL • Hôm nay 21:00</text>
+    <rect x="1253" y="2228" width="52" height="30" fill="#FFBCB3" rx="15" stroke="none"/><text x="1279" y="2248" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Cao</text>
+  </g>
+  <g id="Task_Đọc tài liệu Kotlin">
+    <rect x="992" y="2296" width="342" height="76" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+    <rect x="1008" y="2320" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#E4D6BE" stroke-width="1.8"/>
+    <text x="1042" y="2324" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Đọc tài liệu Kotlin</text>
+    <text x="1042" y="2346" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0">Mobile • Mai 08:00</text>
+    <rect x="1253" y="2318" width="68" height="30" fill="#FFE8A8" rx="15" stroke="none"/><text x="1287" y="2338" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Trung bình</text>
+  </g>
+  <g id="Task_Ôn tập kiểm tra">
+    <rect x="992" y="2386" width="342" height="76" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+    <rect x="1008" y="2410" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#E4D6BE" stroke-width="1.8"/>
+    <text x="1042" y="2414" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Ôn tập kiểm tra</text>
+    <text x="1042" y="2436" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0">Giải tích • 22/05</text>
+    <rect x="1253" y="2408" width="52" height="30" fill="#FFBCB3" rx="15" stroke="none"/><text x="1279" y="2428" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Cao</text>
+  </g>
+  <g id="Task_Tóm tắt bài giảng">
+    <rect x="992" y="2476" width="342" height="76" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+    <rect x="1008" y="2500" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#8ED8B5" stroke-width="1.8"/><path d="M1013 2511 L1018 2516 L1026 2506" fill="none" stroke="#8ED8B5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="1042" y="2504" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Tóm tắt bài giảng</text>
+    <text x="1042" y="2526" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0">UX/UI • Đã xong</text>
+    <rect x="1253" y="2498" width="52" height="30" fill="#CAEEDB" rx="15" stroke="none"/><text x="1279" y="2518" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Thấp</text>
+  </g>
+  <g id="Task_Nộp file nhóm">
+    <rect x="992" y="2566" width="342" height="76" fill="#FFF0EE" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+    <rect x="1008" y="2590" width="22" height="22" fill="#FFFFFF" rx="7" stroke="#E4D6BE" stroke-width="1.8"/>
+    <text x="1042" y="2594" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Nộp file nhóm</text>
+    <text x="1042" y="2616" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="0">CNPM • Quá hạn</text>
+    <rect x="1253" y="2588" width="52" height="30" fill="#FFBCB3" rx="15" stroke="none"/><text x="1279" y="2608" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0" text-anchor="middle">Cao</text>
+  </g>
+  <g id="Floating_Action_Button">
+    <rect x="1244" y="2720" width="128" height="58" fill="#3F3831" rx="29" filter="url(#softShadow)"/>
+    <g><line x1="12" y1="5" x2="12" y2="19" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1261 2737) scale(1)"/><line x1="5" y1="12" x2="19" y2="12" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1261 2737) scale(1)"/></g>
+    <text x="1293" y="2756" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Thêm task</text>
+  </g>
+  <g id="Bottom_Navigation">
+    <rect x="984" y="2806" width="358" height="64" fill="#FFF9EA" rx="25" stroke="#E4D6BE" filter="url(#softShadow)"/>
+    <g id="Tab_Dashboard">
+        <rect x="996" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 11.5L12 5l8 6.5V20H6V11.5" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1012 2825) scale(0.8333333333333334)"/></g>
+        <text x="1021" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text>
+      </g><g id="Tab_Lịch">
+        <rect x="1066" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(1082 2825) scale(0.8333333333333334)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1082 2825) scale(0.8333333333333334)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1082 2825) scale(0.8333333333333334)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1082 2825) scale(0.8333333333333334)"/></g>
+        <text x="1091" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Lịch</text>
+      </g><g id="Tab_To-Do">
+        <rect x="1136" y="2817" width="56" height="42" fill="#FFE8A8" rx="18" opacity="1"/>
+        <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1152 2825) scale(0.8333333333333334)"/></g>
+        <text x="1161" y="2854" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">To-Do</text>
+      </g><g id="Tab_Pomodoro">
+        <rect x="1206" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><circle cx="12" cy="12" r="9" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(1222 2825) scale(0.8333333333333334)"/><path d="M12 7v6l4 2" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1222 2825) scale(0.8333333333333334)"/></g>
+        <text x="1231" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Pomodoro</text>
+      </g><g id="Tab_Thống kê">
+        <rect x="1276" y="2817" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1292 2825) scale(0.8333333333333334)"/></g>
+        <text x="1301" y="2854" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Thống kê</text>
+      </g>
+  </g>
+
+  </g>
+<g id="11._Thêm_/_Sửa_công_việc">
+    <text x="1422" y="2033" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">11. Thêm / Sửa công việc</text>
+    <rect x="1422" y="2046" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1554" y="2059" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="1446" y="2102" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Thêm công việc</text>
+    <text x="1446" y="2126" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Tạo task học tập trong vài bước</text>
+    <rect x="1750" y="2084" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 2091) scale(1)"/></g>
+  </g>
+  <text x="1454" y="2158" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Tên công việc</text><rect x="1454" y="2167" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="2197" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Hoàn thành slide thuyết trình</text>
+  <text x="1454" y="2234" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Môn học</text><rect x="1454" y="2243" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="2273" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Thiết kế UI/UX</text>
+  <text x="1454" y="2310" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Deadline</text><rect x="1454" y="2319" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="2349" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">20/05/2026 • 22:00</text>
+  <text x="1454" y="2414" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Mức độ ưu tiên</text>
+  <rect x="1454" y="2432" width="58" height="30" fill="#FFBCB3" rx="15" stroke="none"/><text x="1483" y="2452" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Cao</text><rect x="1526" y="2432" width="96" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1574" y="2452" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Trung bình</text><rect x="1638" y="2432" width="66" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1671" y="2452" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Thấp</text>
+  <text x="1454" y="2504" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Ghi chú</text><rect x="1454" y="2513" width="326" height="92" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1470" y="2543" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Chuẩn bị hình minh họa và checklist</text>
+  <rect x="1454" y="2636" width="326" height="58" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1478" y="2671" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0">Nhắc nhở trước deadline</text>
+  <rect x="1712" y="2652" width="48" height="26" fill="#CAEEDB" rx="13"/><circle cx="1747" cy="2665" r="10" fill="#FFFFFF"/>
+  <rect x="1454" y="2750" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1617" y="2781" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Lưu</text>
+
+  </g>
+<g id="12._Tạo_lịch_từ_hình_ảnh">
+    <text x="60" y="3007" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">12. Tạo lịch từ hình ảnh</text>
+    <rect x="60" y="3020" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="192" y="3033" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="84" y="3076" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Chụp ảnh lịch</text>
+    <text x="84" y="3100" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Tự động tạo lịch từ thời khóa biểu</text>
+    <rect x="388" y="3058" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><rect x="3" y="7" width="18" height="13" fill="none" rx="4" stroke="#3F3831" stroke-width="2" transform="translate(395 3065) scale(1)"/><circle cx="12" cy="13.5" r="3.2" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(395 3065) scale(1)"/><path d="M8 7l1.5-2h5L16 7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(395 3065) scale(1)"/></g>
+  </g>
+  <rect x="84" y="3124" width="342" height="204" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <rect x="108" y="3150" width="294" height="146" fill="#FFF8E8" rx="20" stroke="#E4D6BE" stroke-dasharray="7 7"/>
+  <g><rect x="3" y="7" width="18" height="13" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(233 3191) scale(1.75)"/><circle cx="12" cy="13.5" r="3.2" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(233 3191) scale(1.75)"/><path d="M8 7l1.5-2h5L16 7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(233 3191) scale(1.75)"/></g>
+  <text x="255" y="3259" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0" text-anchor="middle">Chụp ảnh hoặc tải ảnh lịch thi</text>
+  <rect x="102" y="3346" width="146" height="44" fill="#3F3831" rx="22" filter="url(#softShadow)"/><text x="175" y="3373" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Chụp ảnh</text><rect x="262" y="3346" width="146" height="44" fill="#FFFFFF" rx="22" filter="url(#softShadow)"/><text x="335" y="3373" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Tải ảnh</text>
+  <rect x="84" y="3414" width="342" height="74" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <circle cx="116" cy="3451" r="13" fill="none" stroke="#F6B166" stroke-width="4" stroke-dasharray="20 12"/>
+  <text x="144" y="3455" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0">Đang nhận dạng nội dung...</text>
+  <rect x="84" y="3512" width="342" height="144" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="108" y="3546" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Thông tin trích xuất</text>
+  <text x="108" y="3578" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Môn học: Lập trình Mobile</text><text x="108" y="3602" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Ngày học: Thứ 4, 20/05</text><text x="108" y="3626" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Giờ: 09:30 - 11:30</text><text x="108" y="3650" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Phòng: B203</text>
+  <rect x="92" y="3720" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="255" y="3751" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Tạo lịch</text>
+
+  </g>
+<g id="13._Pomodoro_học_tập">
+    <text x="514" y="3007" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">13. Pomodoro học tập</text>
+    <rect x="514" y="3020" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="646" y="3033" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="538" y="3076" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Pomodoro</text>
+    <text x="538" y="3100" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Tập trung sâu, ít xao nhãng</text>
+    <rect x="842" y="3058" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><circle cx="12" cy="12" r="9" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(849 3065) scale(1)"/><path d="M12 7v6l4 2" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(849 3065) scale(1)"/></g>
+  </g>
+  <circle cx="709" cy="3270" r="118" fill="#FFF1C8" stroke="#E4D6BE" stroke-width="2" filter="url(#softShadow)"/>
+  <circle cx="709" cy="3270" r="96" fill="none" stroke="#8ED8B5" stroke-width="10" stroke-linecap="round" stroke-dasharray="420 180" transform="rotate(-90 709 3270)"/>
+  <text x="709" y="3258" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="50" font-weight="900" letter-spacing="0" text-anchor="middle">25:00</text>
+  <text x="709" y="3294" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Học tập</text>
+  <rect x="566" y="3430" width="96" height="46" fill="#3F3831" rx="23" filter="url(#softShadow)"/><text x="614" y="3458" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Bắt đầu</text><rect x="674" y="3430" width="80" height="46" fill="#FFFFFF" rx="23" filter="url(#softShadow)"/><text x="714" y="3458" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Tạm dừng</text><rect x="766" y="3430" width="86" height="46" fill="#FFFFFF" rx="23" filter="url(#softShadow)"/><text x="809" y="3458" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Đặt lại</text>
+  <text x="546" y="3512" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Task / môn học đang học</text><rect x="546" y="3521" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="562" y="3551" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Ôn kiểm tra CSDL</text>
+  <rect x="546" y="3604" width="152" height="78" fill="#CAEEDB" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="570" y="3639" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0">4 phiên</text><text x="570" y="3662" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">hoàn thành hôm nay</text>
+  <rect x="718" y="3604" width="154" height="78" fill="#FFD8DF" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="742" y="3639" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0">5 phút</text><text x="742" y="3662" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="0">nghỉ sau phiên này</text>
+  <rect x="546" y="3700" width="326" height="58" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="570" y="3735" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Bạn đang đi đúng nhịp. Hoàn thành từng phiên nhỏ nhé.</text>
+  <g id="Bottom_Navigation">
+    <rect x="530" y="3780" width="358" height="64" fill="#FFF9EA" rx="25" stroke="#E4D6BE" filter="url(#softShadow)"/>
+    <g id="Tab_Dashboard">
+        <rect x="542" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 11.5L12 5l8 6.5V20H6V11.5" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(558 3799) scale(0.8333333333333334)"/></g>
+        <text x="567" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text>
+      </g><g id="Tab_Lịch">
+        <rect x="612" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(628 3799) scale(0.8333333333333334)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(628 3799) scale(0.8333333333333334)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(628 3799) scale(0.8333333333333334)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(628 3799) scale(0.8333333333333334)"/></g>
+        <text x="637" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Lịch</text>
+      </g><g id="Tab_To-Do">
+        <rect x="682" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(698 3799) scale(0.8333333333333334)"/></g>
+        <text x="707" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">To-Do</text>
+      </g><g id="Tab_Pomodoro">
+        <rect x="752" y="3791" width="56" height="42" fill="#FFE8A8" rx="18" opacity="1"/>
+        <g><circle cx="12" cy="12" r="9" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(768 3799) scale(0.8333333333333334)"/><path d="M12 7v6l4 2" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(768 3799) scale(0.8333333333333334)"/></g>
+        <text x="777" y="3828" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Pomodoro</text>
+      </g><g id="Tab_Thống kê">
+        <rect x="822" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(838 3799) scale(0.8333333333333334)"/></g>
+        <text x="847" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Thống kê</text>
+      </g>
+  </g>
+
+  </g>
+<g id="14._Báo_cáo_thống_kê">
+    <text x="968" y="3007" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">14. Báo cáo thống kê</text>
+    <rect x="968" y="3020" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1100" y="3033" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="992" y="3076" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Thống kê</text>
+    <text x="992" y="3100" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Nhìn nhanh tiến độ học tập</text>
+    <rect x="1296" y="3058" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1303 3065) scale(1)"/></g>
+  </g>
+  <rect x="998" y="3124" width="66" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1031" y="3144" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Ngày</text><rect x="1074" y="3124" width="66" height="30" fill="#FFE8A8" rx="15" stroke="none"/><text x="1107" y="3144" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Tuần</text><rect x="1150" y="3124" width="72" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1186" y="3144" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Tháng</text>
+  <rect x="992" y="3172" width="342" height="128" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="1016" y="3204" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Thời gian tập trung</text><g id="Weekly_Progress_Chart">
+    <rect x="1024" y="3246" width="12" height="30" fill="#FFE8A8" rx="6"/><rect x="1044" y="3228" width="12" height="48" fill="#FFD8DF" rx="6"/><rect x="1064" y="3238" width="12" height="38" fill="#CAEEDB" rx="6"/><rect x="1084" y="3221" width="12" height="55" fill="#DED9FF" rx="6"/><rect x="1104" y="3234" width="12" height="42" fill="#CFEAF8" rx="6"/><rect x="1124" y="3214" width="12" height="62" fill="#FFBCB3" rx="6"/><rect x="1144" y="3226" width="12" height="50" fill="#FFF1C8" rx="6"/>
+    <text x="1024" y="3296" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="10" font-weight="800" letter-spacing="0">T2  T3  T4  T5  T6  T7  CN</text>
+  </g>
+  <rect x="992" y="3322" width="160" height="126" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1016" y="3352" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0">Hoàn thành</text>
+  <circle cx="1072" cy="3397" r="34" fill="#CAEEDB"/><path d="M1072 3397 L1072 3363 A34 34 0 0 1 1103 3411 Z" fill="#FFBCB3"/>
+  <text x="1072" y="3403" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">78%</text>
+  <rect x="1172" y="3322" width="162" height="126" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1194" y="3352" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="900" letter-spacing="0">Deadline / môn</text>
+  <rect x="1198" y="3380" width="16" height="42" fill="#FFD8DF" rx="8"/><rect x="1226" y="3354" width="16" height="68" fill="#FFE8A8" rx="8"/><rect x="1254" y="3388" width="16" height="34" fill="#CFEAF8" rx="8"/><rect x="1282" y="3367" width="16" height="55" fill="#DED9FF" rx="8"/>
+  <rect x="992" y="3472" width="342" height="84" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="1016" y="3506" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Task quá hạn</text><text x="1016" y="3536" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">2 task</text><text x="1152" y="3522" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="900" letter-spacing="0">Môn nhiều deadline nhất: CSDL</text>
+  <rect x="992" y="3580" width="342" height="112" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="1016" y="3612" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Heatmap hoạt động</text>
+  <rect x="1016" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1050" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1084" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1118" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1152" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1186" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1220" y="3634" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1016" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1050" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1084" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1118" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1152" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1186" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1220" y="3648" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1016" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1050" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1084" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1118" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1152" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1186" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1220" y="3662" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1016" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1050" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1084" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1118" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1152" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1186" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1220" y="3676" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1016" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1050" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1084" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1118" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1152" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1186" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/><rect x="1220" y="3690" width="20" height="10" fill="#FFF8E8" rx="4" stroke="#E4D6BE" stroke-width="0.4"/>
+  <g id="Bottom_Navigation">
+    <rect x="984" y="3780" width="358" height="64" fill="#FFF9EA" rx="25" stroke="#E4D6BE" filter="url(#softShadow)"/>
+    <g id="Tab_Dashboard">
+        <rect x="996" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 11.5L12 5l8 6.5V20H6V11.5" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1012 3799) scale(0.8333333333333334)"/></g>
+        <text x="1021" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text>
+      </g><g id="Tab_Lịch">
+        <rect x="1066" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(1082 3799) scale(0.8333333333333334)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1082 3799) scale(0.8333333333333334)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1082 3799) scale(0.8333333333333334)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1082 3799) scale(0.8333333333333334)"/></g>
+        <text x="1091" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Lịch</text>
+      </g><g id="Tab_To-Do">
+        <rect x="1136" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1152 3799) scale(0.8333333333333334)"/></g>
+        <text x="1161" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">To-Do</text>
+      </g><g id="Tab_Pomodoro">
+        <rect x="1206" y="3791" width="56" height="42" fill="transparent" rx="18" opacity="0"/>
+        <g><circle cx="12" cy="12" r="9" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(1222 3799) scale(0.8333333333333334)"/><path d="M12 7v6l4 2" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1222 3799) scale(0.8333333333333334)"/></g>
+        <text x="1231" y="3828" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Pomodoro</text>
+      </g><g id="Tab_Thống kê">
+        <rect x="1276" y="3791" width="56" height="42" fill="#FFE8A8" rx="18" opacity="1"/>
+        <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1292 3799) scale(0.8333333333333334)"/></g>
+        <text x="1301" y="3828" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="9.5" font-weight="900" letter-spacing="0" text-anchor="middle">Thống kê</text>
+      </g>
+  </g>
+
+  </g>
+<g id="15._Chi_tiết_sự_kiện">
+    <text x="1422" y="3007" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">15. Chi tiết sự kiện</text>
+    <rect x="1422" y="3020" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1554" y="3033" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="1446" y="3076" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Chi tiết sự kiện</text>
+    <text x="1446" y="3100" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Thông tin lịch học và nhắc nhở</text>
+    <rect x="1750" y="3058" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#3F3831" stroke-width="2" transform="translate(1757 3065) scale(1)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 3065) scale(1)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 3065) scale(1)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 3065) scale(1)"/></g>
+  </g>
+  <rect x="1454" y="3138" width="326" height="142" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <g opacity=".9"><rect x="1579" y="3126" width="70" height="18" fill="#FFD8DF" rx="4" transform="rotate(-5 1614 3135)"/></g>
+  <text x="1480" y="3184" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Thi Cấu trúc dữ liệu</text>
+  <rect x="1480" y="3210" width="74" height="30" fill="#FFD8DF" rx="15" stroke="none"/><text x="1517" y="3230" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Lịch thi</text>
+  <rect x="1454" y="3310" width="326" height="240" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1480" y="3350" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Thời gian: 13:00 - 14:30, 22/05/2026</text><text x="1480" y="3388" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Địa điểm: Phòng A405</text><text x="1480" y="3426" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Môn học: Cấu trúc dữ liệu</text><text x="1480" y="3464" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Ghi chú: Mang thẻ sinh viên</text><text x="1480" y="3502" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="800" letter-spacing="0">Nhắc nhở: Bật, trước 30 phút</text>
+  <rect x="1454" y="3610" width="152" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1530" y="3641" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Sửa</text><rect x="1628" y="3610" width="152" height="52" fill="#FFBCB3" rx="26" filter="url(#softShadow)"/><text x="1704" y="3641" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Xóa</text>
+
+  </g>
+<g id="16._Cài_đặt">
+    <text x="60" y="3981" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">16. Cài đặt</text>
+    <rect x="60" y="3994" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="192" y="4007" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="84" y="4050" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Cài đặt</text>
+    <text x="84" y="4074" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Tùy chỉnh trải nghiệm học tập</text>
+    <rect x="388" y="4032" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><circle cx="12" cy="12" r="3.4" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(395 4039) scale(1)"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(395 4039) scale(1)"/></g>
+  </g>
+  <rect x="84" y="4110" width="342" height="62" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="114" y="4148" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Thông báo nhắc nhở</text><text x="394" y="4148" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">›</text><rect x="84" y="4192" width="342" height="62" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="114" y="4230" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Đồng bộ Google Calendar</text><text x="394" y="4230" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">›</text><rect x="84" y="4274" width="342" height="62" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="114" y="4312" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Chế độ offline</text><text x="394" y="4312" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">›</text><rect x="84" y="4356" width="342" height="62" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="114" y="4394" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Quản lý môn học</text><text x="394" y="4394" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">›</text><rect x="84" y="4438" width="342" height="62" fill="#FFF9EA" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="114" y="4476" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Giao diện sáng / tối</text><text x="394" y="4476" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">›</text><rect x="84" y="4520" width="342" height="62" fill="#FFF1C8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="114" y="4558" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Quản lý tài khoản</text><text x="394" y="4558" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">›</text>
+
+  </g>
+<g id="17._Quản_lý_tài_khoản">
+    <text x="514" y="3981" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">17. Quản lý tài khoản</text>
+    <rect x="514" y="3994" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="646" y="4007" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="538" y="4050" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Tài khoản</text>
+    <text x="538" y="4074" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Thông tin cá nhân và bảo mật</text>
+    <rect x="842" y="4032" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><circle cx="12" cy="12" r="3.4" fill="none" stroke="#3F3831" stroke-width="2" transform="translate(849 4039) scale(1)"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(849 4039) scale(1)"/></g>
+  </g>
+  <circle cx="709" cy="4150" r="44" fill="#FFE8A8" stroke="#E4D6BE" stroke-width="2"/>
+  <text x="709" y="4160" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0" text-anchor="middle">MA</text>
+  <text x="709" y="4220" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="0" text-anchor="middle">Nguyễn Minh Anh</text>
+  <text x="709" y="4246" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0" text-anchor="middle">student@email.com</text>
+  <rect x="546" y="4286" width="326" height="66" fill="#CAEEDB" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="572" y="4326" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Trạng thái đồng bộ: Đang bật</text>
+  <rect x="546" y="4380" width="326" height="66" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="572" y="4420" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Đổi mật khẩu</text>
+  <rect x="546" y="4462" width="326" height="66" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="572" y="4502" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Đăng xuất</text>
+  <rect x="546" y="4544" width="326" height="66" fill="#FFF0EE" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="572" y="4584" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Xóa tài khoản</text>
+
+  </g>
+<g id="18._Thêm_lịch_/_sự_kiện">
+    <text x="968" y="3981" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">18. Thêm lịch / sự kiện</text>
+    <rect x="968" y="3994" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1100" y="4007" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="992" y="4050" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Thêm lịch</text>
+    <text x="992" y="4074" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Tạo lịch học, lịch thi hoặc deadline</text>
+    <rect x="1296" y="4032" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><rect x="3" y="5" width="18" height="16" fill="none" rx="4" stroke="#3F3831" stroke-width="2" transform="translate(1303 4039) scale(1)"/><line x1="7" y1="3" x2="7" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1303 4039) scale(1)"/><line x1="17" y1="3" x2="17" y2="7" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1303 4039) scale(1)"/><line x1="3" y1="10" x2="21" y2="10" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1303 4039) scale(1)"/></g>
+  </g>
+  <text x="1000" y="4106" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Tên sự kiện</text><rect x="1000" y="4115" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="4145" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Thực hành Lập trình Mobile</text>
+  <text x="1000" y="4210" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Loại sự kiện</text>
+  <rect x="1000" y="4228" width="78" height="30" fill="#CAEEDB" rx="15" stroke="none"/><text x="1039" y="4248" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Lịch học</text><rect x="1088" y="4228" width="72" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1124" y="4248" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Lịch thi</text><rect x="1170" y="4228" width="84" height="30" fill="#FFFFFF" rx="15" stroke="#E4D6BE"/><text x="1212" y="4248" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0" text-anchor="middle">Deadline</text>
+  <text x="1000" y="4294" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Môn học</text><rect x="1000" y="4303" width="326" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="4333" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Lập trình Mobile</text>
+  <text x="1000" y="4370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Ngày</text><rect x="1000" y="4379" width="150" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="4409" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">20/05/2026</text>
+  <text x="1172" y="4370" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Phòng học</text><rect x="1172" y="4379" width="154" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1188" y="4409" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">B203</text>
+  <text x="1000" y="4446" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Bắt đầu</text><rect x="1000" y="4455" width="150" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="4485" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">09:30</text>
+  <text x="1172" y="4446" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Kết thúc</text><rect x="1172" y="4455" width="154" height="48" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1188" y="4485" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">11:30</text>
+  <text x="1000" y="4522" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="0">Ghi chú</text><rect x="1000" y="4531" width="326" height="70" fill="#FFFFFF" rx="16" stroke="#E4D6BE"/><text x="1016" y="4561" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="0">Mang laptop và tài liệu nhóm</text>
+  <rect x="1000" y="4622" width="326" height="48" fill="#FFF0EE" rx="16" stroke="#E96C61"/>
+  <g><path d="M12 4l9 16H3L12 4z" fill="none" stroke="#E96C61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1016 4634) scale(0.8333333333333334)"/><line x1="12" y1="10" x2="12" y2="14" fill="none" stroke="#E96C61" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1016 4634) scale(0.8333333333333334)"/><circle cx="12" cy="17" r="0.8" fill="#E96C61" transform="translate(1016 4634) scale(0.8333333333333334)"/></g><text x="1046" y="4652" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="900" letter-spacing="0">Lịch này bị trùng với sự kiện khác</text>
+  <rect x="1000" y="4698" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1163" y="4729" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Lưu lịch</text>
+
+  </g>
+<g id="19._Xác_nhận_thông_tin_OCR">
+    <text x="1422" y="3981" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">19. Xác nhận thông tin OCR</text>
+    <rect x="1422" y="3994" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="1554" y="4007" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="1446" y="4050" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Xác nhận thông tin</text>
+    <text x="1446" y="4074" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Chỉnh sửa trước khi lưu vào lịch</text>
+    <rect x="1750" y="4032" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M4 12.5l5 5L20 6" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1757 4039) scale(1)"/></g>
+  </g>
+  <rect x="1446" y="4098" width="342" height="108" fill="#FFF9EA" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <rect x="1468" y="4120" width="98" height="64" fill="#FFF8E8" rx="14" stroke="#E4D6BE" stroke-dasharray="5 5"/>
+  <g><rect x="3" y="7" width="18" height="13" fill="none" rx="4" stroke="#7E7064" stroke-width="2" transform="translate(1505 4139) scale(1)"/><circle cx="12" cy="13.5" r="3.2" fill="none" stroke="#7E7064" stroke-width="2" transform="translate(1505 4139) scale(1)"/><path d="M8 7l1.5-2h5L16 7" fill="none" stroke="#7E7064" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(1505 4139) scale(1)"/></g>
+  <text x="1586" y="4140" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0">Ảnh thời khóa biểu</text>
+  <text x="1586" y="4166" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Đã nhận dạng 3 sự kiện</text>
+  <rect x="1446" y="4232" width="342" height="110" fill="#CAEEDB" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1470" y="4264" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Lập trình Mobile</text>
+  <text x="1470" y="4290" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Thứ 4 • 09:30 - 11:30 • B203</text>
+  <text x="1740" y="4290" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Sửa</text>
+  <rect x="1446" y="4362" width="342" height="110" fill="#FFD8DF" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1470" y="4394" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Thi Cấu trúc dữ liệu</text>
+  <text x="1470" y="4420" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">Thứ 6 • 13:00 - 14:30 • A405</text>
+  <text x="1740" y="4420" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Sửa</text>
+  <rect x="1446" y="4492" width="342" height="110" fill="#FFF1C8" rx="22" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/>
+  <text x="1470" y="4524" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="16" font-weight="900" letter-spacing="0">Nộp báo cáo UX</text>
+  <text x="1470" y="4550" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12.5" font-weight="800" letter-spacing="0">20/05 • 22:00 • Deadline</text>
+  <text x="1740" y="4550" fill="#E96C61" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0">Sửa</text>
+  <rect x="1454" y="4698" width="326" height="52" fill="#3F3831" rx="26" filter="url(#softShadow)"/><text x="1617" y="4729" fill="#FFFFFF" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="15" font-weight="900" letter-spacing="0" text-anchor="middle">Lưu lịch</text>
+
+  </g>
+<g id="20._Prototype_Flow">
+    <text x="60" y="4955" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="0">20. Prototype Flow</text>
+    <rect x="60" y="4968" width="390" height="844" fill="#FBF3E2" rx="34" stroke="#CBB99C" stroke-width="2" filter="url(#frameShadow)"/>
+    <rect x="192" y="4981" width="126" height="5" fill="#DCCFB8" rx="3" opacity="0.8"/>
+    
+  <g id="header">
+    <text x="84" y="5024" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="0">Prototype flow</text>
+    <text x="84" y="5048" fill="#7E7064" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="0">Các luồng thao tác chính</text>
+    <rect x="388" y="5006" width="38" height="38" fill="#FFF9EA" rx="14" stroke="#E4D6BE"/>
+    <g><path d="M5 19V11M12 19V5M19 19v-8" fill="none" stroke="#3F3831" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(395 5013) scale(1)"/></g>
+  </g>
+  <rect x="100" y="5084" width="140" height="54" fill="#FFF1C8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="170" y="5117" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Onboarding</text><rect x="270" y="5084" width="140" height="54" fill="#CAEEDB" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="340" y="5117" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text><rect x="100" y="5176" width="140" height="54" fill="#FFF1C8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="170" y="5209" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Thêm lịch</text><rect x="270" y="5176" width="140" height="54" fill="#CAEEDB" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="340" y="5209" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Chụp ảnh lịch</text><rect x="100" y="5268" width="140" height="54" fill="#FFF1C8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="170" y="5301" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Xác nhận thông tin</text><rect x="270" y="5268" width="140" height="54" fill="#CAEEDB" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="340" y="5301" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Lưu lịch</text>
+  <rect x="100" y="5408" width="140" height="54" fill="#CFEAF8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="170" y="5441" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text><rect x="270" y="5408" width="140" height="54" fill="#FFD8DF" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="340" y="5441" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">To-Do</text><rect x="100" y="5500" width="140" height="54" fill="#CFEAF8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="170" y="5533" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Thêm task</text><rect x="270" y="5500" width="140" height="54" fill="#FFD8DF" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="340" y="5533" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Pomodoro</text>
+  <rect x="100" y="5640" width="140" height="54" fill="#FFF1C8" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="170" y="5673" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Dashboard</text><rect x="270" y="5640" width="140" height="54" fill="#DED9FF" rx="18" stroke="#E4D6BE" stroke-width="1.2" filter="url(#softShadow)"/><text x="340" y="5673" fill="#3F3831" font-family="Nunito, Quicksand, Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="0" text-anchor="middle">Thống kê</text>
+  <path d="M240 5111 H270" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M340 5138 V5176 H240" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M240 5203 H270" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M340 5230 V5268 H240" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M240 5295 H270" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M240 5435 H270" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M340 5462 V5500 H240" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+  <path d="M240 5667 H270" stroke="#3F3831" stroke-width="2" fill="none" markerEnd="url(#arrow)"/>
+
+  </g>
+</svg>

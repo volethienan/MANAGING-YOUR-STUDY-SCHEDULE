@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="paper">#FFF7EA</color>
+    <color name="paper_light">#FFFAF3</color>
+    <color name="dot_grid">#D7C2A8</color>
+    <color name="ink">#1F2937</color>
+    <color name="muted">#4B5563</color>
+    <color name="line">#D7C2A8</color>
+    <color name="rose">#BE123C</color>
+    <color name="accent_blue">#0369A1</color>
+    <color name="yellow">#FFF59D</color>
+    <color name="yellow_soft">#FFF9C4</color>
+    <color name="pink">#FFCDD2</color>
+    <color name="mint">#C8E6C9</color>
+    <color name="lavender">#E1D5FF</color>
+    <color name="blue">#B3E5FC</color>
+    <color name="coral">#FFB4A8</color>
+    <color name="danger">#BE123C</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

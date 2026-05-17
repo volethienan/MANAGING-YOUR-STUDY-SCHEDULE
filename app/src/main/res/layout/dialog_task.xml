@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <EditText
+            android:id="@+id/inputTitle"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:background="@drawable/bg_input"
+            android:hint="Tên công việc"
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences" />
+
+        <EditText
+            android:id="@+id/inputSubject"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Môn học"
+            android:importantForAutofill="no"
+            android:inputType="textCapWords" />
+
+        <EditText
+            android:id="@+id/inputDue"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:focusable="false"
+            android:hint="Deadline"
+            android:importantForAutofill="no"
+            android:inputType="none" />
+
+        <Spinner
+            android:id="@+id/spinnerPriority"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input" />
+
+        <EditText
+            android:id="@+id/inputNote"
+            android:layout_width="match_parent"
+            android:layout_height="86dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Ghi chú"
+            android:importantForAutofill="no"
+            android:inputType="textMultiLine|textCapSentences" />
+    </LinearLayout>
+</ScrollView>
