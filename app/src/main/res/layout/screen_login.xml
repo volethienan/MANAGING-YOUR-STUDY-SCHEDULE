@@ -12,17 +12,16 @@
         android:orientation="vertical"
         android:padding="28dp">
 
-        <TextView
+        <ImageView
             android:layout_width="76dp"
             android:layout_height="76dp"
             android:layout_marginTop="32dp"
             android:background="@drawable/bg_logo"
-            android:gravity="center"
+            android:contentDescription="Checkmark logo"
+            android:padding="16dp"
             android:rotation="-2"
-            android:text="✓"
-            android:textColor="@color/ink"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+            android:src="@drawable/ic_check"
+            app:tint="@color/ink" />
 
         <TextView
             android:layout_width="match_parent"
@@ -47,6 +46,7 @@
 
         <EditText
             android:id="@+id/inputEmail"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="34dp"
@@ -59,6 +59,7 @@
 
         <EditText
             android:id="@+id/inputPassword"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="14dp"

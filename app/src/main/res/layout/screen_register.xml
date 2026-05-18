@@ -22,6 +22,7 @@
 
         <EditText
             android:id="@+id/inputName"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="28dp"
@@ -32,6 +33,7 @@
 
         <EditText
             android:id="@+id/inputEmail"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="14dp"
@@ -42,6 +44,7 @@
 
         <EditText
             android:id="@+id/inputPassword"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="14dp"
@@ -52,6 +55,7 @@
 
         <EditText
             android:id="@+id/inputConfirmPassword"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="14dp"
@@ -75,7 +79,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
             android:backgroundTint="@color/ink"
-            android:text="Đăng ký + xác thực email"
+            android:text="Đăng ký và nhận OTP"
             android:textColor="@color/white"
             android:textStyle="bold"
             app:cornerRadius="18dp" />

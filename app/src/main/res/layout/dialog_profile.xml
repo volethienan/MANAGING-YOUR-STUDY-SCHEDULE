@@ -3,10 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="@dimen/screen_padding">
 
     <EditText
         android:id="@+id/inputName"
+        style="@style/StudyInput"
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:background="@drawable/bg_input"
@@ -16,6 +17,7 @@
 
     <EditText
         android:id="@+id/inputEmail"
+        style="@style/StudyInput"
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginTop="12dp"
@@ -26,6 +28,7 @@
 
     <EditText
         android:id="@+id/inputGoal"
+        style="@style/StudyInput"
         android:layout_width="match_parent"
         android:layout_height="78dp"
         android:layout_marginTop="12dp"

@@ -7,6 +7,7 @@ public class StudyEvent {
     public static final String TYPE_STUDY = "Lịch học";
     public static final String TYPE_EXAM = "Lịch thi";
     public static final String TYPE_DEADLINE = "Deadline";
+    public static final String TYPE_PERSONAL = "Công việc cá nhân";
 
     private final String id;
     private String title;
@@ -16,8 +17,15 @@ public class StudyEvent {
     private long endAt;
     private String room;
     private String note;
+    private boolean reminderEnabled;
+    private int reminderBeforeMinutes;
 
     public StudyEvent(String id, String title, String type, String subject, long startAt, long endAt, String room, String note) {
+        this(id, title, type, subject, startAt, endAt, room, note, false, 15);
+    }
+
+    public StudyEvent(String id, String title, String type, String subject, long startAt, long endAt, String room, String note,
+                      boolean reminderEnabled, int reminderBeforeMinutes) {
         this.id = id;
         this.title = title;
         this.type = type;
@@ -26,6 +34,8 @@ public class StudyEvent {
         this.endAt = endAt;
         this.room = room;
         this.note = note;
+        this.reminderEnabled = reminderEnabled;
+        this.reminderBeforeMinutes = reminderBeforeMinutes <= 0 ? 15 : reminderBeforeMinutes;
     }
 
     public String getId() {
@@ -88,6 +98,22 @@ public class StudyEvent {
         this.note = note;
     }
 
+    public boolean isReminderEnabled() {
+        return reminderEnabled;
+    }
+
+    public void setReminderEnabled(boolean reminderEnabled) {
+        this.reminderEnabled = reminderEnabled;
+    }
+
+    public int getReminderBeforeMinutes() {
+        return reminderBeforeMinutes;
+    }
+
+    public void setReminderBeforeMinutes(int reminderBeforeMinutes) {
+        this.reminderBeforeMinutes = reminderBeforeMinutes <= 0 ? 15 : reminderBeforeMinutes;
+    }
+
     public JSONObject toJson() throws JSONException {
         JSONObject json = new JSONObject();
         json.put("id", id);
@@ -98,6 +124,8 @@ public class StudyEvent {
         json.put("endAt", endAt);
         json.put("room", room);
         json.put("note", note);
+        json.put("reminderEnabled", reminderEnabled);
+        json.put("reminderBeforeMinutes", reminderBeforeMinutes);
         return json;
     }
 
@@ -110,7 +138,9 @@ public class StudyEvent {
                 json.optLong("startAt"),
                 json.optLong("endAt"),
                 json.optString("room"),
-                json.optString("note")
+                json.optString("note"),
+                json.optBoolean("reminderEnabled", false),
+                json.optInt("reminderBeforeMinutes", 15)
         );
     }
 }

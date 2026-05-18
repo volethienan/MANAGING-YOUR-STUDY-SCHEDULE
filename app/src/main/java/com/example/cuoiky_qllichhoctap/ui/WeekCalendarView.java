@@ -25,8 +25,16 @@ public class WeekCalendarView extends View {
         void onEventClick(StudyEvent event);
     }
 
-    private static final int START_HOUR = 6;
-    private static final int END_HOUR = 22;
+    public interface OnEmptySlotClickListener {
+        void onEmptySlotClick(long startAt);
+    }
+
+    public interface OnEventMoveRequestListener {
+        void onEventMoveRequest(StudyEvent event, long newStartAt);
+    }
+
+    private static final int START_HOUR = 5;
+    private static final int END_HOUR = 23;
     private static final long DAY_MS = 24L * 60L * 60L * 1000L;
 
     private final List<StudyEvent> events = new ArrayList<>();
@@ -38,6 +46,8 @@ public class WeekCalendarView extends View {
     private long rangeStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
     private int visibleDayCount = 7;
     private OnEventClickListener listener;
+    private OnEmptySlotClickListener emptySlotClickListener;
+    private OnEventMoveRequestListener moveRequestListener;
 
     public WeekCalendarView(Context context) {
         super(context);
@@ -50,7 +60,7 @@ public class WeekCalendarView extends View {
     }
 
     private void init() {
-        setMinimumHeight(dp(860));
+        setMinimumHeight(dp(1260));
         textPaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.SANS_SERIF, android.graphics.Typeface.BOLD));
     }
 
@@ -78,6 +88,14 @@ public class WeekCalendarView extends View {
         this.listener = listener;
     }
 
+    public void setOnEmptySlotClickListener(OnEmptySlotClickListener listener) {
+        this.emptySlotClickListener = listener;
+    }
+
+    public void setOnEventMoveRequestListener(OnEventMoveRequestListener listener) {
+        this.moveRequestListener = listener;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -86,7 +104,7 @@ public class WeekCalendarView extends View {
         int leftGutter = dp(42);
         int headerHeight = dp(58);
         int width = getWidth();
-        int height = Math.max(getHeight(), dp(860));
+        int height = Math.max(getHeight(), dp(1260));
         float colWidth = (width - leftGutter - dp(8)) / (float) visibleDayCount;
         float hourHeight = (height - headerHeight - dp(22)) / (float) (END_HOUR - START_HOUR);
 
@@ -100,13 +118,19 @@ public class WeekCalendarView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() != MotionEvent.ACTION_UP || listener == null) {
+        if (event.getAction() != MotionEvent.ACTION_UP) {
             return true;
         }
         for (EventHitBox hitBox : hitBoxes) {
-            if (hitBox.rect.contains(event.getX(), event.getY())) {
+            if (hitBox.rect.contains(event.getX(), event.getY()) && listener != null) {
                 listener.onEventClick(hitBox.event);
                 return true;
+            }
+        }
+        if (emptySlotClickListener != null) {
+            long slotStart = slotStartAt(event.getX(), event.getY());
+            if (slotStart > 0) {
+                emptySlotClickListener.onEmptySlotClick(slotStart);
             }
         }
         return true;
@@ -201,6 +225,32 @@ public class WeekCalendarView extends View {
         }
     }
 
+    private long slotStartAt(float x, float y) {
+        int leftGutter = dp(42);
+        int headerHeight = dp(58);
+        int width = getWidth();
+        int height = Math.max(getHeight(), dp(1260));
+        float colWidth = (width - leftGutter - dp(8)) / (float) visibleDayCount;
+        float hourHeight = (height - headerHeight - dp(22)) / (float) (END_HOUR - START_HOUR);
+        if (x < leftGutter || y < headerHeight) {
+            return -1L;
+        }
+        int dayIndex = (int) ((x - leftGutter) / colWidth);
+        if (dayIndex < 0 || dayIndex >= visibleDayCount) {
+            return -1L;
+        }
+        float hourValue = START_HOUR + (y - headerHeight) / hourHeight;
+        int hour = Math.max(START_HOUR, Math.min(END_HOUR - 1, (int) hourValue));
+        int minute = ((hourValue - hour) >= 0.5f) ? 30 : 0;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(DateTimeUtils.addDays(rangeStartMillis, dayIndex));
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
+
     private void drawNowLine(Canvas canvas, int leftGutter, int headerHeight, float colWidth, float hourHeight) {
         long now = System.currentTimeMillis();
         int todayIndex = dayIndexOf(now);
@@ -264,12 +314,15 @@ public class WeekCalendarView extends View {
 
     private int eventColor(StudyEvent event) {
         if (StudyEvent.TYPE_EXAM.equals(event.getType())) {
-            return color(R.color.pink);
+            return color(R.color.coral);
         }
         if (StudyEvent.TYPE_DEADLINE.equals(event.getType())) {
-            return color(R.color.yellow_soft);
+            return color(R.color.lavender);
         }
-        return color(R.color.mint);
+        if (StudyEvent.TYPE_PERSONAL.equals(event.getType())) {
+            return color(R.color.mint);
+        }
+        return color(R.color.blue);
     }
 
     private String trim(String value, int max) {

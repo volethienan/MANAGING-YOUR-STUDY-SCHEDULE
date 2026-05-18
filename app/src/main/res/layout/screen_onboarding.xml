@@ -12,17 +12,16 @@
         android:orientation="vertical"
         android:padding="26dp">
 
-        <TextView
+        <ImageView
             android:layout_width="88dp"
             android:layout_height="88dp"
             android:layout_marginTop="34dp"
             android:background="@drawable/bg_logo"
-            android:gravity="center"
+            android:contentDescription="Checkmark logo"
+            android:padding="20dp"
             android:rotation="-3"
-            android:text="✓"
-            android:textColor="@color/ink"
-            android:textSize="38sp"
-            android:textStyle="bold" />
+            android:src="@drawable/ic_check"
+            app:tint="@color/ink" />
 
         <TextView
             android:layout_width="match_parent"
@@ -40,7 +39,7 @@
             android:layout_marginTop="14dp"
             android:background="@drawable/bg_highlight_yellow"
             android:paddingHorizontal="10dp"
-            android:text="MANAGING YOUR STUDY SCHEDULE"
+            android:text="LẬP KẾ HOẠCH HỌC TẬP"
             android:textColor="@color/ink"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -82,7 +81,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Lịch tiếp theo, task ưu tiên và Pomodoro được dán gọn trên một trang giấy."
+                    android:text="Lịch tiếp theo, việc ưu tiên và Pomodoro được dán gọn trên một trang giấy."
                     android:textColor="@color/muted"
                     android:textSize="15sp" />
             </LinearLayout>

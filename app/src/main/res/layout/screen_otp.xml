@@ -45,6 +45,7 @@
 
         <EditText
             android:id="@+id/inputOtp"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="58dp"
             android:layout_marginTop="30dp"

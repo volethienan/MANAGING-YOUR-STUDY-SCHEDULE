@@ -27,6 +27,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GEMINI_API_KEY", "\"${localProps.getProperty("GEMINI_API_KEY", "")}\"")
+        buildConfigField("String", "OTP_BACKEND_URL", "\"${localProps.getProperty("OTP_BACKEND_URL", "http://10.0.2.2:8080")}\"")
     }
 
     buildFeatures {

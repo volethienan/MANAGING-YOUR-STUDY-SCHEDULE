@@ -6,10 +6,14 @@
     android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/dashboardRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingTop="@dimen/screen_padding"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="96dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -18,8 +22,45 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/avatarCard"
+                android:layout_width="82dp"
+                android:layout_height="76dp"
+                android:background="@drawable/bg_logo"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:rotation="-2">
+
+                <TextView
+                    android:id="@+id/textAvatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="SP"
+                    android:textColor="@color/ink"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textAvatarLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="6dp"
+                    android:text="study"
+                    android:textColor="@color/muted"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -29,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:text="Chào bạn"
                     android:textColor="@color/rose"
-                    android:textSize="28sp"
+                    android:textSize="25sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -37,6 +78,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:maxLines="3"
                     android:textColor="@color/muted"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -55,39 +97,62 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="128dp"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/bg_card_yellow"
-            android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:rotation="-1">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_card_lavender"
+            android:orientation="vertical">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Lịch học tiếp theo"
-                android:textColor="@color/muted"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/textNextEvent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_highlight_yellow"
-                android:paddingHorizontal="8dp"
-                android:textColor="@color/ink"
-                android:textSize="21sp"
-                android:textStyle="bold" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textNextEventMeta"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tiến độ hôm nay"
+                        android:textColor="@color/ink"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/textProgressMeta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/muted"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textProgressPercent"
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:background="@drawable/bg_selected_pill"
+                    android:gravity="center"
+                    android:text="0%"
+                    android:textColor="@color/ink"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progressToday"
+                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:textColor="@color/muted"
-                android:textSize="13sp" />
+                android:layout_height="14dp"
+                android:layout_marginTop="16dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:progressDrawable="@drawable/bg_progress_today" />
         </LinearLayout>
 
         <LinearLayout
@@ -99,46 +164,17 @@
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="96dp"
+                android:layout_height="132dp"
                 android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card_pink"
-                android:gravity="center_vertical"
-                android:orientation="vertical"
-                android:rotation="1.2">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Deadline sắp đến"
-                    android:textColor="@color/muted"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/textDeadline"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="@color/ink"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="96dp"
-                android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_mint"
                 android:gravity="center_vertical"
-                android:orientation="vertical"
-                android:rotation="-1.2">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Công việc hôm nay"
+                    android:text="Việc hôm nay"
                     android:textColor="@color/muted"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -149,20 +185,57 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:textColor="@color/ink"
-                    android:textSize="20sp"
+                    android:textSize="27sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textTodayTasksMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="132dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_card_pink"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Deadline gần nhất"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textDeadline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/ink"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textDeadlineMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickStats"
-            android:layout_width="match_parent"
-            android:layout_height="104dp"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_card"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:rotation="0.6" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -171,51 +244,194 @@
             android:baselineAligned="false"
             android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddEvent"
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="6dp"
+                android:layout_height="142dp"
+                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/yellow"
-                android:text="Thêm lịch"
-                android:textColor="@color/ink"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:cornerRadius="24dp" />
+                android:background="@drawable/bg_card_yellow"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddTask"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginHorizontal="6dp"
-                android:layout_weight="1"
-                android:backgroundTint="@color/mint"
-                android:text="Thêm việc"
-                android:textColor="@color/ink"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:cornerRadius="24dp" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lịch học tiếp theo"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnOcr"
+                <TextView
+                    android:id="@+id/textNextEvent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/ink"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textNextEventMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="6dp"
+                android:layout_height="142dp"
+                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/ink"
-                android:text="Từ ảnh"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:cornerRadius="24dp" />
+                android:background="@drawable/bg_card"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Pomodoro hôm nay"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textPomodoroToday"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/ink"
+                    android:textSize="27sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textPomodoroMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/quickStats"
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_card"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="Thêm nhanh"
+            android:textColor="@color/accent_blue"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddTask"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="7dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/mint"
+                    android:includeFontPadding="false"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="+ Việc"
+                    android:textColor="@color/ink"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddEvent"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="7dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/yellow"
+                    android:includeFontPadding="false"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="+ Lịch"
+                    android:textColor="@color/ink"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOcr"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="7dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/blue"
+                    android:includeFontPadding="false"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="Từ ảnh"
+                    android:textColor="@color/ink"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPomodoroQuick"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="7dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/ink"
+                    android:includeFontPadding="false"
+                    android:minWidth="0dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="Tập trung"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp" />
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
-            android:text="Việc ưu tiên"
+            android:text="3 việc ưu tiên"
             android:textColor="@color/accent_blue"
             android:textSize="18sp"
             android:textStyle="bold" />

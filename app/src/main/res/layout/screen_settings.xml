@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="@dimen/screen_padding_large">
 
         <TextView
             android:layout_width="match_parent"
@@ -36,6 +36,17 @@
             android:rotation="-1"
             android:textColor="@color/ink"
             android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textPersonalizationPreview"
+            android:layout_width="match_parent"
+            android:layout_height="116dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card_lavender"
+            android:gravity="center_vertical"
+            android:textColor="@color/ink"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <CheckBox
@@ -71,6 +82,17 @@
             android:layout_marginTop="22dp"
             android:backgroundTint="@color/mint"
             android:text="Sửa hồ sơ"
+            android:textColor="@color/ink"
+            android:textStyle="bold"
+            app:cornerRadius="18dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPersonalize"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/lavender"
+            android:text="Cá nhân hóa giao diện"
             android:textColor="@color/ink"
             android:textStyle="bold"
             app:cornerRadius="18dp" />

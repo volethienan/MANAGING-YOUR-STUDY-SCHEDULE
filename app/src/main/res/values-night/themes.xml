@@ -1,10 +1,51 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Base.Theme.CUOIKY_QLLICHHOCTAP" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:fontFamily">casual</item>
+        <item name="android:fontFamily">@font/study_handwriting</item>
+        <item name="fontFamily">@font/study_handwriting</item>
+        <item name="android:windowBackground">@color/paper</item>
         <item name="android:navigationBarColor">@color/paper</item>
         <item name="android:statusBarColor">@color/paper</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="colorPrimary">@color/ink</item>
         <item name="colorSecondary">@color/yellow</item>
         <item name="colorSurface">@color/paper_light</item>
+        <item name="android:colorBackground">@color/paper</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="android:textColorHint">@color/input_hint</item>
+        <item name="android:editTextColor">@color/input_text</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="alertDialogTheme">@style/StudyAlertDialog</item>
+        <item name="android:colorAccent">@color/rose</item>
+    </style>
+
+    <style name="StudyAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="android:fontFamily">@font/study_handwriting</item>
+        <item name="fontFamily">@font/study_handwriting</item>
+        <item name="android:colorBackground">@color/paper_light</item>
+        <item name="android:textColorPrimary">@color/dialog_text</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+        <item name="colorPrimary">@color/ink</item>
+        <item name="colorSurface">@color/paper_light</item>
+    </style>
+
+    <style name="StudyInput">
+        <item name="android:fontFamily">@font/study_handwriting</item>
+        <item name="android:textColor">@color/input_text</item>
+        <item name="android:textColorHint">@color/input_hint</item>
+        <item name="android:background">@drawable/bg_input</item>
+    </style>
+
+    <style name="StudySpinner">
+        <item name="android:fontFamily">@font/study_handwriting</item>
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:popupBackground">@color/paper_light</item>
+    </style>
+
+    <style name="StudyReadableText">
+        <item name="android:fontFamily">@font/study_handwriting</item>
+        <item name="fontFamily">@font/study_handwriting</item>
+        <item name="android:textColor">@color/ink</item>
     </style>
 </resources>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:id="@+id/menuAvatarCard"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_logo"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/menuTextAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="SP"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:layout_toEndOf="@id/menuAvatarCard"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/menuTextName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Student Planner"
+                android:textColor="@color/ink"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lập kế hoạch liên tục 1 ⭐"
+                android:textColor="@color/muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnCloseMenu"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/muted" />
+    </RelativeLayout>
+
+    <!-- Banner -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="24dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_menu_banner"
+        android:background="@drawable/bg_menu_card"
+        android:clipToOutline="true"/>
+
+    <!-- PHÂN LOẠI -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="PHÂN LOẠI"
+        android:textColor="@color/muted"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_menu_card"
+        android:orientation="vertical"
+        android:paddingVertical="8dp">
+
+        <LinearLayout
+            android:id="@+id/menuItemAll"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_agenda" app:tint="@color/ink"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Tất cả" android:textColor="@color/ink" android:textSize="16sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/menuCountAll" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/muted"/>
+        </LinearLayout>
+        
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginHorizontal="16dp"/>
+
+        <LinearLayout
+            android:id="@+id/menuItemToday"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/btn_star" app:tint="@color/ink"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Hôm nay" android:textColor="@color/ink" android:textSize="16sp" android:textStyle="bold"/>
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@android:drawable/checkbox_on_background" app:tint="@color/ink"/>
+        </LinearLayout>
+
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginHorizontal="16dp"/>
+
+        <LinearLayout
+            android:id="@+id/menuItemDone"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/checkbox_on_background" app:tint="@color/ink"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Đã hoàn thành" android:textColor="@color/ink" android:textSize="16sp" android:textStyle="bold"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- DỰ ÁN CỦA TÔI -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"
+        android:text="DỰ ÁN CỦA TÔI"
+        android:textColor="@color/muted"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_menu_card"
+        android:orientation="vertical"
+        android:paddingVertical="8dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_compass" app:tint="@color/ink"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Mục tiêu" android:textColor="@color/ink" android:textSize="16sp" android:textStyle="bold"/>
+            <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@android:drawable/arrow_down_float" app:tint="@color/muted" android:rotation="-90"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/menuBtnNewGoal"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="8dp"
+            android:background="@drawable/bg_pill_gray"
+            android:gravity="center"
+            android:foreground="?attr/selectableItemBackground">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tạo mục tiêu mới" android:textColor="@color/ink" android:textSize="14sp" android:textStyle="bold"/>
+        </LinearLayout>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginHorizontal="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_recent_history" app:tint="@color/ink"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Ngày đếm ngược" android:textColor="@color/ink" android:textSize="16sp" android:textStyle="bold"/>
+            <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@android:drawable/arrow_down_float" app:tint="@color/muted" android:rotation="-90"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+
+    <!-- Bottom Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_add"
+            app:tint="@color/ink"/>
+            
+        <ImageButton
+            android:id="@+id/menuBtnSettings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_preferences"
+            app:tint="@color/ink"/>
+    </LinearLayout>
+</LinearLayout>

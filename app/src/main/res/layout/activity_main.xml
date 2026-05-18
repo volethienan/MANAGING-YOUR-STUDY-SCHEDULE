@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.cuoiky_qllichhoctap.ui.StudyPaperLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".MainActivity">
+
+    <com.example.cuoiky_qllichhoctap.ui.StudyPaperLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/contentFrame"
@@ -33,9 +38,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:minWidth="0dp"
-            android:text="Home"
-            android:textColor="@color/muted"
-            android:textSize="11sp"
+            app:icon="@drawable/ic_nav_home"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/muted"
             app:cornerRadius="18dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -45,9 +51,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:minWidth="0dp"
-            android:text="Lịch"
-            android:textColor="@color/muted"
-            android:textSize="11sp"
+            app:icon="@drawable/ic_nav_calendar"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/muted"
             app:cornerRadius="18dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -57,9 +64,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:minWidth="0dp"
-            android:text="To-Do"
-            android:textColor="@color/muted"
-            android:textSize="11sp"
+            app:icon="@drawable/ic_nav_tasks"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/muted"
             app:cornerRadius="18dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -69,9 +77,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:minWidth="0dp"
-            android:text="Focus"
-            android:textColor="@color/muted"
-            android:textSize="11sp"
+            app:icon="@drawable/ic_nav_pomodoro"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/muted"
             app:cornerRadius="18dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -81,9 +90,22 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:minWidth="0dp"
-            android:text="Thống kê"
-            android:textColor="@color/muted"
-            android:textSize="11sp"
+            app:icon="@drawable/ic_nav_stats"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/muted"
             app:cornerRadius="18dp" />
     </LinearLayout>
-</com.example.cuoiky_qllichhoctap.ui.StudyPaperLayout>
+    </com.example.cuoiky_qllichhoctap.ui.StudyPaperLayout>
+
+    <!-- Side Menu -->
+    <ScrollView
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#FAFAFA"
+        android:fillViewport="true">
+        <include layout="@layout/layout_side_menu" />
+    </ScrollView>
+
+</androidx.drawerlayout.widget.DrawerLayout>

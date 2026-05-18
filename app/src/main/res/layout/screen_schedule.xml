@@ -3,8 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="@dimen/screen_padding">
 
     <TextView
         android:layout_width="match_parent"
@@ -73,16 +74,16 @@
         android:baselineAligned="false"
         android:orientation="horizontal">
 
-        <TextView
+        <ImageView
             android:id="@+id/btnPrevWeek"
             android:layout_width="48dp"
             android:layout_height="36dp"
             android:background="@drawable/bg_outline_pill"
-            android:gravity="center"
-            android:text="‹"
-            android:textColor="@color/ink"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:contentDescription="Tuần trước"
+            android:foreground="?attr/selectableItemBackground"
+            android:padding="6dp"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/ink" />
 
         <TextView
             android:id="@+id/btnThisWeek"
@@ -91,21 +92,22 @@
             android:layout_marginHorizontal="8dp"
             android:layout_weight="1"
             android:background="@drawable/bg_selected_pill"
+            android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:text="Hôm nay"
             android:textColor="@color/ink"
             android:textStyle="bold" />
 
-        <TextView
+        <ImageView
             android:id="@+id/btnNextWeek"
             android:layout_width="48dp"
             android:layout_height="36dp"
             android:background="@drawable/bg_outline_pill"
-            android:gravity="center"
-            android:text="›"
-            android:textColor="@color/ink"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:contentDescription="Tuần sau"
+            android:foreground="?attr/selectableItemBackground"
+            android:padding="6dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/ink" />
     </LinearLayout>
 
     <HorizontalScrollView
@@ -156,9 +158,20 @@
                 android:id="@+id/filterDeadline"
                 android:layout_width="96dp"
                 android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_outline_pill"
                 android:gravity="center"
                 android:text="Deadline"
+                android:textColor="@color/ink"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/filterPersonal"
+                android:layout_width="132dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_outline_pill"
+                android:gravity="center"
+                android:text="Cá nhân"
                 android:textColor="@color/ink"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -178,7 +191,7 @@
             <com.example.cuoiky_qllichhoctap.ui.WeekCalendarView
                 android:id="@+id/weekCalendar"
                 android:layout_width="match_parent"
-                android:layout_height="920dp" />
+                android:layout_height="1320dp" />
 
             <TextView
                 android:id="@+id/textConflictTitle"

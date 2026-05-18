@@ -39,9 +39,8 @@ public class AuthRepository extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS otp_codes");
-        db.execSQL("DROP TABLE IF EXISTS users");
-        onCreate(db);
+        db.execSQL("CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, name TEXT NOT NULL, password_hash TEXT NOT NULL, salt TEXT NOT NULL, verified INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS otp_codes (email TEXT NOT NULL, purpose TEXT NOT NULL, code_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(email, purpose))");
     }
 
     public String beginRegistration(String name, String email, String password) {
@@ -78,6 +77,17 @@ public class AuthRepository extends SQLiteOpenHelper {
             throw new IllegalStateException("Không tìm thấy tài khoản sau xác thực");
         }
         return user;
+    }
+
+    public String resendRegistrationOtp(String email) {
+        AuthUser user = findUser(email);
+        if (user == null) {
+            throw new IllegalArgumentException("Không tìm thấy tài khoản cần xác thực");
+        }
+        if (user.isVerified()) {
+            throw new IllegalArgumentException("Tài khoản đã xác thực");
+        }
+        return createOtp(user.getEmail(), "register");
     }
 
     public AuthUser login(String email, String password) {

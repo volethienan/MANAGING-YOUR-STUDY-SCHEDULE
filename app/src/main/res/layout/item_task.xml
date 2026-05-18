@@ -56,48 +56,52 @@
     <LinearLayout
         android:id="@+id/taskForeground"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:background="@drawable/bg_card"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp">
 
         <CheckBox
             android:id="@+id/checkDone"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:buttonTint="@color/mint" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/textTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/textTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/ink"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textMeta"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/muted"
-                android:textSize="12sp" />
-        </LinearLayout>
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/ink"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/textPriority"
-            android:layout_width="72dp"
-            android:layout_height="30dp"
+            android:id="@+id/textMeta"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textDetails"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/textMarker"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@drawable/bg_outline_pill"
             android:gravity="center"
             android:textColor="@color/ink"
-            android:textSize="11sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
     </LinearLayout>
 </com.example.cuoiky_qllichhoctap.ui.SwipeActionLayout>

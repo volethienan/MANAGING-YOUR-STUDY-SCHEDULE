@@ -7,10 +7,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="@dimen/screen_padding">
 
         <EditText
             android:id="@+id/inputTitle"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:background="@drawable/bg_input"
@@ -20,6 +21,7 @@
 
         <Spinner
             android:id="@+id/spinnerType"
+            style="@style/StudySpinner"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
@@ -27,6 +29,7 @@
 
         <EditText
             android:id="@+id/inputSubject"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
@@ -37,6 +40,7 @@
 
         <EditText
             android:id="@+id/inputDate"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
@@ -54,6 +58,7 @@
 
             <EditText
                 android:id="@+id/inputStart"
+                style="@style/StudyInput"
                 android:layout_width="0dp"
                 android:layout_height="54dp"
                 android:layout_marginEnd="6dp"
@@ -66,6 +71,7 @@
 
             <EditText
                 android:id="@+id/inputEnd"
+                style="@style/StudyInput"
                 android:layout_width="0dp"
                 android:layout_height="54dp"
                 android:layout_marginStart="6dp"
@@ -79,6 +85,7 @@
 
         <EditText
             android:id="@+id/inputRoom"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
@@ -89,6 +96,7 @@
 
         <EditText
             android:id="@+id/inputNote"
+            style="@style/StudyInput"
             android:layout_width="match_parent"
             android:layout_height="78dp"
             android:layout_marginTop="12dp"
@@ -97,5 +105,24 @@
             android:hint="Ghi chú"
             android:importantForAutofill="no"
             android:inputType="textMultiLine|textCapSentences" />
+
+        <CheckBox
+            android:id="@+id/checkReminder"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:buttonTint="@color/mint"
+            android:text="Bật nhắc nhở"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerReminderBefore"
+            style="@style/StudySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input" />
     </LinearLayout>
 </ScrollView>
