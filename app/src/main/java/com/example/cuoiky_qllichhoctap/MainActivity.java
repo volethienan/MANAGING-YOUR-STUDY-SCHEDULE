@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int SCREEN_TASKS = 2;
     private static final int SCREEN_POMODORO = 3;
     private static final int SCREEN_STATS = 4;
+    private static final int GOOGLE_SIGN_IN_DEVELOPER_ERROR = 10;
     private static final String CALENDAR_DAY = "Ngày";
     private static final String CALENDAR_THREE_DAYS = "3 ngày";
     private static final String CALENDAR_WEEK = "Tuần";
@@ -247,11 +248,15 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, options);
         googleSignInLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() != RESULT_OK || result.getData() == null) {
-                toast("Bạn đã hủy đăng nhập Google");
+            if (result.getData() != null) {
+                handleGoogleSignInResult(result.getData());
                 return;
             }
-            handleGoogleSignInResult(result.getData());
+            if (result.getResultCode() != RESULT_OK) {
+                toast("Google Sign-In không hoàn tất. Kiểm tra SHA-1/OAuth nếu bạn không tự hủy.");
+                return;
+            }
+            toast("Google không trả về dữ liệu đăng nhập");
         });
     }
 
@@ -571,8 +576,16 @@ public class MainActivity extends AppCompatActivity {
             }
             firebaseAuthWithGoogle(account.getIdToken());
         } catch (ApiException exception) {
-            toast("Đăng nhập Google lỗi: " + exception.getStatusCode());
+            toast(googleSignInErrorMessage(exception));
         }
+    }
+
+    private String googleSignInErrorMessage(ApiException exception) {
+        int statusCode = exception.getStatusCode();
+        if (statusCode == GOOGLE_SIGN_IN_DEVELOPER_ERROR) {
+            return "Google Sign-In lỗi cấu hình SHA-1/OAuth. Kiểm tra Firebase Console.";
+        }
+        return "Đăng nhập Google lỗi: " + statusCode;
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
