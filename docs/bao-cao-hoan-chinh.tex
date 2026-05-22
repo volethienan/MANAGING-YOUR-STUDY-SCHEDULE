@@ -1,0 +1,2394 @@
+% !TEX program = xelatex
+\documentclass[12pt,a4paper]{report}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T5]{fontenc}
+  \usepackage[vietnamese]{babel}
+  \DeclareUnicodeCharacter{2500}{-}
+  \DeclareUnicodeCharacter{2502}{|}
+  \DeclareUnicodeCharacter{2514}{+}
+  \DeclareUnicodeCharacter{251C}{+}
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\IfFontExistsTF{TeX Gyre Termes}{\setmainfont{TeX Gyre Termes}}{\setmainfont{Latin Modern Roman}}}
+  \IfFontExistsTF{Consolas}{\setmonofont{Consolas}}{\setmonofont{Latin Modern Mono}}
+  \ifXeTeX
+    \XeTeXlinebreaklocale "vi"
+    \XeTeXlinebreakskip = 0pt plus 1pt
+  \fi
+\fi
+\AtBeginDocument{
+  \renewcommand{\contentsname}{Mục lục}
+  \renewcommand{\chaptername}{Chương}
+}
+\usepackage{geometry}
+\geometry{left=3cm,right=2cm,top=2.5cm,bottom=2.5cm}
+\usepackage{array,longtable,booktabs,tabularx}
+\usepackage{enumitem}
+\usepackage{fvextra}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\setlist{nosep,leftmargin=1.2cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\arraystretch}{1.25}
+\DefineVerbatimEnvironment{CodeBlock}{Verbatim}{fontsize=\small,breaklines=true,breakanywhere=true,frame=single,rulecolor=\color{gray}}
+\begin{document}
+\begin{titlepage}
+\centering
+{\Large \textbf{BÁO CÁO ĐỒ ÁN CÔNG NGHỆ PHẦN MỀM}\\[1.2cm]}
+{\Huge \textbf{Study Planner}\\[0.4cm]}
+{\Large Managing Your Study Schedule\\[1.5cm]}
+\vfill
+\begin{tabular}{rl}
+\textbf{Loại tài liệu:} & Báo cáo tổng hợp phân tích, thiết kế, kiểm thử, triển khai \\
+\textbf{Nền tảng:} & Android Java/XML \\
+\textbf{Phiên bản:} & 1.0 \\
+\textbf{Ngày lập:} & 22/05/2026 \\
+\end{tabular}
+\vfill
+\end{titlepage}
+\tableofcontents
+\clearpage
+\chapter{Đề Cương Dự Án}
+
+\section{Thông Tin Chung}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Mục} & \textbf{Nội dung} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mục} & \textbf{Nội dung} \\ \hline
+\endhead
+Tên dự án & Managing Your Study Schedule \\ \hline
+Tên ứng dụng & Study Planner \\ \hline
+Loại phần mềm & Ứng dụng Android quản lý lịch học cá nhân \\ \hline
+Nền tảng & Android Java/XML \\ \hline
+Backend phụ trợ & Java HTTP server gửi OTP email \\ \hline
+Cơ sở dữ liệu & SQLite cục bộ trên thiết bị Android \\ \hline
+Dịch vụ bên ngoài & Firebase Authentication, Google Sign-In, Gemini API, SMTP email \\ \hline
+Phiên bản hiện tại & 1.0 \\ \hline
+\end{longtable}
+
+\section{Lý Do Thực Hiện}
+
+Sinh viên thường phải quản lý nhiều loại thông tin học tập cùng lúc như lịch học, lịch thi, deadline, công việc cần làm, thời gian tự học và tiến độ hoàn thành. Nếu dùng ghi chú thủ công hoặc nhiều ứng dụng rời rạc, người dùng dễ bỏ sót deadline, trùng lịch hoặc không theo dõi được hiệu quả học tập.
+
+Ứng dụng Study Planner được xây dựng để gom các nhu cầu này vào một phần mềm di động đơn giản, trực quan và phù hợp với thói quen học tập hằng ngày.
+
+\section{Mục Tiêu Dự Án}
+
+\begin{itemize}
+\item Xây dựng ứng dụng Android cho phép sinh viên quản lý lịch học, lịch thi, deadline và công việc học tập.
+\item Cung cấp chức năng đăng ký, đăng nhập bằng email/mật khẩu kèm xác thực OTP qua email.
+\item Cung cấp đăng nhập Google qua Firebase Authentication.
+\item Cho phép tạo lịch học thủ công hoặc trích xuất lịch từ ảnh bằng Gemini API.
+\item Hỗ trợ Pomodoro để quản lý thời gian tập trung.
+\item Hiển thị thống kê tiến độ học tập, task, lịch và thời gian tập trung.
+\item Lưu dữ liệu cục bộ theo từng tài khoản để người dùng có thể sử dụng lại sau khi đăng nhập.
+\end{itemize}
+
+\section{Phạm Vi Dự Án}
+
+\subsection{Trong Phạm Vi}
+
+\begin{itemize}
+\item Onboarding lần đầu mở ứng dụng.
+\item Đăng ký tài khoản bằng email, mật khẩu và OTP.
+\item Đăng nhập bằng email/mật khẩu.
+\item Đặt lại mật khẩu bằng OTP.
+\item Đăng nhập Google bằng Firebase Auth.
+\item Quản lý hồ sơ người dùng.
+\item Quản lý lịch học, lịch thi, deadline và công việc cá nhân.
+\item Kiểm tra xung đột thời gian giữa các lịch.
+\item Quản lý task học tập, ưu tiên, tag, deadline, nhắc nhở và trạng thái hoàn thành.
+\item Chế độ lọc task theo hôm nay, sắp hạn, quá hạn, đã xong, môn học, ưu tiên và ma trận 4 phần tư.
+\item Pomodoro với phiên tập trung, nghỉ ngắn, nghỉ dài, âm thanh nền và lịch sử.
+\item Thống kê tiến độ học tập.
+\item Nhập lịch từ ảnh thông qua camera/thư viện và Gemini API.
+\item Backend local gửi OTP qua SMTP.
+\end{itemize}
+
+\subsection{Ngoài Phạm Vi}
+
+\begin{itemize}
+\item Không có hệ thống quản trị web riêng.
+\item Không có đồng bộ dữ liệu cloud đầy đủ cho lịch và task.
+\item Không có phân quyền nhiều vai trò như admin, giáo viên, sinh viên.
+\item Không có hệ thống thông báo push từ server.
+\item Không có phát hành chính thức lên Google Play Store trong phạm vi đồ án.
+\end{itemize}
+
+\section{Đối Tượng Sử Dụng}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Đối tượng} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Đối tượng} & \textbf{Mô tả} \\ \hline
+\endhead
+Sinh viên & Người dùng chính, cần quản lý lịch học, task, deadline và thời gian tập trung \\ \hline
+Người kiểm thử/giảng viên & Cài đặt, chạy thử app, kiểm tra chức năng và tài liệu \\ \hline
+Nhà phát triển & Bảo trì mã nguồn Android, backend OTP và cấu hình dịch vụ \\ \hline
+\end{longtable}
+
+\section{Lợi Ích Kỳ Vọng}
+
+\begin{itemize}
+\item Giảm tình trạng quên lịch học, lịch thi và deadline.
+\item Giúp sinh viên theo dõi tiến độ hoàn thành task.
+\item Cải thiện thói quen tập trung bằng Pomodoro.
+\item Rút ngắn thời gian nhập lịch nhờ chức năng tạo lịch từ ảnh.
+\item Cung cấp minh chứng quy trình phát triển phần mềm theo tiêu chí Công nghệ phần mềm.
+\end{itemize}
+
+\section{Ràng Buộc Và Giả Định}
+
+\subsection{Ràng Buộc}
+
+\begin{itemize}
+\item App yêu cầu Android minSdk 24.
+\item App cần \texttt{google-services.json} hợp lệ để dùng Firebase/Google Sign-In.
+\item Google Sign-In yêu cầu SHA-1 debug/release đúng trong Firebase Console.
+\item Chức năng OTP email yêu cầu backend local hoặc server có cấu hình SMTP.
+\item Chức năng đọc lịch từ ảnh yêu cầu \texttt{GEMINI\_API\_KEY}.
+\item Dữ liệu lịch/task hiện lưu cục bộ trên thiết bị, không phải cloud database.
+\end{itemize}
+
+\subsection{Giả Định}
+
+\begin{itemize}
+\item Người dùng có thiết bị Android hoặc emulator có Google Play Services.
+\item Người dùng có kết nối Internet khi đăng nhập Google, gửi OTP hoặc dùng Gemini API.
+\item Người dùng cho phép app truy cập camera/thư viện khi tạo lịch từ ảnh.
+\end{itemize}
+
+\section{Sản Phẩm Bàn Giao}
+
+\begin{itemize}
+\item Mã nguồn ứng dụng Android.
+\item Mã nguồn backend OTP.
+\item File APK debug.
+\item Bộ tài liệu dự án trong thư mục \texttt{docs}.
+\item README hướng dẫn cài đặt và chạy project.
+\end{itemize}
+
+\section{Tiêu Chí Thành Công}
+
+\begin{itemize}
+\item App build thành công bằng Gradle.
+\item Người dùng có thể đăng ký, xác thực OTP và đăng nhập email.
+\item Người dùng có thể thêm, sửa, xóa lịch học và task.
+\item App phát hiện được xung đột lịch.
+\item Người dùng có thể chạy Pomodoro và xem thống kê.
+\item Chức năng Google Sign-In hoạt động khi Firebase SHA-1/OAuth được cấu hình đúng.
+\item Chức năng tạo lịch từ ảnh hoạt động khi có Gemini API key hợp lệ.
+\end{itemize}
+\clearpage
+\chapter{Kế Hoạch Dự Án}
+
+\section{Mục Đích}
+
+Tài liệu này mô tả kế hoạch phát triển, phân công, công cụ, tiến độ, rủi ro và tiêu chí nghiệm thu cho dự án Study Planner.
+
+\section{Phạm Vi Công Việc}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Nhóm công việc} & \textbf{Nội dung} \\ \hline
+\endfirsthead
+\hline
+\textbf{Nhóm công việc} & \textbf{Nội dung} \\ \hline
+\endhead
+Phân tích & Khảo sát nhu cầu quản lý lịch học, task, Pomodoro và xác thực tài khoản \\ \hline
+Thiết kế & Thiết kế UI Android, dữ liệu SQLite, luồng xác thực và luồng nhập lịch từ ảnh \\ \hline
+Xây dựng app & Lập trình Android Java/XML, repository, model, màn hình và xử lý nghiệp vụ \\ \hline
+Xây dựng backend & Tạo HTTP server Java gửi OTP qua SMTP \\ \hline
+Tích hợp & Firebase Auth, Google Sign-In, Gemini API, SMTP \\ \hline
+Kiểm thử & Kiểm thử đăng nhập, OTP, lịch, task, Pomodoro, thống kê, import ảnh \\ \hline
+Tài liệu & Hoàn thiện bộ tài liệu theo tiêu chí Công nghệ phần mềm \\ \hline
+\end{longtable}
+
+\section{Nhân Sự Và Vai Trò}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Vai trò} & \textbf{Trách nhiệm} \\ \hline
+\endfirsthead
+\hline
+\textbf{Vai trò} & \textbf{Trách nhiệm} \\ \hline
+\endhead
+Quản lý dự án & Theo dõi tiến độ, phạm vi, rủi ro, tài liệu bàn giao \\ \hline
+Phân tích viên & Xác định yêu cầu, use case, quy tắc nghiệp vụ \\ \hline
+Lập trình viên Android & Xây dựng giao diện, xử lý nghiệp vụ, SQLite, Firebase \\ \hline
+Lập trình viên backend & Xây dựng OTP backend và cấu hình SMTP \\ \hline
+Kiểm thử viên & Viết test case, kiểm thử thủ công, ghi nhận lỗi \\ \hline
+Người viết tài liệu & Viết SRS, thiết kế, triển khai, hướng dẫn sử dụng \\ \hline
+\end{longtable}
+
+Với đồ án cá nhân hoặc nhóm nhỏ, một thành viên có thể đảm nhiệm nhiều vai trò.
+
+\section{Công Cụ Sử Dụng}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Công cụ} & \textbf{Mục đích} \\ \hline
+\endfirsthead
+\hline
+\textbf{Công cụ} & \textbf{Mục đích} \\ \hline
+\endhead
+Android Studio & Phát triển và chạy ứng dụng Android \\ \hline
+Gradle & Build app và backend \\ \hline
+Java 11+ & Ngôn ngữ lập trình app và backend \\ \hline
+XML Layout & Thiết kế giao diện Android \\ \hline
+SQLite & Lưu trữ dữ liệu cục bộ \\ \hline
+Firebase Console & Cấu hình Firebase Auth và Google Sign-In \\ \hline
+Google Cloud OAuth & Quản lý OAuth client \\ \hline
+Gemini API & Nhận diện lịch học từ ảnh \\ \hline
+SMTP Gmail/App Password & Gửi OTP email \\ \hline
+Git/GitHub & Quản lý mã nguồn và lịch sử thay đổi \\ \hline
+Emulator/Thiết bị Android & Kiểm thử ứng dụng \\ \hline
+\end{longtable}
+
+\section{Tiến Độ Dự Kiến}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\hline
+\textbf{Giai đoạn} & \textbf{Công việc} & \textbf{Thời lượng dự kiến} & \textbf{Kết quả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Giai đoạn} & \textbf{Công việc} & \textbf{Thời lượng dự kiến} & \textbf{Kết quả} \\ \hline
+\endhead
+1 & Khởi tạo ý tưởng và phạm vi & 1 ngày & Đề cương dự án \\ \hline
+2 & Phân tích yêu cầu & 2 ngày & SRS, use case \\ \hline
+3 & Thiết kế hệ thống và dữ liệu & 2 ngày & Kiến trúc, sơ đồ, thiết kế SQLite \\ \hline
+4 & Xây dựng chức năng xác thực & 2 ngày & Đăng ký, OTP, đăng nhập, quên mật khẩu \\ \hline
+5 & Xây dựng lịch học và task & 3 ngày & CRUD lịch/task, lọc, xung đột \\ \hline
+6 & Xây dựng Pomodoro và thống kê & 2 ngày & Timer, lịch sử, thống kê \\ \hline
+7 & Tích hợp Gemini và Firebase & 2 ngày & Import ảnh, Google Sign-In \\ \hline
+8 & Kiểm thử và sửa lỗi & 2 ngày & Test case, bug report \\ \hline
+9 & Hoàn thiện tài liệu & 2 ngày & Bộ tài liệu Markdown \\ \hline
+\end{longtable}
+
+\section{Mốc Thời Gian}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Mốc} & \textbf{Mô tả} & \textbf{Điều kiện hoàn thành} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mốc} & \textbf{Mô tả} & \textbf{Điều kiện hoàn thành} \\ \hline
+\endhead
+M1 & Chốt đề tài & Có đề cương và phạm vi \\ \hline
+M2 & Chốt yêu cầu & Có SRS và use case \\ \hline
+M3 & Chốt thiết kế & Có kiến trúc, dữ liệu, giao diện \\ \hline
+M4 & Bản chạy được & App build và chạy trên emulator \\ \hline
+M5 & Bản tích hợp & Firebase, OTP, Gemini được cấu hình \\ \hline
+M6 & Bản nghiệm thu & Test pass các luồng chính và có tài liệu \\ \hline
+\end{longtable}
+
+\section{Rủi Ro Dự Án}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Mã} & \textbf{Rủi ro} & \textbf{Mức độ} & \textbf{Ảnh hưởng} & \textbf{Phương án xử lý} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mã} & \textbf{Rủi ro} & \textbf{Mức độ} & \textbf{Ảnh hưởng} & \textbf{Phương án xử lý} \\ \hline
+\endhead
+R01 & Sai SHA-1 Firebase làm Google Sign-In lỗi & Cao & Không đăng nhập được Google & Lấy SHA-1 bằng \texttt{keytool}, thêm vào Firebase, tải lại \texttt{google-services.json} \\ \hline
+R02 & Không cấu hình SMTP đúng & Cao & Không gửi được OTP & Dùng Gmail App Password, kiểm tra biến môi trường backend \\ \hline
+R03 & Thiếu Gemini API key & Trung bình & Không tạo lịch từ ảnh & Cấu hình \texttt{GEMINI\_API\_KEY} trong \texttt{local.properties} \\ \hline
+R04 & Dữ liệu chỉ lưu local & Trung bình & Đổi máy sẽ mất dữ liệu & Ghi rõ giới hạn, đề xuất cloud sync ở phiên bản sau \\ \hline
+R05 & UI phụ thuộc kích thước màn hình & Trung bình & Một số màn hình nhỏ có thể cuộn nhiều & Test trên emulator nhiều kích thước \\ \hline
+R06 & Google Sign-In legacy API bị deprecate & Thấp/Trung bình & Cần nâng cấp tương lai & Ghi nhận trong bảo trì, cân nhắc Credential Manager \\ \hline
+\end{longtable}
+
+\section{Chi Phí Dự Kiến}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Hạng mục} & \textbf{Chi phí} \\ \hline
+\endfirsthead
+\hline
+\textbf{Hạng mục} & \textbf{Chi phí} \\ \hline
+\endhead
+Android Studio, Gradle, Java & Miễn phí \\ \hline
+Firebase Authentication & Có gói miễn phí, tùy giới hạn sử dụng \\ \hline
+Gemini API & Có thể phát sinh chi phí theo API key \\ \hline
+SMTP Gmail & Miễn phí nếu dùng tài khoản cá nhân, cần App Password \\ \hline
+GitHub & Miễn phí cho repo cá nhân \\ \hline
+\end{longtable}
+
+\section{Kế Hoạch Kiểm Soát Chất Lượng}
+
+\begin{itemize}
+\item Kiểm tra build Android bằng \texttt{.\textbackslash\{\}gradlew.bat :app:assembleDebug}.
+\item Kiểm tra cài đặt app bằng \texttt{.\textbackslash\{\}gradlew.bat :app:installDebug}.
+\item Kiểm tra backend OTP bằng endpoint \texttt{/health}.
+\item Kiểm thử thủ công các luồng chính theo tài liệu test case.
+\item Ghi nhận bug, nguyên nhân, trạng thái và cách khắc phục.
+\item Không commit file nhạy cảm như \texttt{local.properties}, \texttt{.env}, keystore, mật khẩu SMTP.
+\end{itemize}
+
+\section{Tiêu Chí Nghiệm Thu}
+
+\begin{itemize}
+\item App chạy được trên emulator Android.
+\item Có thể đăng ký tài khoản email và xác thực OTP khi backend SMTP hoạt động.
+\item Có thể đăng nhập bằng email/mật khẩu sau khi xác thực.
+\item Google Sign-In chạy được khi Firebase SHA-1/OAuth cấu hình đúng.
+\item Có thể thêm/sửa/xóa lịch học và task.
+\item Có thể phát hiện lịch bị trùng thời gian.
+\item Có thể chạy Pomodoro và ghi nhận thống kê.
+\item Có đủ 9 tài liệu Markdown trong thư mục \texttt{docs}.
+\end{itemize}
+\clearpage
+\chapter{SRS - Đặc Tả Yêu Cầu Phần Mềm}
+
+\section{Giới Thiệu}
+
+\subsection{Mục Đích}
+
+Tài liệu SRS mô tả yêu cầu chức năng, yêu cầu phi chức năng, tác nhân, use case, quy tắc nghiệp vụ và ràng buộc hệ thống của ứng dụng Study Planner.
+
+\subsection{Phạm Vi Sản Phẩm}
+
+Study Planner là ứng dụng Android hỗ trợ sinh viên quản lý lịch học, lịch thi, deadline, task, Pomodoro và thống kê học tập. Ứng dụng có xác thực bằng email/OTP và Google Sign-In, lưu dữ liệu học tập cục bộ theo từng tài khoản.
+
+\subsection{Thuật Ngữ}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Thuật ngữ} & \textbf{Ý nghĩa} \\ \hline
+\endfirsthead
+\hline
+\textbf{Thuật ngữ} & \textbf{Ý nghĩa} \\ \hline
+\endhead
+OTP & Mã xác thực một lần gửi qua email \\ \hline
+Task & Công việc học tập cần hoàn thành \\ \hline
+Event & Lịch học, lịch thi, deadline hoặc công việc cá nhân có thời gian bắt đầu/kết thúc \\ \hline
+Pomodoro & Phương pháp học tập theo phiên tập trung và nghỉ \\ \hline
+Firebase Auth & Dịch vụ xác thực người dùng của Firebase \\ \hline
+Gemini API & API AI dùng để đọc lịch học từ ảnh \\ \hline
+SMTP & Giao thức gửi email dùng cho backend OTP \\ \hline
+\end{longtable}
+
+\section{Mô Tả Tổng Quan}
+
+\subsection{Bối Cảnh Hệ Thống}
+
+Ứng dụng Android là thành phần chính. Backend OTP chỉ làm nhiệm vụ nhận email, mã OTP, mục đích xác thực rồi gửi email qua SMTP. Firebase Auth xử lý đăng nhập Google. Gemini API xử lý nhận diện ảnh lịch học.
+
+\begin{CodeBlock}
+flowchart LR
+    User["Sinh viên"] --> App["Android App - Study Planner"]
+    App --> SQLite["SQLite cục bộ"]
+    App --> Firebase["Firebase Authentication"]
+    App --> Gemini["Gemini API"]
+    App --> Backend["OTP Backend"]
+    Backend --> SMTP["SMTP Email Server"]
+\end{CodeBlock}
+
+\subsection{Tác Nhân}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Actor} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Actor} & \textbf{Mô tả} \\ \hline
+\endhead
+Sinh viên & Người dùng chính sử dụng app để quản lý lịch học \\ \hline
+Firebase Auth & Dịch vụ ngoài xác thực Google \\ \hline
+Gemini API & Dịch vụ ngoài đọc lịch từ ảnh \\ \hline
+OTP Backend & Backend phụ trợ gửi mã OTP \\ \hline
+SMTP Server & Máy chủ email gửi OTP \\ \hline
+\end{longtable}
+
+\subsection{Môi Trường Vận Hành}
+
+\begin{itemize}
+\item Android minSdk 24, targetSdk 36.
+\item Java 11 cho Android compile options và backend.
+\item Gradle/Android Gradle Plugin.
+\item Thiết bị/emulator có Internet cho các chức năng online.
+\end{itemize}
+
+\section{Yêu Cầu Chức Năng}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\hline
+\textbf{Mã} & \textbf{Tên yêu cầu} & \textbf{Mô tả} & \textbf{Độ ưu tiên} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mã} & \textbf{Tên yêu cầu} & \textbf{Mô tả} & \textbf{Độ ưu tiên} \\ \hline
+\endhead
+FR-01 & Onboarding & Hiển thị màn hình giới thiệu lần đầu mở app & Trung bình \\ \hline
+FR-02 & Đăng ký email & Người dùng nhập tên, email, mật khẩu, xác nhận mật khẩu và đồng ý điều khoản & Cao \\ \hline
+FR-03 & Gửi OTP đăng ký & App tạo OTP, lưu hash OTP và gửi OTP qua backend email & Cao \\ \hline
+FR-04 & Xác thực OTP đăng ký & Người dùng nhập OTP hợp lệ để kích hoạt tài khoản & Cao \\ \hline
+FR-05 & Đăng nhập email & Người dùng đăng nhập bằng email và mật khẩu đã xác thực & Cao \\ \hline
+FR-06 & Quên mật khẩu & Người dùng yêu cầu OTP đặt lại mật khẩu & Cao \\ \hline
+FR-07 & Đặt lại mật khẩu & Người dùng nhập OTP và mật khẩu mới & Cao \\ \hline
+FR-08 & Đăng nhập Google & Người dùng đăng nhập bằng tài khoản Google qua Firebase Auth & Cao \\ \hline
+FR-09 & Đăng xuất & Người dùng đăng xuất khỏi app và Firebase/Google nếu có & Cao \\ \hline
+FR-10 & Quản lý hồ sơ & Người dùng sửa tên, email, mục tiêu học tập & Trung bình \\ \hline
+FR-11 & Cá nhân hóa giao diện & Người dùng chọn avatar, mascot, nền dashboard, màu chủ đề, trạng thái học tập & Trung bình \\ \hline
+FR-12 & Xem dashboard & App hiển thị tiến độ hôm nay, task, deadline, lịch tiếp theo, Pomodoro & Cao \\ \hline
+FR-13 & Thêm lịch & Người dùng tạo event với tiêu đề, loại, môn, ngày, giờ, phòng, ghi chú, nhắc nhở & Cao \\ \hline
+FR-14 & Sửa lịch & Người dùng cập nhật thông tin event đã tạo & Cao \\ \hline
+FR-15 & Xóa lịch & Người dùng xóa event khỏi danh sách & Cao \\ \hline
+FR-16 & Lọc lịch & Người dùng lọc theo tất cả, lịch học, lịch thi, deadline, cá nhân & Trung bình \\ \hline
+FR-17 & Xem lịch ngày/3 ngày/tuần & Người dùng chuyển chế độ xem lịch & Trung bình \\ \hline
+FR-18 & Kiểm tra xung đột & App cảnh báo khi event trùng thời gian với event khác & Cao \\ \hline
+FR-19 & Nhập lịch từ ảnh & Người dùng chọn camera/thư viện để trích xuất event bằng Gemini API & Cao \\ \hline
+FR-20 & Thêm task & Người dùng tạo task học tập với deadline, ưu tiên, ghi chú & Cao \\ \hline
+FR-21 & Sửa task & Người dùng cập nhật task & Cao \\ \hline
+FR-22 & Xóa task & Người dùng xóa task & Cao \\ \hline
+FR-23 & Đánh dấu hoàn thành task & Người dùng chuyển task sang trạng thái đã xong & Cao \\ \hline
+FR-24 & Lọc task & Lọc task theo tất cả, hôm nay, sắp hạn, quá hạn, đã xong, môn, ưu tiên, ma trận & Cao \\ \hline
+FR-25 & Gắn marker task & Người dùng chọn biểu tượng/marker cho task & Thấp \\ \hline
+FR-26 & Chạy Pomodoro & Người dùng bắt đầu, tạm dừng, đặt lại và bỏ qua phiên Pomodoro & Cao \\ \hline
+FR-27 & Chọn task Pomodoro & Người dùng gắn phiên Pomodoro với task/môn học & Trung bình \\ \hline
+FR-28 & Âm thanh Pomodoro & Người dùng chọn âm thanh nền hoặc white noise & Trung bình \\ \hline
+FR-29 & Lịch sử Pomodoro & Người dùng xem các phiên Pomodoro đã ghi nhận & Trung bình \\ \hline
+FR-30 & Thống kê & App hiển thị thống kê task, lịch, tiến độ và thời gian tập trung & Cao \\ \hline
+FR-31 & Cài đặt thông báo & Người dùng bật/tắt thông báo nhắc nhở & Trung bình \\ \hline
+FR-32 & Cài đặt đồng bộ & Người dùng bật/tắt lựa chọn đồng bộ Google Calendar ở mức cấu hình UI & Thấp \\ \hline
+\end{longtable}
+
+\section{Yêu Cầu Phi Chức Năng}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Mã} & \textbf{Nhóm} & \textbf{Yêu cầu} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mã} & \textbf{Nhóm} & \textbf{Yêu cầu} \\ \hline
+\endhead
+NFR-01 & Hiệu năng & Các thao tác CRUD dữ liệu cục bộ phản hồi trong thời gian ngắn với dữ liệu học tập cá nhân \\ \hline
+NFR-02 & Bảo mật & Mật khẩu và OTP không lưu plaintext; sử dụng SHA-256 kết hợp salt/hash \\ \hline
+NFR-03 & Bảo mật & Không commit API key, SMTP password, local.properties, keystore \\ \hline
+NFR-04 & Tin cậy & OTP hết hạn sau 5 phút và giới hạn số lần nhập sai \\ \hline
+NFR-05 & Tính dùng được & Giao diện tiếng Việt, phù hợp sinh viên, có dashboard tổng quan \\ \hline
+NFR-06 & Tương thích & Hỗ trợ Android từ API 24 trở lên \\ \hline
+NFR-07 & Khả năng bảo trì & Mã chia thành model, data repository, UI custom view, backend riêng \\ \hline
+NFR-08 & Khả năng mở rộng & Có thể nâng cấp lưu trữ local sang cloud sync trong tương lai \\ \hline
+NFR-09 & Khả năng phục hồi & Nếu backend OTP/Gemini lỗi, app hiển thị thông báo lỗi thay vì crash \\ \hline
+NFR-10 & Cấu hình & Các khóa nhạy cảm được lấy từ \texttt{local.properties} hoặc biến môi trường \\ \hline
+\end{longtable}
+
+\section{Use Case Chính}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.16\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.20\textwidth}|}
+\hline
+\textbf{Mã} & \textbf{Use case} & \textbf{Actor chính} & \textbf{Mô tả ngắn} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mã} & \textbf{Use case} & \textbf{Actor chính} & \textbf{Mô tả ngắn} \\ \hline
+\endhead
+UC-01 & Đăng ký tài khoản & Sinh viên & Tạo tài khoản email và nhận OTP \\ \hline
+UC-02 & Xác thực OTP & Sinh viên & Nhập OTP để kích hoạt tài khoản \\ \hline
+UC-03 & Đăng nhập email & Sinh viên & Truy cập app bằng email/mật khẩu \\ \hline
+UC-04 & Đăng nhập Google & Sinh viên & Truy cập app bằng tài khoản Google \\ \hline
+UC-05 & Quên mật khẩu & Sinh viên & Nhận OTP và đặt mật khẩu mới \\ \hline
+UC-06 & Quản lý lịch học & Sinh viên & Thêm, sửa, xóa, lọc event \\ \hline
+UC-07 & Tạo lịch từ ảnh & Sinh viên & Dùng Gemini đọc ảnh lịch và lưu event \\ \hline
+UC-08 & Quản lý task & Sinh viên & Thêm, sửa, xóa, hoàn thành, lọc task \\ \hline
+UC-09 & Chạy Pomodoro & Sinh viên & Bắt đầu phiên tập trung và lưu thống kê \\ \hline
+UC-10 & Xem thống kê & Sinh viên & Xem tiến độ học tập \\ \hline
+UC-11 & Cài đặt cá nhân & Sinh viên & Sửa hồ sơ, giao diện, thông báo \\ \hline
+\end{longtable}
+
+\section{Quy Tắc Nghiệp Vụ}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Mã} & \textbf{Quy tắc} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mã} & \textbf{Quy tắc} \\ \hline
+\endhead
+BR-01 & Email đăng ký phải đúng định dạng email \\ \hline
+BR-02 & Mật khẩu tối thiểu 6 ký tự \\ \hline
+BR-03 & Mật khẩu xác nhận phải trùng mật khẩu đăng ký \\ \hline
+BR-04 & Người dùng phải đồng ý điều khoản trước khi đăng ký \\ \hline
+BR-05 & Tài khoản email chưa xác thực OTP không được đăng nhập \\ \hline
+BR-06 & OTP có hiệu lực 5 phút \\ \hline
+BR-07 & OTP nhập sai quá 5 lần sẽ bị hủy \\ \hline
+BR-08 & Event phải có thời gian kết thúc sau thời gian bắt đầu \\ \hline
+BR-09 & Khi event trùng thời gian, app phải cảnh báo xung đột \\ \hline
+BR-10 & Task quá hạn là task chưa hoàn thành và deadline nhỏ hơn thời gian hiện tại \\ \hline
+BR-11 & Pomodoro focus hoàn thành sẽ cộng vào thống kê tập trung \\ \hline
+BR-12 & Dữ liệu học tập được tách theo tài khoản email nếu người dùng đăng nhập \\ \hline
+\end{longtable}
+
+\section{Ràng Buộc Hệ Thống}
+
+\begin{itemize}
+\item Package name Android: \texttt{com.example.cuoiky\_qllichhoctap}.
+\item App dùng \texttt{google-services.json} trong module \texttt{app}.
+\item Backend OTP mặc định chạy ở \texttt{http://10.0.2.2:8080} trên emulator.
+\item Gemini API key đọc từ \texttt{local.properties} qua \texttt{BuildConfig.GEMINI\_API\_KEY}.
+\item OTP backend đọc SMTP config từ biến môi trường.
+\item Dữ liệu app lưu trong SQLite trên thiết bị, không đồng bộ server.
+\end{itemize}
+
+\section{Tiêu Chí Chấp Nhận}
+
+\begin{itemize}
+\item Build debug thành công.
+\item App không crash khi mở các màn hình chính.
+\item Luồng đăng ký OTP hoạt động khi backend SMTP hoạt động.
+\item Google Sign-In hoạt động khi Firebase SHA-1/OAuth đúng.
+\item Task/event được lưu và hiển thị lại sau khi đóng/mở app.
+\item Pomodoro cập nhật thống kê sau phiên hoàn thành.
+\item Import ảnh hiển thị lỗi rõ ràng nếu thiếu Gemini API key.
+\end{itemize}
+\clearpage
+\chapter{Phân Tích Và Thiết Kế Hệ Thống}
+
+\section{Phân Tích Hiện Trạng}
+
+Sinh viên thường quản lý việc học bằng nhiều công cụ khác nhau: lịch điện thoại, ghi chú, giấy, ứng dụng task hoặc nhắc nhở. Việc phân tán dữ liệu dẫn tới các vấn đề:
+
+\begin{itemize}
+\item Khó nhìn tổng quan lịch học, deadline và task trong một màn hình.
+\item Dễ tạo lịch trùng giờ.
+\item Khó biết hôm nay cần ưu tiên việc gì.
+\item Không đo được thời gian tập trung thực tế.
+\item Nhập lịch thủ công từ ảnh thời khóa biểu mất thời gian.
+\end{itemize}
+
+Study Planner giải quyết bằng một ứng dụng Android tập trung vào lịch học cá nhân, task, Pomodoro, thống kê và hỗ trợ nhập lịch từ ảnh.
+
+\section{Kiến Trúc Tổng Thể}
+
+\begin{CodeBlock}
+flowchart TB
+    subgraph Android["Android App"]
+        UI["XML Screens + MainActivity"]
+        Repo["Repository Layer"]
+        Models["Model Layer"]
+        SQLite["SQLiteOpenHelper"]
+        Prefs["SharedPreferences"]
+        GeminiClient["GeminiScheduleExtractor"]
+        FirebaseClient["Firebase Auth / Google Sign-In"]
+    end
+
+    UI --> Repo
+    UI --> GeminiClient
+    UI --> FirebaseClient
+    Repo --> Models
+    Repo --> SQLite
+    Repo --> Prefs
+    GeminiClient --> Gemini["Gemini API"]
+    UI --> OtpBackend["OTP Backend"]
+    OtpBackend --> SMTP["SMTP Server"]
+\end{CodeBlock}
+
+\section{Thành Phần Chính}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Thành phần} & \textbf{File/Module} & \textbf{Vai trò} \\ \hline
+\endfirsthead
+\hline
+\textbf{Thành phần} & \textbf{File/Module} & \textbf{Vai trò} \\ \hline
+\endhead
+MainActivity & \texttt{app/src/main/java/.../MainActivity.java} & Điều phối màn hình, sự kiện UI, xác thực, Pomodoro, CRUD \\ \hline
+AuthRepository & \texttt{data/AuthRepository.java} & Quản lý tài khoản email, mật khẩu hash, OTP, session \\ \hline
+StudyRepository & \texttt{data/StudyRepository.java} & Quản lý profile, task, event, settings, thống kê, Pomodoro \\ \hline
+GeminiScheduleExtractor & \texttt{data/GeminiScheduleExtractor.java} & Gửi ảnh tới Gemini API và parse event \\ \hline
+Model & \texttt{model/*.java} & Định nghĩa dữ liệu nghiệp vụ \\ \hline
+Custom UI & \texttt{ui/*.java} & Biểu đồ, calendar view, swipe action, nền giấy \\ \hline
+OTP Backend & \texttt{otp-backend} & HTTP server gửi OTP qua SMTP \\ \hline
+\end{longtable}
+
+\section{Thiết Kế Module Android}
+
+\begin{CodeBlock}
+flowchart LR
+    MainActivity --> AuthRepository
+    MainActivity --> StudyRepository
+    MainActivity --> GeminiScheduleExtractor
+    MainActivity --> FirebaseAuth
+    MainActivity --> GoogleSignInClient
+    StudyRepository --> StudyEvent
+    StudyRepository --> StudyTask
+    StudyRepository --> UserProfile
+    StudyRepository --> PomodoroSession
+    AuthRepository --> AuthUser
+\end{CodeBlock}
+
+\section{Sơ Đồ Use Case}
+
+\begin{CodeBlock}
+flowchart TB
+    Student["Sinh viên"]
+    Student --> UC1["Đăng ký tài khoản"]
+    Student --> UC2["Xác thực OTP"]
+    Student --> UC3["Đăng nhập email"]
+    Student --> UC4["Đăng nhập Google"]
+    Student --> UC5["Đặt lại mật khẩu"]
+    Student --> UC6["Quản lý lịch học"]
+    Student --> UC7["Tạo lịch từ ảnh"]
+    Student --> UC8["Quản lý task"]
+    Student --> UC9["Chạy Pomodoro"]
+    Student --> UC10["Xem thống kê"]
+    Student --> UC11["Cài đặt cá nhân"]
+
+    UC2 --> Backend["OTP Backend"]
+    UC4 --> Firebase["Firebase Auth"]
+    UC7 --> Gemini["Gemini API"]
+\end{CodeBlock}
+
+\section{Luồng Xử Lý Chính}
+
+\subsection{Đăng Ký Và Xác Thực OTP}
+
+\begin{CodeBlock}
+sequenceDiagram
+    actor User as Sinh viên
+    participant App as Android App
+    participant Auth as AuthRepository
+    participant OTP as OTP Backend
+    participant SMTP as SMTP Server
+
+    User->>App: Nhập tên, email, mật khẩu
+    App->>Auth: beginRegistration()
+    Auth->>Auth: Lưu user chưa verified, tạo OTP hash
+    Auth-->>App: Trả OTP plaintext
+    App->>OTP: POST /send-otp
+    OTP->>SMTP: Gửi email OTP
+    SMTP-->>User: Email chứa OTP
+    User->>App: Nhập OTP
+    App->>Auth: verifyRegistrationOtp()
+    Auth->>Auth: Kiểm tra hash, hạn dùng, số lần nhập
+    Auth-->>App: User verified
+    App->>App: Vào Dashboard
+\end{CodeBlock}
+
+\subsection{Đăng Nhập Google}
+
+\begin{CodeBlock}
+sequenceDiagram
+    actor User as Sinh viên
+    participant App as Android App
+    participant Google as Google Play Services
+    participant Firebase as Firebase Auth
+
+    User->>App: Bấm Đăng nhập với Google
+    App->>Google: Mở Google Sign-In Intent
+    Google-->>User: Chọn tài khoản
+    Google-->>App: Trả GoogleSignInAccount hoặc lỗi
+    App->>Firebase: signInWithCredential(idToken)
+    Firebase-->>App: FirebaseUser
+    App->>App: Tạo repository theo email, sync profile, vào Dashboard
+\end{CodeBlock}
+
+Ghi chú: luồng này phụ thuộc SHA-1/OAuth trong Firebase Console. Nếu SHA-1 không khớp, Google Play Services trả lỗi ứng dụng chưa đăng ký OAuth2.
+
+\subsection{Tạo Lịch Từ Ảnh}
+
+\begin{CodeBlock}
+sequenceDiagram
+    actor User as Sinh viên
+    participant App as Android App
+    participant Gemini as Gemini API
+    participant Repo as StudyRepository
+
+    User->>App: Chọn camera hoặc thư viện
+    App->>Gemini: Gửi ảnh base64 + prompt JSON schema
+    Gemini-->>App: JSON danh sách events
+    App->>App: Parse StudyEvent
+    App->>User: Hiển thị danh sách lịch trích xuất
+    User->>App: Xác nhận lưu
+    App->>Repo: saveEvent()
+\end{CodeBlock}
+
+\subsection{Lưu Lịch Và Kiểm Tra Xung Đột}
+
+\begin{CodeBlock}
+flowchart TD
+    A["Người dùng nhập lịch"] --> B["Validate dữ liệu"]
+    B --> C{"Thời gian hợp lệ?"}
+    C -- "Không" --> D["Hiển thị lỗi"]
+    C -- "Có" --> E["Kiểm tra xung đột"]
+    E --> F{"Có trùng lịch?"}
+    F -- "Có" --> G["Hiển thị cảnh báo xung đột"]
+    G --> H{"Người dùng vẫn lưu?"}
+    H -- "Không" --> I["Quay lại chỉnh sửa"]
+    H -- "Có" --> J["Lưu event"]
+    F -- "Không" --> J
+\end{CodeBlock}
+
+\section{Thiết Kế Giao Diện}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Màn hình} & \textbf{File layout} & \textbf{Chức năng} \\ \hline
+\endfirsthead
+\hline
+\textbf{Màn hình} & \textbf{File layout} & \textbf{Chức năng} \\ \hline
+\endhead
+Onboarding & \texttt{screen\_onboarding.xml} & Giới thiệu app \\ \hline
+Login & \texttt{screen\_login.xml} & Đăng nhập email/Google, quên mật khẩu \\ \hline
+Register & \texttt{screen\_register.xml} & Đăng ký tài khoản \\ \hline
+OTP & \texttt{screen\_otp.xml} & Nhập/gửi lại OTP \\ \hline
+Reset Password & \texttt{screen\_reset\_password.xml} & Đặt mật khẩu mới \\ \hline
+Dashboard & \texttt{screen\_dashboard.xml} & Tổng quan tiến độ, task, lịch, Pomodoro \\ \hline
+Schedule & \texttt{screen\_schedule.xml} & Quản lý lịch học \\ \hline
+Tasks & \texttt{screen\_tasks.xml} & Quản lý task \\ \hline
+Pomodoro & \texttt{screen\_pomodoro.xml} & Timer tập trung \\ \hline
+Stats & \texttt{screen\_stats.xml} & Thống kê học tập \\ \hline
+Settings & \texttt{screen\_settings.xml} & Hồ sơ, cá nhân hóa, đăng xuất \\ \hline
+\end{longtable}
+
+\section{Thiết Kế Lớp}
+
+\begin{CodeBlock}
+classDiagram
+    class AuthUser {
+        String email
+        String name
+        boolean verified
+        long createdAt
+        long updatedAt
+    }
+
+    class UserProfile {
+        String name
+        String email
+        String goal
+    }
+
+    class StudyTask {
+        String id
+        String title
+        String subject
+        long dueAt
+        String priority
+        boolean completed
+        boolean important
+        boolean urgent
+        String tag
+    }
+
+    class StudyEvent {
+        String id
+        String title
+        String type
+        String subject
+        long startAt
+        long endAt
+        String room
+        boolean reminderEnabled
+    }
+
+    class PomodoroSession {
+        String id
+        String taskId
+        String mode
+        int durationMinutes
+        int completedMinutes
+        boolean isCompleted
+    }
+
+    class AuthRepository
+    class StudyRepository
+
+    AuthRepository --> AuthUser
+    StudyRepository --> UserProfile
+    StudyRepository --> StudyTask
+    StudyRepository --> StudyEvent
+    StudyRepository --> PomodoroSession
+\end{CodeBlock}
+
+\section{Thiết Kế API Backend OTP}
+
+\subsection{\texttt{GET /health}}
+
+Kiểm tra backend còn chạy.
+
+Response:
+
+\begin{CodeBlock}
+{"ok": true}
+\end{CodeBlock}
+
+\subsection{\texttt{POST /send-otp}}
+
+Gửi OTP qua email.
+
+Request:
+
+\begin{CodeBlock}
+{
+  "email": "student@example.com",
+  "code": "123456",
+  "purpose": "xác thực tài khoản"
+}
+\end{CodeBlock}
+
+Response thành công:
+
+\begin{CodeBlock}
+{"ok": true}
+\end{CodeBlock}
+
+Response lỗi:
+
+\begin{CodeBlock}
+{
+  "ok": false,
+  "error": "Missing email or code"
+}
+\end{CodeBlock}
+
+\section{Cấu Trúc Thư Mục}
+
+\begin{CodeBlock}
+MANAGING-YOUR-STUDY-SCHEDULE/
+├── app/
+│   ├── build.gradle.kts
+│   └── src/main/
+│       ├── java/com/example/cuoiky_qllichhoctap/
+│       │   ├── MainActivity.java
+│       │   ├── data/
+│       │   ├── model/
+│       │   ├── ui/
+│       │   └── util/
+│       └── res/
+│           ├── layout/
+│           ├── drawable/
+│           ├── values/
+│           └── raw/
+├── otp-backend/
+│   └── src/main/java/com/example/otpbackend/OtpMailServer.java
+├── gradle/
+├── docs/
+└── README.md
+\end{CodeBlock}
+
+\section{Hạn Chế Thiết Kế Hiện Tại}
+
+\begin{itemize}
+\item \texttt{MainActivity} đang xử lý nhiều trách nhiệm UI và nghiệp vụ, có thể tách ViewModel/Controller ở phiên bản sau.
+\item Google Sign-In đang dùng API legacy của \texttt{play-services-auth}; có thể nâng cấp Credential Manager.
+\item Đồng bộ Google Calendar mới có cấu hình UI, chưa có tích hợp Calendar API đầy đủ.
+\item Dữ liệu học tập lưu local, chưa có cloud backup/sync.
+\end{itemize}
+\clearpage
+\chapter{Thiết Kế Dữ Liệu}
+
+\section{Tổng Quan}
+
+Ứng dụng Study Planner sử dụng SQLite cục bộ trên Android để lưu dữ liệu xác thực email, hồ sơ, task, lịch học, thống kê Pomodoro và cài đặt. Ngoài SQLite, app dùng SharedPreferences để lưu trạng thái mở lần đầu, session và lựa chọn cá nhân hóa.
+
+Backend OTP không lưu dữ liệu lâu dài; backend chỉ nhận request gửi OTP và chuyển tiếp qua SMTP.
+
+\section{Danh Sách Cơ Sở Dữ Liệu}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Database} & \textbf{File quản lý} & \textbf{Mục đích} \\ \hline
+\endfirsthead
+\hline
+\textbf{Database} & \textbf{File quản lý} & \textbf{Mục đích} \\ \hline
+\endhead
+\texttt{study\_auth.db} & \texttt{AuthRepository.java} & Lưu user email, hash mật khẩu, OTP hash \\ \hline
+\texttt{study\_planner.db} hoặc \texttt{study\_planner\_\textless{}hash\textgreater{}.db} & \texttt{StudyRepository.java} & Lưu profile, task, event, Pomodoro, settings \\ \hline
+\end{longtable}
+
+Khi người dùng đăng nhập bằng email, dữ liệu học tập được tách theo email bằng suffix hash trong tên database và SharedPreferences.
+
+\section{ERD Tổng Quan}
+
+\begin{CodeBlock}
+erDiagram
+    USERS ||--o{ OTP_CODES : "requests"
+    PROFILE ||--o{ TASKS : "owns"
+    PROFILE ||--o{ EVENTS : "owns"
+    TASKS ||--o{ POMODORO_SESSIONS : "tracked by"
+    FOCUS_STATS ||--o{ FOCUS_DAY_STATS : "summarizes"
+
+    USERS {
+        text email PK
+        text name
+        text password_hash
+        text salt
+        integer verified
+        integer created_at
+        integer updated_at
+    }
+
+    OTP_CODES {
+        text email PK
+        text purpose PK
+        text code_hash
+        integer expires_at
+        integer created_at
+        integer attempts
+    }
+
+    PROFILE {
+        integer id PK
+        text name
+        text email
+        text goal
+    }
+
+    TASKS {
+        text id PK
+        text title
+        text subject
+        integer due_at
+        text priority
+        text note
+        integer completed
+    }
+
+    EVENTS {
+        text id PK
+        text title
+        text type
+        text subject
+        integer start_at
+        integer end_at
+        text room
+    }
+
+    POMODORO_SESSIONS {
+        text id PK
+        text task_id
+        text mode
+        integer duration_minutes
+        integer completed_minutes
+    }
+\end{CodeBlock}
+
+\section{Database \texttt{study\_auth.db}}
+
+\subsection{Bảng \texttt{users}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{email} & TEXT & PK & Có & Email đã normalize lowercase \\ \hline
+\texttt{name} & TEXT &  & Có & Tên người dùng \\ \hline
+\texttt{password\_hash} & TEXT &  & Có & Hash mật khẩu bằng SHA-256 \\ \hline
+\texttt{salt} & TEXT &  & Có & Salt random dùng khi hash mật khẩu \\ \hline
+\texttt{verified} & INTEGER &  & Có & 0: chưa xác thực, 1: đã xác thực \\ \hline
+\texttt{created\_at} & INTEGER &  & Có & Thời điểm tạo tài khoản, milliseconds \\ \hline
+\texttt{updated\_at} & INTEGER &  & Có & Thời điểm cập nhật gần nhất \\ \hline
+\end{longtable}
+
+Ràng buộc:
+
+\begin{itemize}
+\item \texttt{email} là duy nhất.
+\item Tài khoản chưa verified không được đăng nhập.
+\item Không lưu mật khẩu plaintext.
+\end{itemize}
+
+\subsection{Bảng \texttt{otp\_codes}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{email} & TEXT & PK & Có & Email nhận OTP \\ \hline
+\texttt{purpose} & TEXT & PK & Có & \texttt{register} hoặc \texttt{reset} \\ \hline
+\texttt{code\_hash} & TEXT &  & Có & Hash OTP theo email, purpose, code \\ \hline
+\texttt{expires\_at} & INTEGER &  & Có & Thời điểm hết hạn \\ \hline
+\texttt{created\_at} & INTEGER &  & Có & Thời điểm tạo OTP \\ \hline
+\texttt{attempts} & INTEGER &  & Có & Số lần nhập sai \\ \hline
+\end{longtable}
+
+Ràng buộc:
+
+\begin{itemize}
+\item Khóa chính ghép: (\texttt{email}, \texttt{purpose}).
+\item OTP hết hạn sau 5 phút.
+\item Nhập sai tối đa 5 lần.
+\end{itemize}
+
+\section{Database \texttt{study\_planner.db}}
+
+\subsection{Bảng \texttt{profile}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{id} & INTEGER & PK & Có & Luôn bằng 1 \\ \hline
+\texttt{name} & TEXT &  & Có & Tên hiển thị \\ \hline
+\texttt{email} & TEXT &  & Có & Email hồ sơ \\ \hline
+\texttt{goal} & TEXT &  & Có & Mục tiêu học tập \\ \hline
+\end{longtable}
+
+\subsection{Bảng \texttt{tasks}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{id} & TEXT & PK & Có & UUID task \\ \hline
+\texttt{title} & TEXT &  & Có & Tên công việc \\ \hline
+\texttt{subject} & TEXT &  & Có & Môn học \\ \hline
+\texttt{due\_at} & INTEGER & INDEX & Có & Deadline dạng milliseconds \\ \hline
+\texttt{priority} & TEXT &  & Có & Cao, Trung bình, Thấp \\ \hline
+\texttt{note} & TEXT &  & Không & Ghi chú \\ \hline
+\texttt{completed} & INTEGER &  & Có & 0/1 \\ \hline
+\texttt{important} & INTEGER &  & Có & Dùng cho ma trận ưu tiên \\ \hline
+\texttt{urgent} & INTEGER &  & Có & Dùng cho ma trận ưu tiên \\ \hline
+\texttt{tag} & TEXT &  & Không & Tag hoặc môn học \\ \hline
+\texttt{reminder\_time} & INTEGER &  & Có & Thời điểm nhắc nhở, 0 nếu không có \\ \hline
+\texttt{repeat\_option} & TEXT &  & Có & Không lặp, hằng ngày, hằng tuần, hằng tháng \\ \hline
+\texttt{estimated\_pomodoro} & INTEGER &  & Có & Số phiên Pomodoro dự kiến \\ \hline
+\texttt{completed\_pomodoros} & INTEGER &  & Có & Số phiên hoàn thành, cột tương thích \\ \hline
+\texttt{marker\_type} & TEXT &  & Có & Loại marker task \\ \hline
+\texttt{marker\_value} & TEXT &  & Có & Giá trị marker \\ \hline
+\end{longtable}
+
+Index:
+
+\begin{itemize}
+\item \texttt{idx\_tasks\_due\_at} trên \texttt{due\_at}.
+\end{itemize}
+
+\subsection{Bảng \texttt{events}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{id} & TEXT & PK & Có & UUID event \\ \hline
+\texttt{title} & TEXT &  & Có & Tên lịch \\ \hline
+\texttt{type} & TEXT &  & Có & Lịch học, Lịch thi, Deadline, Công việc cá nhân \\ \hline
+\texttt{subject} & TEXT &  & Có & Môn học/chủ đề \\ \hline
+\texttt{start\_at} & INTEGER & INDEX & Có & Thời điểm bắt đầu \\ \hline
+\texttt{end\_at} & INTEGER &  & Có & Thời điểm kết thúc \\ \hline
+\texttt{room} & TEXT &  & Không & Phòng học/địa điểm \\ \hline
+\texttt{note} & TEXT &  & Không & Ghi chú \\ \hline
+\texttt{reminder\_enabled} & INTEGER &  & Có & 0/1 \\ \hline
+\texttt{reminder\_before\_minutes} & INTEGER &  & Có & Số phút nhắc trước \\ \hline
+\end{longtable}
+
+Index:
+
+\begin{itemize}
+\item \texttt{idx\_events\_start\_at} trên \texttt{start\_at}.
+\end{itemize}
+
+Ràng buộc nghiệp vụ:
+
+\begin{itemize}
+\item \texttt{end\_at} phải lớn hơn \texttt{start\_at}.
+\item Event mới được kiểm tra xung đột với event khác trước khi lưu.
+\end{itemize}
+
+\subsection{Bảng \texttt{focus\_stats}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{id} & INTEGER & PK & Có & Luôn bằng 1 \\ \hline
+\texttt{minutes} & INTEGER &  & Có & Tổng phút tập trung \\ \hline
+\texttt{sessions} & INTEGER &  & Có & Tổng số phiên \\ \hline
+\end{longtable}
+
+\subsection{Bảng \texttt{focus\_day\_stats}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{day\_key} & TEXT & PK & Có & Ngày dạng chuỗi \\ \hline
+\texttt{minutes} & INTEGER &  & Có & Phút tập trung trong ngày \\ \hline
+\texttt{sessions} & INTEGER &  & Có & Số phiên trong ngày \\ \hline
+\end{longtable}
+
+\subsection{Bảng \texttt{pomodoro\_sessions}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{id} & TEXT & PK & Có & UUID phiên \\ \hline
+\texttt{task\_id} & TEXT &  & Không & Task liên kết \\ \hline
+\texttt{subject\_tag} & TEXT &  & Không & Môn/tag liên kết \\ \hline
+\texttt{mode} & TEXT &  & Không & \texttt{focus}, \texttt{short\_break}, \texttt{long\_break} \\ \hline
+\texttt{duration\_minutes} & INTEGER &  & Không & Thời lượng phiên \\ \hline
+\texttt{completed\_minutes} & INTEGER &  & Không & Số phút đã hoàn thành \\ \hline
+\texttt{started\_at} & INTEGER &  & Không & Thời điểm bắt đầu \\ \hline
+\texttt{ended\_at} & INTEGER &  & Không & Thời điểm kết thúc \\ \hline
+\texttt{is\_completed} & INTEGER &  & Không & 0/1 \\ \hline
+\texttt{sound\_type} & TEXT &  & Không & Âm thanh đã dùng \\ \hline
+\texttt{created\_at} & INTEGER &  & Không & Thời điểm lưu \\ \hline
+\end{longtable}
+
+\subsection{Bảng \texttt{settings}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.11\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.19\textwidth}|>{\raggedright\arraybackslash}p{0.18\textwidth}|}
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Trường} & \textbf{Kiểu} & \textbf{Khóa} & \textbf{Bắt buộc} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{key} & TEXT & PK & Có & Tên cài đặt \\ \hline
+\texttt{value} & TEXT &  & Có & Giá trị cài đặt \\ \hline
+\end{longtable}
+
+Ví dụ:
+
+\begin{itemize}
+\item \texttt{notify}: \texttt{1} hoặc \texttt{0}.
+\item \texttt{sync}: \texttt{1} hoặc \texttt{0}.
+\end{itemize}
+
+\section{SharedPreferences}
+
+\subsection{\texttt{study\_auth\_session}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Key} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Key} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{session\_email} & Email tài khoản đang đăng nhập local \\ \hline
+\end{longtable}
+
+\subsection{\texttt{study\_planner\_store} hoặc \texttt{study\_planner\_store\_\textless{}hash\textgreater{}}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Key} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Key} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{first\_open} & Đã hoàn thành onboarding chưa \\ \hline
+\texttt{logged\_in} & Trạng thái đăng nhập UI \\ \hline
+\texttt{avatar} & Lựa chọn avatar \\ \hline
+\texttt{dashboard\_background} & Lựa chọn nền dashboard \\ \hline
+\texttt{theme\_color} & Màu chủ đề \\ \hline
+\texttt{mascot} & Mascot \\ \hline
+\texttt{study\_status} & Trạng thái học tập \\ \hline
+\end{longtable}
+
+\section{Dữ Liệu Mẫu}
+
+Khi chưa có profile và chưa scoped theo tài khoản, app seed dữ liệu mẫu:
+
+\begin{itemize}
+\item Event: Toán rời rạc, Thi Cấu trúc dữ liệu, Họp nhóm Mobile.
+\item Task: Làm bài tập Chương 4, Đọc tài liệu Android, Ôn tập kiểm tra, Tóm tắt bài giảng.
+\item Profile mặc định: Minh Anh, \texttt{student@email.com}, mục tiêu quản lý lịch học và deadline.
+\end{itemize}
+
+\section{Chính Sách Bảo Mật Dữ Liệu}
+
+\begin{itemize}
+\item Mật khẩu lưu dưới dạng hash có salt.
+\item OTP lưu dưới dạng hash, không lưu OTP plaintext sau khi tạo.
+\item API key và mật khẩu SMTP không lưu trong mã nguồn.
+\item \texttt{google-services.json} và \texttt{local.properties} không nên commit nếu chứa thông tin riêng của project thật.
+\end{itemize}
+
+\section{Hạn Chế Và Đề Xuất Nâng Cấp}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Hạn chế} & \textbf{Đề xuất} \\ \hline
+\endfirsthead
+\hline
+\textbf{Hạn chế} & \textbf{Đề xuất} \\ \hline
+\endhead
+Dữ liệu local không đồng bộ cloud & Thêm Firebase Firestore hoặc backend riêng \\ \hline
+Chưa có migration phức tạp & Dùng Room Database để quản lý migration rõ hơn \\ \hline
+Session local tách với Firebase session & Đồng bộ hóa session và trạng thái Firebase chặt hơn \\ \hline
+Backend OTP không lưu log kiểm toán & Thêm logging và rate limit nếu triển khai thật \\ \hline
+\end{longtable}
+\clearpage
+\chapter{Tài Liệu Kiểm Thử}
+
+\section{Mục Tiêu Kiểm Thử}
+
+Đảm bảo ứng dụng Study Planner hoạt động đúng các luồng chính: xác thực, quản lý lịch, quản lý task, Pomodoro, thống kê, import ảnh và cấu hình dịch vụ ngoài.
+
+\section{Phạm Vi Kiểm Thử}
+
+\subsection{Trong Phạm Vi}
+
+\begin{itemize}
+\item Build Android app.
+\item Cài app lên emulator.
+\item Onboarding, đăng ký, đăng nhập, quên mật khẩu.
+\item Gửi OTP qua backend local.
+\item Google Sign-In qua Firebase.
+\item CRUD lịch học và task.
+\item Kiểm tra xung đột lịch.
+\item Pomodoro và thống kê.
+\item Import lịch từ ảnh bằng Gemini API.
+\item Cài đặt hồ sơ và cá nhân hóa.
+\end{itemize}
+
+\subsection{Ngoài Phạm Vi}
+
+\begin{itemize}
+\item Kiểm thử tải lớn nhiều người dùng đồng thời.
+\item Kiểm thử bảo mật chuyên sâu/pentest.
+\item Kiểm thử phát hành Google Play.
+\item Kiểm thử đồng bộ Google Calendar thật vì hiện mới có tùy chọn UI.
+\end{itemize}
+
+\section{Môi Trường Kiểm Thử}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Thành phần} & \textbf{Giá trị} \\ \hline
+\endfirsthead
+\hline
+\textbf{Thành phần} & \textbf{Giá trị} \\ \hline
+\endhead
+Hệ điều hành dev & Windows \\ \hline
+IDE & Android Studio \\ \hline
+Build tool & Gradle \\ \hline
+Android minSdk & 24 \\ \hline
+Android targetSdk & 36 \\ \hline
+Emulator đã test & Pixel 9 Pro XL, Android API 36 \\ \hline
+Java & Java 11+ \\ \hline
+Backend OTP & Java HTTP server, port 8080 \\ \hline
+Firebase & Project có Android app \texttt{com.example.cuoiky\_qllichhoctap} \\ \hline
+Gemini & API key trong \texttt{local.properties} \\ \hline
+\end{longtable}
+
+\section{Chiến Lược Kiểm Thử}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Loại kiểm thử} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Loại kiểm thử} & \textbf{Mô tả} \\ \hline
+\endhead
+Unit test & Kiểm thử logic nhỏ, hiện project mới có test mẫu \\ \hline
+Instrumented test & Kiểm thử context Android, hiện project mới có test mẫu \\ \hline
+Manual test & Kiểm thử trực tiếp các luồng UI chính \\ \hline
+Integration test & Kiểm thử app với Firebase, backend OTP, Gemini API \\ \hline
+Regression test & Chạy lại các test case chính sau khi sửa lỗi \\ \hline
+\end{longtable}
+
+\section{Lệnh Kiểm Thử Kỹ Thuật}
+
+Build debug:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:assembleDebug
+\end{CodeBlock}
+
+Cài app lên emulator:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:installDebug
+\end{CodeBlock}
+
+Chạy unit test:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:testDebugUnitTest
+\end{CodeBlock}
+
+Chạy instrumented test:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:connectedDebugAndroidTest
+\end{CodeBlock}
+
+Chạy backend OTP:
+
+\begin{CodeBlock}
+.\gradlew.bat -p otp-backend run
+\end{CodeBlock}
+
+Kiểm tra backend:
+
+\begin{CodeBlock}
+curl http://localhost:8080/health
+\end{CodeBlock}
+
+\section{Test Case}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.150\textwidth}|>{\raggedright\arraybackslash}p{0.150\textwidth}|>{\raggedright\arraybackslash}p{0.150\textwidth}|>{\raggedright\arraybackslash}p{0.150\textwidth}|>{\raggedright\arraybackslash}p{0.150\textwidth}|>{\raggedright\arraybackslash}p{0.150\textwidth}|}
+\hline
+\textbf{Mã} & \textbf{Chức năng} & \textbf{Tiền điều kiện} & \textbf{Bước thực hiện} & \textbf{Kết quả mong đợi} & \textbf{Trạng thái} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mã} & \textbf{Chức năng} & \textbf{Tiền điều kiện} & \textbf{Bước thực hiện} & \textbf{Kết quả mong đợi} & \textbf{Trạng thái} \\ \hline
+\endhead
+TC-01 & Build app & Có JDK/Gradle & Chạy \texttt{.\textbackslash\{\}gradlew.bat :app:assembleDebug} & Build success, tạo APK debug & Pass \\ \hline
+TC-02 & Mở app lần đầu & App mới cài & Mở app & Hiển thị onboarding & Chưa test lại \\ \hline
+TC-03 & Vào màn đăng nhập & Ở onboarding & Bấm "Bắt đầu ghi lịch" & Hiển thị màn đăng nhập & Chưa test lại \\ \hline
+TC-04 & Đăng ký thiếu thông tin & Ở màn đăng ký & Bỏ trống tên/email/mật khẩu, bấm đăng ký & App báo cần nhập đủ thông tin & Chưa test lại \\ \hline
+TC-05 & Đăng ký email sai định dạng & Ở màn đăng ký & Nhập email không hợp lệ & App báo email sai định dạng & Chưa test lại \\ \hline
+TC-06 & Đăng ký mật khẩu ngắn & Ở màn đăng ký & Nhập mật khẩu dưới 6 ký tự & App báo mật khẩu cần ít nhất 6 ký tự & Chưa test lại \\ \hline
+TC-07 & Đăng ký mật khẩu xác nhận sai & Ở màn đăng ký & Nhập confirm khác mật khẩu & App báo xác nhận chưa khớp & Chưa test lại \\ \hline
+TC-08 & Đăng ký chưa đồng ý điều khoản & Ở màn đăng ký & Không tick điều khoản & App báo cần đồng ý điều khoản & Chưa test lại \\ \hline
+TC-09 & Đăng ký hợp lệ & Backend OTP chạy, SMTP đúng & Nhập thông tin hợp lệ, bấm đăng ký & App gửi OTP và mở màn OTP & Cần test khi có SMTP \\ \hline
+TC-10 & OTP sai & Có OTP active & Nhập OTP sai & App báo OTP chưa đúng, tăng attempts & Cần test \\ \hline
+TC-11 & OTP đúng & Có OTP active & Nhập OTP đúng & Tài khoản verified, vào dashboard & Cần test \\ \hline
+TC-12 & OTP hết hạn & OTP quá 5 phút & Nhập OTP & App báo OTP hết hạn & Cần test \\ \hline
+TC-13 & Đăng nhập email chưa xác thực & Có user chưa verified & Nhập email/mật khẩu & App báo tài khoản chưa xác thực OTP & Cần test \\ \hline
+TC-14 & Đăng nhập email sai mật khẩu & Có user verified & Nhập mật khẩu sai & App báo mật khẩu không đúng & Cần test \\ \hline
+TC-15 & Đăng nhập email thành công & Có user verified & Nhập email/mật khẩu đúng & Vào dashboard & Cần test \\ \hline
+TC-16 & Quên mật khẩu email không tồn tại & Ở forgot password & Nhập email không có trong DB & App báo không tìm thấy tài khoản đã xác thực & Cần test \\ \hline
+TC-17 & Đặt lại mật khẩu & Có OTP reset & Nhập OTP và mật khẩu mới & Mật khẩu được cập nhật & Cần test \\ \hline
+TC-18 & Google Sign-In thiếu/sai SHA-1 & Firebase SHA-1 không khớp & Bấm đăng nhập Google, chọn account & Google Sign-In không hoàn tất, log báo OAuth/SHA-1 & Fail cấu hình \\ \hline
+TC-19 & Google Sign-In đúng cấu hình & Firebase SHA-1 đúng & Bấm đăng nhập Google, chọn account & Đăng nhập thành công, vào dashboard & Cần test sau cấu hình \\ \hline
+TC-20 & Dashboard & Đã đăng nhập & Mở dashboard & Hiển thị tiến độ, task, deadline, lịch tiếp theo & Chưa test lại \\ \hline
+TC-21 & Thêm task & Đã đăng nhập & Bấm thêm task, nhập thông tin hợp lệ & Task xuất hiện trong danh sách & Cần test \\ \hline
+TC-22 & Sửa task & Có task & Mở action sửa, cập nhật title & Task cập nhật & Cần test \\ \hline
+TC-23 & Xóa task & Có task & Mở action xóa & Task biến mất & Cần test \\ \hline
+TC-24 & Hoàn thành task & Có task chưa xong & Đánh dấu hoàn thành & Task chuyển trạng thái đã xong, thống kê cập nhật & Cần test \\ \hline
+TC-25 & Lọc task hôm nay & Có task deadline hôm nay & Bấm filter Hôm nay & Chỉ hiện task hôm nay & Cần test \\ \hline
+TC-26 & Lọc task quá hạn & Có task quá hạn & Bấm filter Quá hạn & Chỉ hiện task quá hạn & Cần test \\ \hline
+TC-27 & Thêm lịch hợp lệ & Đã đăng nhập & Bấm thêm lịch, nhập ngày giờ hợp lệ & Event được lưu và hiển thị & Cần test \\ \hline
+TC-28 & Thêm lịch giờ sai & Nhập end \textless{}= start & Lưu event & App báo lỗi thời gian & Cần test \\ \hline
+TC-29 & Xung đột lịch & Có event A & Tạo event B trùng giờ A & App cảnh báo xung đột & Cần test \\ \hline
+TC-30 & Lọc lịch thi & Có event loại lịch thi & Bấm filter Thi & Chỉ hiện lịch thi & Cần test \\ \hline
+TC-31 & Import ảnh thiếu Gemini key & \texttt{GEMINI\_API\_KEY} rỗng & Chọn ảnh import & App báo chưa cấu hình Gemini API key & Cần test \\ \hline
+TC-32 & Import ảnh hợp lệ & Có Gemini key & Chọn ảnh lịch học & App parse danh sách event và cho lưu & Cần test \\ \hline
+TC-33 & Chạy Pomodoro & Đã đăng nhập & Bấm bắt đầu Pomodoro & Timer chạy & Cần test \\ \hline
+TC-34 & Hoàn thành Pomodoro & Timer kết thúc & Chờ hết phiên hoặc test duration ngắn & Focus stats tăng & Cần test \\ \hline
+TC-35 & Xem thống kê & Có task/event/focus data & Mở Stats & Hiển thị biểu đồ và số liệu & Cần test \\ \hline
+TC-36 & Sửa hồ sơ & Đã đăng nhập & Mở Settings, sửa profile & Profile mới hiển thị & Cần test \\ \hline
+TC-37 & Cá nhân hóa & Đã đăng nhập & Chọn avatar/nền/màu/mascot & Dashboard cập nhật theo lựa chọn & Cần test \\ \hline
+TC-38 & Đăng xuất & Đã đăng nhập & Bấm Đăng xuất & Trở về màn login, Firebase/Google sign out nếu có & Cần test \\ \hline
+\end{longtable}
+
+\section{Bug Report}
+
+\subsection{BUG-01: Google Sign-In Báo Không Hoàn Tất Do Sai SHA-1/OAuth}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Mục} & \textbf{Nội dung} \\ \hline
+\endfirsthead
+\hline
+\textbf{Mục} & \textbf{Nội dung} \\ \hline
+\endhead
+Chức năng & Đăng nhập Google \\ \hline
+Mức độ & Cao \\ \hline
+Môi trường & Emulator Android API 36 \\ \hline
+Cách tái hiện & Bấm "Đăng nhập với Google", chọn tài khoản Gmail \\ \hline
+Kết quả thực tế & Flow đóng lại, app không đăng nhập được \\ \hline
+Log chính & \texttt{This android application is not registered to use OAuth2.0... package name and SHA-1 certificate fingerprint match...} \\ \hline
+Nguyên nhân & SHA-1 debug hiện tại không khớp SHA-1 trong Firebase/Google OAuth client \\ \hline
+SHA-1 debug hiện tại & \texttt{24:46:D4:63:C7:3C:AF:03:64:4D:FE:10:9F:F4:5A:43:3D:0C:36:40} \\ \hline
+Trạng thái & Chưa fix cấu hình Firebase; đã sửa thông báo trong app để không báo nhầm người dùng hủy \\ \hline
+Hướng xử lý & Thêm SHA-1 vào Firebase Console, tải lại \texttt{google-services.json}, rebuild app \\ \hline
+\end{longtable}
+
+\section{Ma Trận Truy Vết Yêu Cầu - Test}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Yêu cầu} & \textbf{Test case} \\ \hline
+\endfirsthead
+\hline
+\textbf{Yêu cầu} & \textbf{Test case} \\ \hline
+\endhead
+FR-01 & TC-02, TC-03 \\ \hline
+FR-02, FR-03, FR-04 & TC-04 đến TC-12 \\ \hline
+FR-05 & TC-13 đến TC-15 \\ \hline
+FR-06, FR-07 & TC-16, TC-17 \\ \hline
+FR-08 & TC-18, TC-19 \\ \hline
+FR-09 & TC-38 \\ \hline
+FR-10, FR-11 & TC-36, TC-37 \\ \hline
+FR-12 & TC-20 \\ \hline
+FR-13 đến FR-18 & TC-27 đến TC-30 \\ \hline
+FR-19 & TC-31, TC-32 \\ \hline
+FR-20 đến FR-25 & TC-21 đến TC-26 \\ \hline
+FR-26 đến FR-29 & TC-33, TC-34 \\ \hline
+FR-30 & TC-35 \\ \hline
+\end{longtable}
+
+\section{Kết Luận Kiểm Thử Hiện Tại}
+
+\begin{itemize}
+\item App build debug thành công.
+\item App cài được lên emulator.
+\item Google Sign-In đã test và xác định lỗi do cấu hình SHA-1/OAuth, không phải lỗi người dùng hủy.
+\item Các test case nghiệp vụ còn lại cần chạy thủ công đầy đủ khi có backend OTP, SMTP và Gemini API key hợp lệ.
+\end{itemize}
+\clearpage
+\chapter{Hướng Dẫn Cài Đặt Và Triển Khai}
+
+\section{Mục Đích}
+
+Tài liệu này hướng dẫn cài đặt môi trường, cấu hình Firebase, Gemini API, OTP backend, build và chạy ứng dụng Study Planner.
+
+\section{Yêu Cầu Môi Trường}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Thành phần} & \textbf{Yêu cầu} \\ \hline
+\endfirsthead
+\hline
+\textbf{Thành phần} & \textbf{Yêu cầu} \\ \hline
+\endhead
+OS dev & Windows \\ \hline
+JDK & Java 11 hoặc cao hơn \\ \hline
+Android Studio & Bản hỗ trợ Android Gradle Plugin hiện tại \\ \hline
+Android SDK & compileSdk 36 \\ \hline
+Gradle Wrapper & Dùng \texttt{gradlew.bat} có sẵn trong repo \\ \hline
+Emulator/Device & Android API 24 trở lên, có Google Play Services nếu dùng Google Sign-In \\ \hline
+Internet & Cần cho Firebase, Gemini, SMTP \\ \hline
+\end{longtable}
+
+\section{Clone Và Mở Project}
+
+\begin{CodeBlock}
+git clone <repository-url>
+cd MANAGING-YOUR-STUDY-SCHEDULE
+\end{CodeBlock}
+
+Mở thư mục project bằng Android Studio, chờ Gradle sync hoàn tất.
+
+\section{Cấu Hình Android App}
+
+\subsection{Package Name}
+
+Package/applicationId hiện tại:
+
+\begin{CodeBlock}
+com.example.cuoiky_qllichhoctap
+\end{CodeBlock}
+
+Firebase Android app phải dùng đúng package này.
+
+\subsection{File \texttt{google-services.json}}
+
+Tải file từ Firebase Console và đặt tại:
+
+\begin{CodeBlock}
+app/google-services.json
+\end{CodeBlock}
+
+Nếu thiếu file này, Gradle sẽ lỗi ở task:
+
+\begin{CodeBlock}
+:app:processDebugGoogleServices
+\end{CodeBlock}
+
+\subsection{Cấu Hình SHA-1 Cho Google Sign-In}
+
+Lấy SHA-1 debug:
+
+\begin{CodeBlock}
+$keytool = Join-Path $env:JAVA_HOME 'bin\keytool.exe'
+& $keytool -list -v -alias androiddebugkey -keystore "$env:USERPROFILE\.android\debug.keystore" -storepass android -keypass android
+\end{CodeBlock}
+
+SHA-1 đang dùng trên máy kiểm thử hiện tại:
+
+\begin{CodeBlock}
+24:46:D4:63:C7:3C:AF:03:64:4D:FE:10:9F:F4:5A:43:3D:0C:36:40
+\end{CodeBlock}
+
+Thêm SHA-1 này vào Firebase Console:
+
+\begin{CodeBlock}
+Project settings -> Your apps -> Android app -> Add fingerprint
+\end{CodeBlock}
+
+Sau đó tải lại \texttt{google-services.json} và thay file trong \texttt{app/}.
+
+\section{Cấu Hình \texttt{local.properties}}
+
+File \texttt{local.properties} nằm ở root project và không commit lên Git.
+
+Ví dụ:
+
+\begin{CodeBlock}
+sdk.dir=C\:\\Users\\<user>\\AppData\\Local\\Android\\Sdk
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+OTP_BACKEND_URL=http://10.0.2.2:8080
+\end{CodeBlock}
+
+Giải thích:
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Key} & \textbf{Mục đích} \\ \hline
+\endfirsthead
+\hline
+\textbf{Key} & \textbf{Mục đích} \\ \hline
+\endhead
+\texttt{GEMINI\_API\_KEY} & Dùng cho chức năng tạo lịch từ ảnh \\ \hline
+\texttt{OTP\_BACKEND\_URL} & URL backend gửi OTP; emulator dùng \texttt{http://10.0.2.2:8080} \\ \hline
+\end{longtable}
+
+\section{Build Android App}
+
+Build debug:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:assembleDebug
+\end{CodeBlock}
+
+APK debug được tạo tại:
+
+\begin{CodeBlock}
+app/build/outputs/apk/debug/app-debug.apk
+\end{CodeBlock}
+
+Cài lên emulator/device:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:installDebug
+\end{CodeBlock}
+
+\section{Chạy OTP Backend}
+
+\subsection{Cấu Hình Biến Môi Trường}
+
+Với Gmail, cần dùng App Password thay vì mật khẩu đăng nhập thường.
+
+\begin{CodeBlock}
+$env:SMTP_HOST="smtp.gmail.com"
+$env:SMTP_PORT="587"
+$env:SMTP_USERNAME="your-email@gmail.com"
+$env:SMTP_PASSWORD="your-app-password"
+$env:SMTP_FROM="your-email@gmail.com"
+$env:SMTP_STARTTLS="true"
+$env:OTP_BACKEND_PORT="8080"
+\end{CodeBlock}
+
+\subsection{Khởi Động Backend}
+
+\begin{CodeBlock}
+.\gradlew.bat -p otp-backend run
+\end{CodeBlock}
+
+Khi chạy thành công:
+
+\begin{CodeBlock}
+OTP mail backend started on http://localhost:8080
+\end{CodeBlock}
+
+\subsection{Kiểm Tra Backend}
+
+\begin{CodeBlock}
+curl http://localhost:8080/health
+\end{CodeBlock}
+
+Response:
+
+\begin{CodeBlock}
+{"ok": true}
+\end{CodeBlock}
+
+Test gửi OTP:
+
+\begin{CodeBlock}
+curl -Method POST http://localhost:8080/send-otp `
+  -ContentType "application/json" `
+  -Body '{"email":"student@example.com","code":"123456","purpose":"xác thực tài khoản"}'
+\end{CodeBlock}
+
+\section{Cấu Hình Firebase Authentication}
+
+Trong Firebase Console:
+
+\begin{enumerate}
+\item Vào Authentication.
+\item Chọn Sign-in method.
+\item Bật Email/Password nếu dùng Firebase email trong tương lai.
+\item Bật Google provider.
+\item Đảm bảo Android app có đúng package name và SHA-1.
+\item Tải lại \texttt{google-services.json} sau khi thêm SHA-1.
+\end{enumerate}
+
+Lưu ý: App hiện có hệ thống email/password local bằng SQLite và OTP backend riêng. Firebase chủ yếu dùng cho Google Sign-In.
+
+\section{Cấu Hình Gemini API}
+
+\begin{enumerate}
+\item Tạo Gemini API key từ Google AI Studio/Google Cloud.
+\item Thêm vào \texttt{local.properties}:
+\end{enumerate}
+
+\begin{CodeBlock}
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+\end{CodeBlock}
+
+\begin{enumerate}
+\item Rebuild app:
+\end{enumerate}
+
+\begin{CodeBlock}
+.\gradlew.bat :app:assembleDebug
+\end{CodeBlock}
+
+Nếu không cấu hình key, chức năng tạo lịch từ ảnh sẽ báo lỗi chưa cấu hình \texttt{GEMINI\_API\_KEY}.
+
+\section{Chạy Trên Thiết Bị Thật}
+
+Nếu dùng điện thoại thật thay vì emulator:
+
+\begin{itemize}
+\item \texttt{10.0.2.2} không trỏ về máy tính.
+\item Đổi \texttt{OTP\_BACKEND\_URL} sang IP LAN của máy tính, ví dụ:
+\end{itemize}
+
+\begin{CodeBlock}
+OTP_BACKEND_URL=http://192.168.1.10:8080
+\end{CodeBlock}
+
+\begin{itemize}
+\item Mở Windows Firewall cho port 8080 nếu cần.
+\item Điện thoại và máy tính phải cùng mạng.
+\end{itemize}
+
+\section{Xử Lý Lỗi Thường Gặp}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Lỗi} & \textbf{Nguyên nhân} & \textbf{Cách xử lý} \\ \hline
+\endfirsthead
+\hline
+\textbf{Lỗi} & \textbf{Nguyên nhân} & \textbf{Cách xử lý} \\ \hline
+\endhead
+\texttt{google-services.json is missing} & Chưa đặt file Firebase config & Tải file và đặt vào \texttt{app/google-services.json} \\ \hline
+Google Sign-In không hoàn tất & Sai SHA-1/OAuth & Thêm SHA-1 debug/release vào Firebase, tải lại config \\ \hline
+OTP không gửi được & Backend chưa chạy hoặc SMTP sai & Chạy backend, kiểm tra biến môi trường SMTP \\ \hline
+App không gọi được backend trên emulator & URL sai & Dùng \texttt{http://10.0.2.2:8080} \\ \hline
+App không gọi được backend trên điện thoại thật & IP/firewall sai & Dùng IP LAN, mở firewall \\ \hline
+Gemini API lỗi 401/403 & API key sai hoặc chưa bật quyền & Kiểm tra key và quyền API \\ \hline
+Gemini API lỗi timeout & Mạng chậm/ảnh lớn & Thử ảnh nhỏ hơn hoặc mạng ổn định hơn \\ \hline
+\end{longtable}
+
+\section{Backup Và Restore Dữ Liệu}
+
+Hiện dữ liệu chính nằm trong SQLite private app storage. Với bản debug/phát triển:
+
+\begin{itemize}
+\item Backup đơn giản nhất là export dữ liệu qua chức năng tương lai hoặc dùng Android Studio Device Explorer.
+\item Khi uninstall app, dữ liệu local có thể bị xóa.
+\item Chưa có cơ chế backup/restore chính thức trong phiên bản 1.0.
+\end{itemize}
+
+\section{Release Notes Phiên Bản 1.0}
+
+\subsection{Tính năng}
+
+\begin{itemize}
+\item Onboarding và login/register UI.
+\item Đăng ký email với OTP.
+\item Đăng nhập email local.
+\item Quên mật khẩu qua OTP.
+\item Google Sign-In qua Firebase.
+\item Dashboard học tập.
+\item Quản lý lịch học/task.
+\item Pomodoro và thống kê.
+\item Import lịch từ ảnh bằng Gemini.
+\item Backend gửi OTP qua SMTP.
+\end{itemize}
+
+\subsection{Hạn chế}
+
+\begin{itemize}
+\item Dữ liệu chưa đồng bộ cloud.
+\item Google Calendar sync mới có cấu hình UI.
+\item Google Sign-In phụ thuộc cấu hình SHA-1 thủ công.
+\item Backend OTP phù hợp demo/local, chưa có rate limit production.
+\end{itemize}
+\clearpage
+\chapter{Hướng Dẫn Sử Dụng}
+
+\section{Giới Thiệu}
+
+Study Planner là ứng dụng Android giúp sinh viên quản lý lịch học, deadline, task, Pomodoro và thống kê học tập. Giao diện được thiết kế theo phong cách trang vở học tập.
+
+\section{Mở Ứng Dụng Lần Đầu}
+
+\begin{enumerate}
+\item Mở app Study Planner.
+\item Ở màn hình giới thiệu, bấm \\textbf{Bắt đầu ghi lịch}.
+\item App chuyển sang màn hình đăng nhập.
+\end{enumerate}
+
+\section{Đăng Ký Tài Khoản}
+
+\begin{enumerate}
+\item Ở màn hình đăng nhập, bấm \\textbf{Chưa có tài khoản? Đăng ký ngay}.
+\item Nhập:
+\end{enumerate}
+\begin{itemize}
+\item Họ tên.
+\item Email.
+\item Mật khẩu.
+\item Xác nhận mật khẩu.
+\end{itemize}
+\begin{enumerate}
+\item Tick \\textbf{Đồng ý điều khoản sử dụng}.
+\item Bấm \\textbf{Đăng ký và nhận OTP}.
+\item Kiểm tra email để lấy mã OTP.
+\item Nhập OTP 6 số ở màn hình xác thực.
+\item Bấm \\textbf{Xác nhận}.
+\end{enumerate}
+
+Lưu ý:
+
+\begin{itemize}
+\item Mật khẩu cần ít nhất 6 ký tự.
+\item OTP có hiệu lực 5 phút.
+\item Nếu không nhận được OTP, bấm \\textbf{Gửi lại mã}.
+\item Backend OTP phải đang chạy và cấu hình SMTP đúng.
+\end{itemize}
+
+\section{Đăng Nhập Bằng Email}
+
+\begin{enumerate}
+\item Nhập email và mật khẩu.
+\item Bấm \\textbf{Đăng nhập}.
+\item Nếu tài khoản đã xác thực OTP và mật khẩu đúng, app mở Dashboard.
+\end{enumerate}
+
+Các lỗi thường gặp:
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Thông báo} & \textbf{Nguyên nhân} \\ \hline
+\endfirsthead
+\hline
+\textbf{Thông báo} & \textbf{Nguyên nhân} \\ \hline
+\endhead
+Email chưa đúng định dạng & Email nhập sai format \\ \hline
+Mật khẩu cần ít nhất 6 ký tự & Mật khẩu quá ngắn \\ \hline
+Tài khoản chưa xác thực OTP & Đăng ký chưa hoàn tất OTP \\ \hline
+Mật khẩu không đúng & Sai mật khẩu \\ \hline
+\end{longtable}
+
+\section{Đăng Nhập Bằng Google}
+
+\begin{enumerate}
+\item Ở màn hình đăng nhập, bấm \\textbf{Đăng nhập với Google}.
+\item Chọn tài khoản Google.
+\item Nếu Firebase cấu hình đúng, app đăng nhập và mở Dashboard.
+\end{enumerate}
+
+Nếu app báo Google Sign-In không hoàn tất:
+
+\begin{itemize}
+\item Kiểm tra kết nối Internet.
+\item Kiểm tra thiết bị/emulator có Google Play Services.
+\item Nếu bạn không tự hủy đăng nhập, nguyên nhân thường là Firebase SHA-1/OAuth chưa đúng.
+\end{itemize}
+
+\section{Quên Mật Khẩu}
+
+\begin{enumerate}
+\item Ở màn hình đăng nhập, bấm \\textbf{Quên mật khẩu?}.
+\item Nhập email đã đăng ký.
+\item Bấm \\textbf{Gửi mã OTP}.
+\item Nhập OTP, mật khẩu mới và xác nhận mật khẩu.
+\item Bấm \\textbf{Cập nhật mật khẩu}.
+\item Quay lại đăng nhập bằng mật khẩu mới.
+\end{enumerate}
+
+\section{Dashboard}
+
+Dashboard hiển thị nhanh:
+
+\begin{itemize}
+\item Lời chào và hồ sơ người dùng.
+\item Tiến độ hôm nay.
+\item Số việc hôm nay.
+\item Deadline gần nhất.
+\item Lịch học tiếp theo.
+\item Pomodoro hôm nay.
+\item 3 việc ưu tiên.
+\end{itemize}
+
+Các nút thêm nhanh:
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Nút} & \textbf{Chức năng} \\ \hline
+\endfirsthead
+\hline
+\textbf{Nút} & \textbf{Chức năng} \\ \hline
+\endhead
+\texttt{+ Việc} & Thêm task học tập \\ \hline
+\texttt{+ Lịch} & Thêm lịch học/lịch thi/deadline \\ \hline
+\texttt{Từ ảnh} & Tạo lịch từ ảnh \\ \hline
+\texttt{Tập trung} & Mở Pomodoro \\ \hline
+\end{longtable}
+
+\section{Quản Lý Lịch Học}
+
+\subsection{Xem Lịch}
+
+\begin{enumerate}
+\item Mở tab \\textbf{Lịch học}.
+\item Chọn chế độ xem:
+\end{enumerate}
+\begin{itemize}
+\item Ngày.
+\item 3 ngày.
+\item Tuần.
+\end{itemize}
+\begin{enumerate}
+\item Dùng nút điều hướng để chuyển tuần/ngày.
+\item Dùng bộ lọc:
+\end{enumerate}
+\begin{itemize}
+\item Tất cả.
+\item Lịch học.
+\item Thi.
+\item Deadline.
+\item Cá nhân.
+\end{itemize}
+
+\subsection{Thêm Lịch}
+
+\begin{enumerate}
+\item Bấm \\textbf{Thêm lịch}.
+\item Nhập:
+\end{enumerate}
+\begin{itemize}
+\item Tiêu đề.
+\item Loại lịch.
+\item Môn học.
+\item Ngày.
+\item Giờ bắt đầu.
+\item Giờ kết thúc.
+\item Phòng học.
+\item Ghi chú.
+\end{itemize}
+\begin{enumerate}
+\item Có thể bật nhắc nhở và chọn thời gian nhắc trước.
+\item Bấm lưu.
+\end{enumerate}
+
+Nếu lịch trùng với lịch khác, app hiển thị cảnh báo xung đột. Người dùng có thể quay lại sửa hoặc vẫn lưu.
+
+\subsection{Sửa/Xóa Lịch}
+
+\begin{enumerate}
+\item Chọn một lịch trong danh sách.
+\item Chọn thao tác sửa hoặc xóa.
+\item Xác nhận thay đổi.
+\end{enumerate}
+
+\section{Tạo Lịch Từ Ảnh}
+
+\begin{enumerate}
+\item Ở Dashboard hoặc màn Lịch học, bấm \\textbf{Từ ảnh} hoặc \\textbf{Tạo từ ảnh}.
+\item Chọn:
+\end{enumerate}
+\begin{itemize}
+\item Chụp ảnh bằng camera.
+\item Chọn ảnh từ thư viện.
+\end{itemize}
+\begin{enumerate}
+\item App gửi ảnh tới Gemini API để đọc lịch.
+\item Kiểm tra danh sách lịch được trích xuất.
+\item Xác nhận lưu các lịch phù hợp.
+\end{enumerate}
+
+Lưu ý:
+
+\begin{itemize}
+\item Cần cấu hình \texttt{GEMINI\_API\_KEY}.
+\item Ảnh nên rõ chữ, đủ sáng, không bị cắt mất ngày/giờ.
+\end{itemize}
+
+\section{Quản Lý Việc Học}
+
+\subsection{Xem Và Lọc Task}
+
+Mở tab \\textbf{Việc học}. Có thể lọc theo:
+
+\begin{itemize}
+\item Tất cả.
+\item Hôm nay.
+\item Sắp hạn.
+\item Quá hạn.
+\item Đã xong.
+\item Môn học.
+\item Ưu tiên.
+\item 4 phần tư.
+\end{itemize}
+
+\subsection{Thêm Task}
+
+\begin{enumerate}
+\item Bấm \\textbf{Thêm công việc} hoặc \texttt{+ Việc}.
+\item Nhập tên task, môn học, deadline, ưu tiên và ghi chú.
+\item Lưu task.
+\end{enumerate}
+
+\subsection{Hoàn Thành, Sửa, Xóa Task}
+
+\begin{enumerate}
+\item Chọn task trong danh sách.
+\item Chọn thao tác:
+\end{enumerate}
+\begin{itemize}
+\item Đánh dấu hoàn thành.
+\item Sửa thông tin.
+\item Xóa task.
+\item Chọn marker.
+\end{itemize}
+
+\section{Pomodoro}
+
+\begin{enumerate}
+\item Mở tab \\textbf{Pomodoro} hoặc bấm \\textbf{Tập trung} từ Dashboard.
+\item Chọn chế độ/task nếu cần.
+\item Bấm \\textbf{Bắt đầu}.
+\item Có thể tạm dừng, đặt lại hoặc bỏ qua phiên.
+\item Khi hoàn thành phiên focus, app ghi nhận vào thống kê.
+\end{enumerate}
+
+Tính năng Pomodoro gồm:
+
+\begin{itemize}
+\item Timer 25 phút mặc định.
+\item Nghỉ ngắn/nghỉ dài.
+\item Hiển thị biểu tượng phiên.
+\item Chọn âm thanh nền.
+\item Xem lịch sử Pomodoro.
+\end{itemize}
+
+\section{Thống Kê}
+
+Mở tab \\textbf{Thống kê học tập} để xem:
+
+\begin{itemize}
+\item Tổng quan hoàn thành task.
+\item Tiến độ hôm nay.
+\item Biểu đồ task.
+\item Số task đã xong, đang chờ, quá hạn.
+\item Phút tập trung hôm nay và tổng thời gian tập trung.
+\item Thống kê lịch theo loại.
+\end{itemize}
+
+\section{Cài Đặt}
+
+Mở biểu tượng cài đặt từ Dashboard hoặc tab Settings.
+
+\subsection{Sửa Hồ Sơ}
+
+\begin{enumerate}
+\item Bấm \\textbf{Sửa hồ sơ}.
+\item Cập nhật tên, email, mục tiêu học tập.
+\item Lưu thay đổi.
+\end{enumerate}
+
+\subsection{Cá Nhân Hóa Giao Diện}
+
+\begin{enumerate}
+\item Bấm \\textbf{Cá nhân hóa giao diện}.
+\item Chọn:
+\end{enumerate}
+\begin{itemize}
+\item Ảnh đại diện.
+\item Mascot.
+\item Nền Dashboard.
+\item Màu chủ đề.
+\item Trạng thái học tập.
+\end{itemize}
+\begin{enumerate}
+\item Lưu thay đổi.
+\end{enumerate}
+
+\subsection{Thông Báo Và Đồng Bộ}
+
+\begin{itemize}
+\item Bật/tắt \\textbf{Thông báo nhắc nhở}.
+\item Bật/tắt \\textbf{Đồng bộ Google Calendar}.
+\end{itemize}
+
+Lưu ý: Google Calendar sync hiện là tùy chọn giao diện, chưa phải đồng bộ Calendar API đầy đủ.
+
+\subsection{Đăng Xuất}
+
+\begin{enumerate}
+\item Bấm \\textbf{Đăng xuất}.
+\item App xóa trạng thái đăng nhập local.
+\item Nếu đăng nhập Google, app gọi sign out Google/Firebase.
+\end{enumerate}
+
+\section{Xử Lý Lỗi Thường Gặp}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Tình huống} & \textbf{Cách xử lý} \\ \hline
+\endfirsthead
+\hline
+\textbf{Tình huống} & \textbf{Cách xử lý} \\ \hline
+\endhead
+Không nhận được OTP & Kiểm tra backend OTP, SMTP, email nhập đúng \\ \hline
+App báo không gọi được backend OTP & Emulator dùng \texttt{10.0.2.2:8080}; điện thoại thật dùng IP LAN \\ \hline
+Google Sign-In không hoàn tất & Thêm đúng SHA-1 vào Firebase và tải lại \texttt{google-services.json} \\ \hline
+Không tạo lịch từ ảnh & Kiểm tra \texttt{GEMINI\_API\_KEY}, Internet và chất lượng ảnh \\ \hline
+Dữ liệu không thấy sau đăng nhập tài khoản khác & Dữ liệu được tách theo từng email \\ \hline
+Build lỗi thiếu \texttt{google-services.json} & Đặt file vào \texttt{app/google-services.json} \\ \hline
+\end{longtable}
+\clearpage
+\chapter{README Mã Nguồn}
+
+\section{Tổng Quan}
+
+Study Planner là ứng dụng Android Java/XML hỗ trợ quản lý lịch học, deadline, task, Pomodoro, thống kê học tập, đăng ký OTP qua email, đăng nhập Google và nhập lịch từ ảnh bằng Gemini API.
+
+Repo gồm hai phần chính:
+
+\begin{itemize}
+\item \texttt{app}: ứng dụng Android.
+\item \texttt{otp-backend}: backend Java nhỏ dùng để gửi OTP qua SMTP.
+\end{itemize}
+
+\section{Công Nghệ Sử Dụng}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Nhóm} & \textbf{Công nghệ} \\ \hline
+\endfirsthead
+\hline
+\textbf{Nhóm} & \textbf{Công nghệ} \\ \hline
+\endhead
+Mobile & Android Java, XML Layout \\ \hline
+UI & AppCompat, Material Components, ConstraintLayout \\ \hline
+Local database & SQLiteOpenHelper \\ \hline
+Local state & SharedPreferences \\ \hline
+Authentication & Firebase Auth, Google Sign-In, email/password local \\ \hline
+AI & Gemini API \\ \hline
+Backend OTP & Java HTTP Server \\ \hline
+Email & Jakarta Mail, SMTP \\ \hline
+Build & Gradle Kotlin DSL \\ \hline
+Test & JUnit, AndroidX Test, Espresso \\ \hline
+\end{longtable}
+
+\section{Cấu Trúc Thư Mục}
+
+\begin{CodeBlock}
+MANAGING-YOUR-STUDY-SCHEDULE/
+├── app/
+│   ├── build.gradle.kts
+│   └── src/
+│       ├── main/
+│       │   ├── AndroidManifest.xml
+│       │   ├── java/com/example/cuoiky_qllichhoctap/
+│       │   │   ├── MainActivity.java
+│       │   │   ├── data/
+│       │   │   │   ├── AuthRepository.java
+│       │   │   │   ├── GeminiScheduleExtractor.java
+│       │   │   │   └── StudyRepository.java
+│       │   │   ├── model/
+│       │   │   ├── ui/
+│       │   │   └── util/
+│       │   └── res/
+│       │       ├── layout/
+│       │       ├── drawable/
+│       │       ├── values/
+│       │       └── raw/
+│       ├── test/
+│       └── androidTest/
+├── otp-backend/
+│   ├── build.gradle.kts
+│   └── src/main/java/com/example/otpbackend/OtpMailServer.java
+├── docs/
+├── gradle/
+├── build.gradle.kts
+├── settings.gradle.kts
+└── README.md
+\end{CodeBlock}
+
+\section{Module Android \texttt{app}}
+
+\subsection{\texttt{MainActivity.java}}
+
+Điều phối hầu hết UI và nghiệp vụ:
+
+\begin{itemize}
+\item Onboarding.
+\item Login/register/OTP/reset password.
+\item Google Sign-In.
+\item Dashboard.
+\item Schedule.
+\item Tasks.
+\item Pomodoro.
+\item Stats.
+\item Settings.
+\item Import ảnh.
+\end{itemize}
+
+\subsection{Package \texttt{data}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{File} & \textbf{Vai trò} \\ \hline
+\endfirsthead
+\hline
+\textbf{File} & \textbf{Vai trò} \\ \hline
+\endhead
+\texttt{AuthRepository.java} & Quản lý user local, mật khẩu hash, OTP hash, session \\ \hline
+\texttt{StudyRepository.java} & Quản lý profile, task, event, settings, Pomodoro, thống kê \\ \hline
+\texttt{GeminiScheduleExtractor.java} & Gửi ảnh tới Gemini và parse JSON event \\ \hline
+\end{longtable}
+
+\subsection{Package \texttt{model}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{File} & \textbf{Vai trò} \\ \hline
+\endfirsthead
+\hline
+\textbf{File} & \textbf{Vai trò} \\ \hline
+\endhead
+\texttt{AuthUser.java} & Dữ liệu tài khoản email local \\ \hline
+\texttt{UserProfile.java} & Hồ sơ người dùng \\ \hline
+\texttt{StudyTask.java} & Task học tập \\ \hline
+\texttt{StudyEvent.java} & Lịch học/lịch thi/deadline/cá nhân \\ \hline
+\texttt{PomodoroSession.java} & Phiên Pomodoro \\ \hline
+\end{longtable}
+
+\subsection{Package \texttt{ui}}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{File} & \textbf{Vai trò} \\ \hline
+\endfirsthead
+\hline
+\textbf{File} & \textbf{Vai trò} \\ \hline
+\endhead
+\texttt{StudyPaperLayout.java} & Nền giao diện dạng giấy học tập \\ \hline
+\texttt{WeekCalendarView.java} & Lịch tuần/ngày \\ \hline
+\texttt{SwipeActionLayout.java} & Hành động vuốt \\ \hline
+\texttt{DonutChartView.java} & Biểu đồ tròn \\ \hline
+\texttt{ComparisonBarChartView.java} & Biểu đồ cột so sánh \\ \hline
+\end{longtable}
+
+\section{Module \texttt{otp-backend}}
+
+Backend Java đơn giản dùng \texttt{com.sun.net.httpserver.HttpServer}.
+
+Endpoint:
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.20\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|>{\raggedright\arraybackslash}p{0.35\textwidth}|}
+\hline
+\textbf{Method} & \textbf{Path} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Method} & \textbf{Path} & \textbf{Mô tả} \\ \hline
+\endhead
+GET & \texttt{/health} & Kiểm tra backend còn chạy \\ \hline
+POST & \texttt{/send-otp} & Gửi OTP qua email \\ \hline
+\end{longtable}
+
+Biến môi trường cần có:
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Biến} & \textbf{Mô tả} \\ \hline
+\endfirsthead
+\hline
+\textbf{Biến} & \textbf{Mô tả} \\ \hline
+\endhead
+\texttt{SMTP\_HOST} & SMTP host, ví dụ \texttt{smtp.gmail.com} \\ \hline
+\texttt{SMTP\_PORT} & SMTP port, ví dụ \texttt{587} \\ \hline
+\texttt{SMTP\_USERNAME} & Tài khoản email gửi \\ \hline
+\texttt{SMTP\_PASSWORD} & App Password \\ \hline
+\texttt{SMTP\_FROM} & Email người gửi \\ \hline
+\texttt{SMTP\_STARTTLS} & Bật STARTTLS, mặc định true \\ \hline
+\texttt{OTP\_BACKEND\_PORT} & Port backend, mặc định 8080 \\ \hline
+\end{longtable}
+
+\section{Cài Đặt Nhanh}
+
+\subsection{Cấu Hình Firebase}
+
+Đặt file:
+
+\begin{CodeBlock}
+app/google-services.json
+\end{CodeBlock}
+
+Package name phải là:
+
+\begin{CodeBlock}
+com.example.cuoiky_qllichhoctap
+\end{CodeBlock}
+
+Thêm SHA-1 debug vào Firebase nếu dùng Google Sign-In.
+
+\subsection{Cấu Hình \texttt{local.properties}}
+
+\begin{CodeBlock}
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+OTP_BACKEND_URL=http://10.0.2.2:8080
+\end{CodeBlock}
+
+\subsection{Build App}
+
+\begin{CodeBlock}
+.\gradlew.bat :app:assembleDebug
+\end{CodeBlock}
+
+\subsection{Cài App}
+
+\begin{CodeBlock}
+.\gradlew.bat :app:installDebug
+\end{CodeBlock}
+
+\subsection{Chạy Backend OTP}
+
+\begin{CodeBlock}
+$env:SMTP_HOST="smtp.gmail.com"
+$env:SMTP_PORT="587"
+$env:SMTP_USERNAME="your-email@gmail.com"
+$env:SMTP_PASSWORD="your-app-password"
+$env:SMTP_FROM="your-email@gmail.com"
+$env:OTP_BACKEND_PORT="8080"
+
+.\gradlew.bat -p otp-backend run
+\end{CodeBlock}
+
+\section{Lệnh Phát Triển Thường Dùng}
+
+Build toàn bộ:
+
+\begin{CodeBlock}
+.\gradlew.bat build
+\end{CodeBlock}
+
+Build Android debug:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:assembleDebug
+\end{CodeBlock}
+
+Cài Android debug:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:installDebug
+\end{CodeBlock}
+
+Chạy unit test:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:testDebugUnitTest
+\end{CodeBlock}
+
+Chạy Android test:
+
+\begin{CodeBlock}
+.\gradlew.bat :app:connectedDebugAndroidTest
+\end{CodeBlock}
+
+Chạy OTP backend:
+
+\begin{CodeBlock}
+.\gradlew.bat -p otp-backend run
+\end{CodeBlock}
+
+\section{Quy Ước Code}
+
+\begin{itemize}
+\item Java source dùng package theo \texttt{com.example.cuoiky\_qllichhoctap}.
+\item Model chỉ giữ dữ liệu và chuyển đổi JSON khi cần.
+\item Repository chịu trách nhiệm đọc/ghi dữ liệu.
+\item Không hardcode API key, SMTP password hoặc thông tin bí mật.
+\item Không commit \texttt{local.properties}, \texttt{.env}, keystore, file cấu hình riêng tư.
+\item Với tính năng mới, cập nhật tài liệu trong \texttt{docs} và test case tương ứng.
+\end{itemize}
+
+\section{Trạng Thái Kiểm Thử Hiện Tại}
+
+\begin{itemize}
+\item Build debug đã chạy thành công.
+\item Cài debug lên emulator đã chạy thành công.
+\item Đã xác định lỗi Google Sign-In khi SHA-1/OAuth chưa khớp.
+\item Code đã cập nhật để thông báo Google Sign-In không hoàn tất rõ hơn.
+\end{itemize}
+
+\section{Hướng Bảo Trì Và Mở Rộng}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Hạng mục} & \textbf{Đề xuất} \\ \hline
+\endfirsthead
+\hline
+\textbf{Hạng mục} & \textbf{Đề xuất} \\ \hline
+\endhead
+Kiến trúc Android & Tách \texttt{MainActivity} thành nhiều Activity/Fragment hoặc MVVM \\ \hline
+Database & Chuyển SQLiteOpenHelper sang Room \\ \hline
+Google Sign-In & Nâng cấp từ legacy Google Sign-In sang Credential Manager \\ \hline
+Cloud sync & Thêm Firestore hoặc backend riêng \\ \hline
+OTP backend & Thêm rate limit, logging, template email HTML \\ \hline
+Test & Bổ sung unit test cho repository và instrumented test cho UI \\ \hline
+Release & Thêm signing config release và quy trình phát hành \\ \hline
+\end{longtable}
+
+\section{Liên Kết Tài Liệu Trong Repo}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{0.28\textwidth}|>{\raggedright\arraybackslash}p{0.62\textwidth}|}
+\hline
+\textbf{Tài liệu} & \textbf{File} \\ \hline
+\endfirsthead
+\hline
+\textbf{Tài liệu} & \textbf{File} \\ \hline
+\endhead
+Đề cương dự án & \texttt{docs/01-de-cuong-du-an.md} \\ \hline
+Kế hoạch dự án & \texttt{docs/02-ke-hoach-du-an.md} \\ \hline
+SRS & \texttt{docs/03-srs-dac-ta-yeu-cau.md} \\ \hline
+Phân tích thiết kế & \texttt{docs/04-phan-tich-thiet-ke-he-thong.md} \\ \hline
+Thiết kế dữ liệu & \texttt{docs/05-thiet-ke-du-lieu.md} \\ \hline
+Kiểm thử & \texttt{docs/06-tai-lieu-kiem-thu.md} \\ \hline
+Triển khai & \texttt{docs/07-huong-dan-trien-khai.md} \\ \hline
+Hướng dẫn sử dụng & \texttt{docs/08-huong-dan-su-dung.md} \\ \hline
+README mã nguồn & \texttt{docs/09-readme-ma-nguon.md} \\ \hline
+\end{longtable}
+\clearpage
+\end{document}
