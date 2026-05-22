@@ -704,9 +704,7 @@ public class MainActivity extends AppCompatActivity {
             showSchedule(scheduleFilter);
         });
         screen.findViewById(R.id.btnThisWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
-                    ? DateTimeUtils.startOfWeek(System.currentTimeMillis())
-                    : DateTimeUtils.startOfDay(System.currentTimeMillis());
+            scheduleWeekStartMillis = startForScheduleMode(scheduleViewMode, System.currentTimeMillis());
             showSchedule(scheduleFilter);
         });
         screen.findViewById(R.id.btnNextWeek).setOnClickListener(v -> {
@@ -750,9 +748,8 @@ public class MainActivity extends AppCompatActivity {
             if (mode.equals(scheduleViewMode)) {
                 return;
             }
-            long focusedDay = DateTimeUtils.startOfDay(scheduleWeekStartMillis);
             scheduleViewMode = mode;
-            scheduleWeekStartMillis = CALENDAR_WEEK.equals(mode) ? DateTimeUtils.startOfWeek(focusedDay) : focusedDay;
+            scheduleWeekStartMillis = startForScheduleMode(mode, System.currentTimeMillis());
             showSchedule(scheduleFilter);
         });
     }
@@ -794,6 +791,12 @@ public class MainActivity extends AppCompatActivity {
         scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
                 ? DateTimeUtils.startOfWeek(scheduleWeekStartMillis)
                 : DateTimeUtils.startOfDay(scheduleWeekStartMillis);
+    }
+
+    private long startForScheduleMode(String mode, long millis) {
+        return CALENDAR_WEEK.equals(mode)
+                ? DateTimeUtils.startOfWeek(millis)
+                : DateTimeUtils.startOfDay(millis);
     }
 
     private Set<String> conflictIds(List<StudyEvent> events) {
