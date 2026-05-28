@@ -55,6 +55,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.cuoiky_qllichhoctap.data.GeminiScheduleExtractor;
+import com.example.cuoiky_qllichhoctap.data.AdminPortalClient;
 import com.example.cuoiky_qllichhoctap.data.AuthRepository;
 import com.example.cuoiky_qllichhoctap.data.StudyRepository;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
@@ -124,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
     private StudyRepository repository;
     private AuthRepository authRepository;
+    private AdminPortalClient adminPortalClient;
     private FirebaseAuth firebaseAuth;
     private GoogleSignInClient googleSignInClient;
     private FrameLayout contentFrame;
@@ -168,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
         repository = new StudyRepository(this);
         authRepository = new AuthRepository(this);
+        adminPortalClient = new AdminPortalClient();
         firebaseAuth = FirebaseAuth.getInstance();
         contentFrame = findViewById(R.id.contentFrame);
         bottomNav = findViewById(R.id.bottomNav);
@@ -182,15 +185,20 @@ public class MainActivity extends AppCompatActivity {
         if (repository.isFirstOpen()) {
             showOnboarding();
         } else if (localUser != null) {
-            activateStudyRepository(localUser.getEmail());
-            syncProfileFromAuthUser(localUser);
-            repository.setLoggedIn(true);
-            showDashboard();
+            enterWithAdminSync(localUser.getEmail(), localUser.getName(), "email", () -> {
+                activateStudyRepository(localUser.getEmail());
+                syncProfileFromAuthUser(localUser);
+                repository.setLoggedIn(true);
+                showDashboard();
+            });
         } else if (canEnterWithFirebaseUser(firebaseUser)) {
-            activateStudyRepository(firebaseUser.getEmail());
-            syncProfileFromFirebase(firebaseUser);
-            repository.setLoggedIn(true);
-            showDashboard();
+            String name = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? firebaseUser.getEmail() : firebaseUser.getDisplayName();
+            enterWithAdminSync(firebaseUser.getEmail(), name, "google", () -> {
+                activateStudyRepository(firebaseUser.getEmail());
+                syncProfileFromFirebase(firebaseUser);
+                repository.setLoggedIn(true);
+                showDashboard();
+            });
         } else {
             showLogin();
         }
@@ -377,11 +385,13 @@ public class MainActivity extends AppCompatActivity {
     private void signInWithEmail(String email, String password) {
         try {
             AuthUser user = authRepository.login(email, password);
-            activateStudyRepository(user.getEmail());
-            syncProfileFromAuthUser(user);
-            repository.finishOnboarding();
-            repository.setLoggedIn(true);
-            showDashboard();
+            enterWithAdminSync(user.getEmail(), user.getName(), "email", () -> {
+                activateStudyRepository(user.getEmail());
+                syncProfileFromAuthUser(user);
+                repository.finishOnboarding();
+                repository.setLoggedIn(true);
+                showDashboard();
+            });
         } catch (IllegalArgumentException exception) {
             toast(exception.getMessage());
         }
@@ -408,11 +418,13 @@ public class MainActivity extends AppCompatActivity {
             }
             try {
                 AuthUser user = authRepository.verifyRegistrationOtp(email, textOf(otp));
-                activateStudyRepository(user.getEmail());
-                syncProfileFromAuthUser(user);
-                repository.finishOnboarding();
-                repository.setLoggedIn(true);
-                showDashboard();
+                enterWithAdminSync(user.getEmail(), user.getName(), "email", () -> {
+                    activateStudyRepository(user.getEmail());
+                    syncProfileFromAuthUser(user);
+                    repository.finishOnboarding();
+                    repository.setLoggedIn(true);
+                    showDashboard();
+                });
             } catch (IllegalArgumentException exception) {
                 toast(exception.getMessage());
             }
@@ -497,7 +509,10 @@ public class MainActivity extends AppCompatActivity {
                 lastError = exception.getMessage();
             }
             String detail = lastError;
-            runOnUiThread(() -> showOtpSendError(detail));
+            runOnUiThread(() -> {
+                adminPortalClient.reportIssue("otp", email, detail);
+                showOtpSendError(detail);
+            });
         }).start();
     }
 
@@ -600,15 +615,36 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user != null) {
-                        activateStudyRepository(user.getEmail());
+                    if (user == null || TextUtils.isEmpty(user.getEmail())) {
+                        toast("Google không trả về email tài khoản");
+                        return;
                     }
-                    syncProfileFromFirebase(user);
-                    repository.finishOnboarding();
-                    repository.setLoggedIn(true);
-                    toast("Đăng nhập Google thành công");
-                    showDashboard();
+                    String displayName = TextUtils.isEmpty(user.getDisplayName()) ? user.getEmail() : user.getDisplayName();
+                    enterWithAdminSync(user.getEmail(), displayName, "google", () -> {
+                        activateStudyRepository(user.getEmail());
+                        syncProfileFromFirebase(user);
+                        repository.finishOnboarding();
+                        repository.setLoggedIn(true);
+                        toast("Đăng nhập Google thành công");
+                        showDashboard();
+                    });
                 });
+    }
+
+    private void enterWithAdminSync(String email, String name, String provider, Runnable onAllowed) {
+        adminPortalClient.syncUserAccess(email, name, provider, (allowed, synced, message) -> runOnUiThread(() -> {
+            if (!allowed) {
+                authRepository.logout();
+                firebaseAuth.signOut();
+                toast(TextUtils.isEmpty(message) ? "Tài khoản không được phép truy cập" : message);
+                showLogin();
+                return;
+            }
+            if (!synced && !TextUtils.isEmpty(message)) {
+                toast("Web quản trị chưa đồng bộ: " + message);
+            }
+            onAllowed.run();
+        }));
     }
 
     private void showDashboard() {
@@ -1896,6 +1932,8 @@ public class MainActivity extends AppCompatActivity {
             public void onError(String message) {
                 runOnUiThread(() -> {
                     loading.dismiss();
+                    UserProfile profile = repository.getProfile();
+                    adminPortalClient.reportIssue("ai", profile.getEmail(), message);
                     toast(message);
                 });
             }

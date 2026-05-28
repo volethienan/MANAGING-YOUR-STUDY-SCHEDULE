@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Study Planner Admin</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<main class="app-shell">
+    <section id="loginView" class="login-view">
+        <div class="login-panel">
+            <img class="login-mascot" src="/assets/mascot.png" alt="">
+            <p class="eyebrow">Study Planner</p>
+            <h1>Quản trị hệ thống</h1>
+            <form id="loginForm">
+                <label>
+                    Tài khoản
+                    <input name="username" autocomplete="username" required>
+                </label>
+                <label>
+                    Mật khẩu
+                    <input name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit">Đăng nhập</button>
+                <p id="loginError" class="form-error"></p>
+            </form>
+        </div>
+    </section>
+
+    <section id="dashboardView" class="dashboard hidden">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="/assets/mascot.png" alt="">
+                <div>
+                    <strong>Study Planner</strong>
+                    <span>Admin Web</span>
+                </div>
+            </div>
+            <nav aria-label="Quản trị">
+                <button class="nav-item active" data-target="overviewPanel">Tổng quan</button>
+                <button class="nav-item" data-target="usersPanel">Tài khoản</button>
+                <button class="nav-item" data-target="announcementsPanel">Thông báo</button>
+                <button class="nav-item" data-target="issuesPanel">Lỗi hệ thống</button>
+            </nav>
+            <button id="logoutButton" class="quiet-button">Đăng xuất</button>
+        </aside>
+
+        <section class="workspace">
+            <header class="workspace-header">
+                <div>
+                    <p class="eyebrow">Bảng điều khiển</p>
+                    <h2>Quản lý tài khoản và trạng thái hệ thống</h2>
+                </div>
+                <span id="adminName" class="admin-chip"></span>
+            </header>
+
+            <section id="overviewPanel" class="panel active-panel">
+                <div id="statGrid" class="stat-grid"></div>
+                <div class="two-column">
+                    <article class="surface">
+                        <div class="surface-header">
+                            <h3>Hoạt động gần đây</h3>
+                            <button id="refreshButton" class="quiet-button">Làm mới</button>
+                        </div>
+                        <div id="auditList" class="audit-list"></div>
+                    </article>
+                    <article class="surface system-note">
+                        <h3>Phạm vi quản trị</h3>
+                        <p>Web quản trị nhận tài khoản và lỗi từ app Android qua backend quản trị. Lịch học, task và Pomodoro chi tiết vẫn lưu trên thiết bị người dùng.</p>
+                        <code>ADMIN_BACKEND_URL=http://10.0.2.2:8090</code>
+                    </article>
+                </div>
+            </section>
+
+            <section id="usersPanel" class="panel">
+                <article class="surface">
+                    <div class="surface-header">
+                        <div>
+                            <h3>Tài khoản người dùng</h3>
+                            <p>Tìm, khóa hoặc mở khóa các tài khoản đã đồng bộ từ app.</p>
+                        </div>
+                        <input id="userSearch" class="search" placeholder="Tìm tên hoặc email">
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Nguồn đăng nhập</th>
+                                <th>Xác thực</th>
+                                <th>Lần gần nhất</th>
+                                <th>Trạng thái</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="userRows"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+
+            <section id="announcementsPanel" class="panel">
+                <div class="two-column announcement-layout">
+                    <article class="surface">
+                        <h3>Tạo thông báo</h3>
+                        <form id="announcementForm">
+                            <label>
+                                Tiêu đề
+                                <input name="title" required maxlength="120">
+                            </label>
+                            <label>
+                                Nội dung
+                                <textarea name="body" rows="5" required maxlength="600"></textarea>
+                            </label>
+                            <button type="submit">Lưu thông báo</button>
+                        </form>
+                    </article>
+                    <article class="surface">
+                        <div class="surface-header">
+                            <h3>Thông báo hiện có</h3>
+                        </div>
+                        <div id="announcementList" class="stack-list"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="issuesPanel" class="panel">
+                <article class="surface">
+                    <div class="surface-header">
+                        <div>
+                            <h3>Lỗi OTP và AI</h3>
+                            <p>Lỗi được app gửi về khi không gọi được OTP hoặc không đọc được ảnh lịch.</p>
+                        </div>
+                    </div>
+                    <div id="issueList" class="stack-list"></div>
+                </article>
+            </section>
+        </section>
+    </section>
+</main>
+<script src="/assets/app.js"></script>
+</body>
+</html>

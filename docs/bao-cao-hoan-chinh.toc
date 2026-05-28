@@ -1,0 +1,160 @@
+\contentsline {chapter}{\numberline {1}Đề Cương Dự Án}{6}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Thông Tin Chung}{6}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Lý Do Thực Hiện}{6}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Mục Tiêu Dự Án}{6}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Phạm Vi Dự Án}{7}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Trong Phạm Vi}{7}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Ngoài Phạm Vi}{7}{subsection.1.4.2}%
+\contentsline {section}{\numberline {1.5}Đối Tượng Sử Dụng}{7}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Lợi Ích Kỳ Vọng}{8}{section.1.6}%
+\contentsline {section}{\numberline {1.7}Ràng Buộc Và Giả Định}{8}{section.1.7}%
+\contentsline {subsection}{\numberline {1.7.1}Ràng Buộc}{8}{subsection.1.7.1}%
+\contentsline {subsection}{\numberline {1.7.2}Giả Định}{8}{subsection.1.7.2}%
+\contentsline {section}{\numberline {1.8}Sản Phẩm Bàn Giao}{8}{section.1.8}%
+\contentsline {section}{\numberline {1.9}Tiêu Chí Thành Công}{8}{section.1.9}%
+\contentsline {chapter}{\numberline {2}Kế Hoạch Dự Án}{10}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Mục Đích}{10}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Phạm Vi Công Việc}{10}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Nhân Sự Và Vai Trò}{10}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Công Cụ Sử Dụng}{11}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Tiến Độ Dự Kiến}{11}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Mốc Thời Gian}{12}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Rủi Ro Dự Án}{12}{section.2.7}%
+\contentsline {section}{\numberline {2.8}Chi Phí Dự Kiến}{13}{section.2.8}%
+\contentsline {section}{\numberline {2.9}Kế Hoạch Kiểm Soát Chất Lượng}{13}{section.2.9}%
+\contentsline {section}{\numberline {2.10}Tiêu Chí Nghiệm Thu}{13}{section.2.10}%
+\contentsline {chapter}{\numberline {3}SRS - Đặc Tả Yêu Cầu Phần Mềm}{15}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Giới Thiệu}{15}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Mục Đích}{15}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Phạm Vi Sản Phẩm}{15}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Thuật Ngữ}{15}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Mô Tả Tổng Quan}{16}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Bối Cảnh Hệ Thống}{16}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Tác Nhân}{16}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Môi Trường Vận Hành}{16}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Yêu Cầu Chức Năng}{16}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Yêu Cầu Phi Chức Năng}{19}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Use Case Chính}{19}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Quy Tắc Nghiệp Vụ}{20}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Ràng Buộc Hệ Thống}{21}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Tiêu Chí Chấp Nhận}{21}{section.3.8}%
+\contentsline {chapter}{\numberline {4}Phân Tích Và Thiết Kế Hệ Thống}{22}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Phân Tích Hiện Trạng}{22}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Kiến Trúc Tổng Thể}{22}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Thành Phần Chính}{23}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Thiết Kế Module Android}{23}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Sơ Đồ Use Case}{23}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Luồng Xử Lý Chính}{24}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Đăng Ký Và Xác Thực OTP}{24}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Đăng Nhập Google}{24}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Tạo Lịch Từ Ảnh}{25}{subsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.6.4}Lưu Lịch Và Kiểm Tra Xung Đột}{25}{subsection.4.6.4}%
+\contentsline {section}{\numberline {4.7}Thiết Kế Giao Diện}{25}{section.4.7}%
+\contentsline {section}{\numberline {4.8}Thiết Kế Lớp}{26}{section.4.8}%
+\contentsline {section}{\numberline {4.9}Thiết Kế API Backend OTP}{27}{section.4.9}%
+\contentsline {subsection}{\numberline {4.9.1}\texttt {GET /health}}{27}{subsection.4.9.1}%
+\contentsline {subsection}{\numberline {4.9.2}\texttt {POST /send-otp}}{27}{subsection.4.9.2}%
+\contentsline {section}{\numberline {4.10}Cấu Trúc Thư Mục}{28}{section.4.10}%
+\contentsline {section}{\numberline {4.11}Hạn Chế Thiết Kế Hiện Tại}{28}{section.4.11}%
+\contentsline {chapter}{\numberline {5}Thiết Kế Dữ Liệu}{29}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Tổng Quan}{29}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Danh Sách Cơ Sở Dữ Liệu}{29}{section.5.2}%
+\contentsline {section}{\numberline {5.3}ERD Tổng Quan}{29}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Database \texttt {study\_auth.db}}{31}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Bảng \texttt {users}}{31}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Bảng \texttt {otp\_codes}}{31}{subsection.5.4.2}%
+\contentsline {section}{\numberline {5.5}Database \texttt {study\_planner.db}}{32}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Bảng \texttt {profile}}{32}{subsection.5.5.1}%
+\contentsline {subsection}{\numberline {5.5.2}Bảng \texttt {tasks}}{32}{subsection.5.5.2}%
+\contentsline {subsection}{\numberline {5.5.3}Bảng \texttt {events}}{33}{subsection.5.5.3}%
+\contentsline {subsection}{\numberline {5.5.4}Bảng \texttt {focus\_stats}}{34}{subsection.5.5.4}%
+\contentsline {subsection}{\numberline {5.5.5}Bảng \texttt {focus\_day\_stats}}{34}{subsection.5.5.5}%
+\contentsline {subsection}{\numberline {5.5.6}Bảng \texttt {pomodoro\_sessions}}{34}{subsection.5.5.6}%
+\contentsline {subsection}{\numberline {5.5.7}Bảng \texttt {settings}}{35}{subsection.5.5.7}%
+\contentsline {section}{\numberline {5.6}SharedPreferences}{35}{section.5.6}%
+\contentsline {subsection}{\numberline {5.6.1}\texttt {study\_auth\_session}}{35}{subsection.5.6.1}%
+\contentsline {subsection}{\numberline {5.6.2}\texttt {study\_planner\_store} hoặc \texttt {study\_planner\_store\_\textless {}hash\textgreater {}}}{35}{subsection.5.6.2}%
+\contentsline {section}{\numberline {5.7}Dữ Liệu Mẫu}{36}{section.5.7}%
+\contentsline {section}{\numberline {5.8}Chính Sách Bảo Mật Dữ Liệu}{36}{section.5.8}%
+\contentsline {section}{\numberline {5.9}Hạn Chế Và Đề Xuất Nâng Cấp}{36}{section.5.9}%
+\contentsline {chapter}{\numberline {6}Tài Liệu Kiểm Thử}{37}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Mục Tiêu Kiểm Thử}{37}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Phạm Vi Kiểm Thử}{37}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Trong Phạm Vi}{37}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}Ngoài Phạm Vi}{37}{subsection.6.2.2}%
+\contentsline {section}{\numberline {6.3}Môi Trường Kiểm Thử}{37}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Chiến Lược Kiểm Thử}{38}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Lệnh Kiểm Thử Kỹ Thuật}{38}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Test Case}{39}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Bug Report}{42}{section.6.7}%
+\contentsline {subsection}{\numberline {6.7.1}BUG-01: Google Sign-In Báo Không Hoàn Tất Do Sai SHA-1/OAuth}{42}{subsection.6.7.1}%
+\contentsline {section}{\numberline {6.8}Ma Trận Truy Vết Yêu Cầu - Test}{42}{section.6.8}%
+\contentsline {section}{\numberline {6.9}Kết Luận Kiểm Thử Hiện Tại}{43}{section.6.9}%
+\contentsline {chapter}{\numberline {7}Hướng Dẫn Cài Đặt Và Triển Khai}{44}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Mục Đích}{44}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Yêu Cầu Môi Trường}{44}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Clone Và Mở Project}{44}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Cấu Hình Android App}{45}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Package Name}{45}{subsection.7.4.1}%
+\contentsline {subsection}{\numberline {7.4.2}File \texttt {google-services.json}}{45}{subsection.7.4.2}%
+\contentsline {subsection}{\numberline {7.4.3}Cấu Hình SHA-1 Cho Google Sign-In}{45}{subsection.7.4.3}%
+\contentsline {section}{\numberline {7.5}Cấu Hình \texttt {local.properties}}{46}{section.7.5}%
+\contentsline {section}{\numberline {7.6}Build Android App}{46}{section.7.6}%
+\contentsline {section}{\numberline {7.7}Chạy OTP Backend}{46}{section.7.7}%
+\contentsline {subsection}{\numberline {7.7.1}Cấu Hình Biến Môi Trường}{46}{subsection.7.7.1}%
+\contentsline {subsection}{\numberline {7.7.2}Khởi Động Backend}{47}{subsection.7.7.2}%
+\contentsline {subsection}{\numberline {7.7.3}Kiểm Tra Backend}{47}{subsection.7.7.3}%
+\contentsline {section}{\numberline {7.8}Cấu Hình Firebase Authentication}{47}{section.7.8}%
+\contentsline {section}{\numberline {7.9}Cấu Hình Gemini API}{47}{section.7.9}%
+\contentsline {section}{\numberline {7.10}Chạy Trên Thiết Bị Thật}{48}{section.7.10}%
+\contentsline {section}{\numberline {7.11}Xử Lý Lỗi Thường Gặp}{48}{section.7.11}%
+\contentsline {section}{\numberline {7.12}Backup Và Restore Dữ Liệu}{49}{section.7.12}%
+\contentsline {section}{\numberline {7.13}Release Notes Phiên Bản 1.0}{49}{section.7.13}%
+\contentsline {subsection}{\numberline {7.13.1}Tính năng}{49}{subsection.7.13.1}%
+\contentsline {subsection}{\numberline {7.13.2}Hạn chế}{49}{subsection.7.13.2}%
+\contentsline {chapter}{\numberline {8}Hướng Dẫn Sử Dụng}{50}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Giới Thiệu}{50}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Mở Ứng Dụng Lần Đầu}{50}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Đăng Ký Tài Khoản}{50}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Đăng Nhập Bằng Email}{51}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Đăng Nhập Bằng Google}{51}{section.8.5}%
+\contentsline {section}{\numberline {8.6}Quên Mật Khẩu}{51}{section.8.6}%
+\contentsline {section}{\numberline {8.7}Dashboard}{52}{section.8.7}%
+\contentsline {section}{\numberline {8.8}Quản Lý Lịch Học}{52}{section.8.8}%
+\contentsline {subsection}{\numberline {8.8.1}Xem Lịch}{52}{subsection.8.8.1}%
+\contentsline {subsection}{\numberline {8.8.2}Thêm Lịch}{53}{subsection.8.8.2}%
+\contentsline {subsection}{\numberline {8.8.3}Sửa/Xóa Lịch}{53}{subsection.8.8.3}%
+\contentsline {section}{\numberline {8.9}Tạo Lịch Từ Ảnh}{53}{section.8.9}%
+\contentsline {section}{\numberline {8.10}Quản Lý Việc Học}{54}{section.8.10}%
+\contentsline {subsection}{\numberline {8.10.1}Xem Và Lọc Task}{54}{subsection.8.10.1}%
+\contentsline {subsection}{\numberline {8.10.2}Thêm Task}{54}{subsection.8.10.2}%
+\contentsline {subsection}{\numberline {8.10.3}Hoàn Thành, Sửa, Xóa Task}{54}{subsection.8.10.3}%
+\contentsline {section}{\numberline {8.11}Pomodoro}{54}{section.8.11}%
+\contentsline {section}{\numberline {8.12}Thống Kê}{55}{section.8.12}%
+\contentsline {section}{\numberline {8.13}Cài Đặt}{55}{section.8.13}%
+\contentsline {subsection}{\numberline {8.13.1}Sửa Hồ Sơ}{55}{subsection.8.13.1}%
+\contentsline {subsection}{\numberline {8.13.2}Cá Nhân Hóa Giao Diện}{55}{subsection.8.13.2}%
+\contentsline {subsection}{\numberline {8.13.3}Thông Báo Và Đồng Bộ}{55}{subsection.8.13.3}%
+\contentsline {subsection}{\numberline {8.13.4}Đăng Xuất}{56}{subsection.8.13.4}%
+\contentsline {section}{\numberline {8.14}Xử Lý Lỗi Thường Gặp}{56}{section.8.14}%
+\contentsline {chapter}{\numberline {9}README Mã Nguồn}{57}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Tổng Quan}{57}{section.9.1}%
+\contentsline {section}{\numberline {9.2}Công Nghệ Sử Dụng}{57}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Cấu Trúc Thư Mục}{57}{section.9.3}%
+\contentsline {section}{\numberline {9.4}Module Android \texttt {app}}{58}{section.9.4}%
+\contentsline {subsection}{\numberline {9.4.1}\texttt {MainActivity.java}}{58}{subsection.9.4.1}%
+\contentsline {subsection}{\numberline {9.4.2}Package \texttt {data}}{59}{subsection.9.4.2}%
+\contentsline {subsection}{\numberline {9.4.3}Package \texttt {model}}{59}{subsection.9.4.3}%
+\contentsline {subsection}{\numberline {9.4.4}Package \texttt {ui}}{59}{subsection.9.4.4}%
+\contentsline {section}{\numberline {9.5}Module \texttt {otp-backend}}{59}{section.9.5}%
+\contentsline {section}{\numberline {9.6}Cài Đặt Nhanh}{60}{section.9.6}%
+\contentsline {subsection}{\numberline {9.6.1}Cấu Hình Firebase}{60}{subsection.9.6.1}%
+\contentsline {subsection}{\numberline {9.6.2}Cấu Hình \texttt {local.properties}}{60}{subsection.9.6.2}%
+\contentsline {subsection}{\numberline {9.6.3}Build App}{60}{subsection.9.6.3}%
+\contentsline {subsection}{\numberline {9.6.4}Cài App}{60}{subsection.9.6.4}%
+\contentsline {subsection}{\numberline {9.6.5}Chạy Backend OTP}{61}{subsection.9.6.5}%
+\contentsline {section}{\numberline {9.7}Lệnh Phát Triển Thường Dùng}{61}{section.9.7}%
+\contentsline {section}{\numberline {9.8}Quy Ước Code}{62}{section.9.8}%
+\contentsline {section}{\numberline {9.9}Trạng Thái Kiểm Thử Hiện Tại}{62}{section.9.9}%
+\contentsline {section}{\numberline {9.10}Hướng Bảo Trì Và Mở Rộng}{62}{section.9.10}%
+\contentsline {section}{\numberline {9.11}Liên Kết Tài Liệu Trong Repo}{62}{section.9.11}%
