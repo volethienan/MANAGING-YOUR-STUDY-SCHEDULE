@@ -1,8 +1,8 @@
 :root {
     color-scheme: light;
-    --bg: #f3f6f4;
+    --bg: #f7f3f7;
     --surface: #ffffff;
-    --line: #d5ddd8;
+    --line: #e1d8df;
     --text: #18221d;
     --muted: #5a6760;
     --rose: #b94967;
@@ -11,6 +11,9 @@
     --blue: #356bcf;
     --danger: #b53232;
     --shadow: 0 18px 48px rgba(24, 34, 29, 0.09);
+    --soft-rose: #fff0f4;
+    --soft-mint: #ecf8f1;
+    --soft-lavender: #f2efff;
 }
 
 * {
@@ -27,13 +30,14 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
     font: inherit;
 }
 
 button {
     border: 0;
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--text);
     color: #fff;
     cursor: pointer;
@@ -47,9 +51,10 @@ button:disabled {
 }
 
 input,
-textarea {
+textarea,
+select {
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 8px;
     background: #fff;
     color: var(--text);
     display: block;
@@ -61,6 +66,10 @@ textarea {
 textarea {
     min-height: 132px;
     resize: vertical;
+}
+
+select {
+    min-height: 42px;
 }
 
 label {
@@ -250,6 +259,29 @@ nav {
     padding: 0 12px;
 }
 
+.header-actions {
+    align-items: flex-end;
+    display: grid;
+    gap: 8px;
+    justify-items: end;
+}
+
+.action-status {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+    min-height: 18px;
+    text-align: right;
+}
+
+.action-status.success {
+    color: var(--success);
+}
+
+.action-status.error {
+    color: var(--danger);
+}
+
 .panel {
     display: none;
 }
@@ -261,7 +293,7 @@ nav {
 .stat-grid {
     display: grid;
     gap: 14px;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     margin-bottom: 18px;
 }
 
@@ -269,12 +301,22 @@ nav {
 .surface {
     background: var(--surface);
     border: 1px solid var(--line);
+    border-radius: 8px;
     box-shadow: 0 8px 26px rgba(24, 34, 29, .05);
 }
 
 .stat {
+    background: linear-gradient(180deg, #fff, var(--soft-rose));
     min-height: 122px;
     padding: 20px;
+}
+
+.stat:nth-child(2n) {
+    background: linear-gradient(180deg, #fff, var(--soft-mint));
+}
+
+.stat:nth-child(3n) {
+    background: linear-gradient(180deg, #fff, var(--soft-lavender));
 }
 
 .stat strong {
@@ -331,6 +373,7 @@ code {
 .audit-row,
 .list-row {
     border: 1px solid var(--line);
+    border-radius: 8px;
     display: grid;
     gap: 8px;
     padding: 14px;
@@ -348,6 +391,14 @@ code {
 
 .search {
     max-width: 300px;
+}
+
+.toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
 }
 
 .table-wrap {

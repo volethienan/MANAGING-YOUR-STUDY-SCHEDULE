@@ -34,7 +34,7 @@ public class StudyRepository {
     private static final String KEY_MASCOT = "mascot";
     private static final String KEY_STUDY_STATUS = "study_status";
     private static final String DB_NAME = "study_planner.db";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     private final SharedPreferences prefs;
     private final StudyDbHelper dbHelper;
@@ -92,7 +92,7 @@ public class StudyRepository {
 
     public List<StudyTask> getTasks() {
         List<StudyTask> tasks = new ArrayList<>();
-        try (Cursor cursor = db().query("tasks", new String[]{"id", "title", "subject", "due_at", "priority", "note", "completed", "important", "urgent", "tag", "reminder_time", "repeat_option", "estimated_pomodoro", "marker_type", "marker_value"}, null, null, null, null, "due_at ASC")) {
+        try (Cursor cursor = db().query("tasks", new String[]{"id", "title", "subject", "due_at", "priority", "note", "completed", "important", "urgent", "tag", "reminder_time", "repeat_option", "estimated_pomodoro", "marker_type", "marker_value", "show_on_calendar"}, null, null, null, null, "due_at ASC")) {
             while (cursor.moveToNext()) {
                 tasks.add(new StudyTask(
                         cursor.getString(0),
@@ -109,11 +109,24 @@ public class StudyRepository {
                         cursor.getString(11),
                         cursor.getInt(12),
                         cursor.getString(13),
-                        cursor.getString(14)
+                        cursor.getString(14),
+                        cursor.getInt(15) == 1
                 ));
             }
         }
         return tasks;
+    }
+
+    public StudyTask getTask(String id) {
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+        for (StudyTask task : getTasks()) {
+            if (id.equals(task.getId())) {
+                return task;
+            }
+        }
+        return null;
     }
 
     public void saveTask(StudyTask task) {
@@ -133,16 +146,18 @@ public class StudyRepository {
         values.put("estimated_pomodoro", task.getEstimatedPomodoro());
         values.put("marker_type", task.getMarkerType());
         values.put("marker_value", task.getMarkerValue());
+        values.put("show_on_calendar", task.isShowOnCalendar() ? 1 : 0);
         db().insertWithOnConflict("tasks", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     public void deleteTask(String id) {
+        db().delete("events", "source_task_id = ?", new String[]{id});
         db().delete("tasks", "id = ?", new String[]{id});
     }
 
     public List<StudyEvent> getEvents() {
         List<StudyEvent> events = new ArrayList<>();
-        try (Cursor cursor = db().query("events", new String[]{"id", "title", "type", "subject", "start_at", "end_at", "room", "note", "reminder_enabled", "reminder_before_minutes"}, null, null, null, null, "start_at ASC")) {
+        try (Cursor cursor = db().query("events", new String[]{"id", "title", "type", "subject", "start_at", "end_at", "room", "note", "reminder_enabled", "reminder_before_minutes", "source_task_id"}, null, null, null, null, "start_at ASC")) {
             while (cursor.moveToNext()) {
                 events.add(new StudyEvent(
                         cursor.getString(0),
@@ -154,7 +169,8 @@ public class StudyRepository {
                         cursor.getString(6),
                         cursor.getString(7),
                         cursor.getInt(8) == 1,
-                        cursor.getInt(9)
+                        cursor.getInt(9),
+                        cursor.getString(10)
                 ));
             }
         }
@@ -173,11 +189,73 @@ public class StudyRepository {
         values.put("note", event.getNote());
         values.put("reminder_enabled", event.isReminderEnabled() ? 1 : 0);
         values.put("reminder_before_minutes", event.getReminderBeforeMinutes());
+        values.put("source_task_id", event.getSourceTaskId());
         db().insertWithOnConflict("events", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     public void deleteEvent(String id) {
         db().delete("events", "id = ?", new String[]{id});
+    }
+
+    public void setTaskCalendarVisibility(String taskId, boolean showOnCalendar) {
+        StudyTask task = getTask(taskId);
+        if (task == null) {
+            return;
+        }
+        task.setShowOnCalendar(showOnCalendar);
+        saveTask(task);
+    }
+
+    public StudyEvent getEventForTask(String taskId) {
+        try (Cursor cursor = db().query("events", new String[]{"id", "title", "type", "subject", "start_at", "end_at", "room", "note", "reminder_enabled", "reminder_before_minutes", "source_task_id"}, "source_task_id = ?", new String[]{taskId}, null, null, null)) {
+            if (cursor.moveToFirst()) {
+                return new StudyEvent(
+                        cursor.getString(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getLong(4),
+                        cursor.getLong(5),
+                        cursor.getString(6),
+                        cursor.getString(7),
+                        cursor.getInt(8) == 1,
+                        cursor.getInt(9),
+                        cursor.getString(10)
+                );
+            }
+        }
+        return null;
+    }
+
+    public StudyEvent syncTaskDeadlineEvent(StudyTask task) {
+        StudyEvent existing = getEventForTask(task.getId());
+        if (!task.isShowOnCalendar() || task.isCompleted()) {
+            if (existing != null) {
+                deleteEvent(existing.getId());
+            }
+            return null;
+        }
+        long startAt = task.getDueAt();
+        long endAt = startAt + 30L * 60L * 1000L;
+        String note = task.getNote();
+        if (!task.getPriority().isEmpty()) {
+            note = (note == null || note.trim().isEmpty() ? "" : note + " • ") + "Ưu tiên: " + task.getPriority();
+        }
+        StudyEvent event = new StudyEvent(
+                existing == null ? UUID.randomUUID().toString() : existing.getId(),
+                task.getTitle(),
+                StudyEvent.TYPE_DEADLINE,
+                task.getSubject(),
+                startAt,
+                endAt,
+                "",
+                note,
+                task.getReminderTime() > 0,
+                15,
+                task.getId()
+        );
+        saveEvent(event);
+        return event;
     }
 
     public boolean hasConflict(StudyEvent candidate) {
@@ -186,8 +264,14 @@ public class StudyRepository {
 
     public List<StudyEvent> getConflicts(StudyEvent candidate) {
         List<StudyEvent> conflicts = new ArrayList<>();
+        if (StudyEvent.TYPE_DEADLINE.equals(candidate.getType())) {
+            return conflicts;
+        }
         for (StudyEvent event : getEvents()) {
             if (event.getId().equals(candidate.getId())) {
+                continue;
+            }
+            if (StudyEvent.TYPE_DEADLINE.equals(event.getType())) {
                 continue;
             }
             if (DateTimeUtils.rangesOverlap(candidate.getStartAt(), candidate.getEndAt(), event.getStartAt(), event.getEndAt())) {
@@ -273,6 +357,36 @@ public class StudyRepository {
         return 0;
     }
 
+    public List<com.example.cuoiky_qllichhoctap.model.PomodoroSession> getRecentPomodoroSessions(int limit) {
+        List<com.example.cuoiky_qllichhoctap.model.PomodoroSession> sessions = new ArrayList<>();
+        String safeLimit = String.valueOf(Math.max(1, Math.min(50, limit)));
+        try (Cursor cursor = db().query(
+                "pomodoro_sessions",
+                new String[]{"id", "task_id", "subject_tag", "mode", "duration_minutes", "completed_minutes", "started_at", "ended_at", "is_completed", "sound_type"},
+                null,
+                null,
+                null,
+                null,
+                "created_at DESC",
+                safeLimit)) {
+            while (cursor.moveToNext()) {
+                sessions.add(new com.example.cuoiky_qllichhoctap.model.PomodoroSession(
+                        cursor.getString(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getInt(4),
+                        cursor.getInt(5),
+                        cursor.getLong(6),
+                        cursor.getLong(7),
+                        cursor.getInt(8) == 1,
+                        cursor.getString(9)
+                ));
+            }
+        }
+        return sessions;
+    }
+
 
     public boolean isNotifyEnabled() {
         return getBooleanSetting("notify", true);
@@ -337,6 +451,13 @@ public class StudyRepository {
         saveTask(newTask("Nộp báo cáo UX", "UX/UI", DateTimeUtils.daysFromNow(2, 22, 0), StudyTask.PRIORITY_HIGH, "Tạo từ ảnh lịch"));
     }
 
+    public void seedDemoDataIfEmpty() {
+        if (!getEvents().isEmpty() || !getTasks().isEmpty()) {
+            return;
+        }
+        seedDemoScheduleData();
+    }
+
     private boolean hasEventTitle(String title) {
         for (StudyEvent event : getEvents()) {
             if (title.equalsIgnoreCase(event.getTitle())) {
@@ -371,8 +492,11 @@ public class StudyRepository {
         ensureTaskColumn("completed_pomodoros", "INTEGER NOT NULL DEFAULT 0");
         ensureTaskColumn("marker_type", "TEXT NOT NULL DEFAULT 'flag'");
         ensureTaskColumn("marker_value", "TEXT NOT NULL DEFAULT ''");
+        ensureTaskColumn("show_on_calendar", "INTEGER NOT NULL DEFAULT 0");
         ensureEventColumn("reminder_enabled", "INTEGER NOT NULL DEFAULT 0");
         ensureEventColumn("reminder_before_minutes", "INTEGER NOT NULL DEFAULT 15");
+        ensureEventColumn("source_task_id", "TEXT NOT NULL DEFAULT ''");
+        normalizeLegacyEventTypes();
     }
 
     private void ensureTaskColumn(String column, String definition) {
@@ -401,6 +525,13 @@ public class StudyRepository {
             }
         }
         db().execSQL("ALTER TABLE events ADD COLUMN " + column + " " + definition);
+    }
+
+    private void normalizeLegacyEventTypes() {
+        db().execSQL("UPDATE events SET type = ? WHERE LOWER(type) = 'study'", new Object[]{StudyEvent.TYPE_STUDY});
+        db().execSQL("UPDATE events SET type = ? WHERE LOWER(type) = 'exam'", new Object[]{StudyEvent.TYPE_EXAM});
+        db().execSQL("UPDATE events SET type = ? WHERE LOWER(type) = 'deadline'", new Object[]{StudyEvent.TYPE_DEADLINE});
+        db().execSQL("UPDATE events SET type = ? WHERE LOWER(type) = 'personal' OR type = 'Cá nhân'", new Object[]{StudyEvent.TYPE_PERSONAL});
     }
 
     private boolean getBooleanSetting(String key, boolean defaultValue) {
@@ -461,11 +592,20 @@ public class StudyRepository {
             }
         }
         saveProfile(defaultProfile());
+        seedDemoScheduleData();
+    }
+
+    private void seedDemoScheduleData() {
         saveEvent(newEvent("Toán rời rạc", StudyEvent.TYPE_STUDY, "Toán", DateTimeUtils.daysFromNow(0, 9, 30), DateTimeUtils.daysFromNow(0, 11, 30), "B203", "Ôn chương 4"));
         saveEvent(newEvent("Thi Cấu trúc dữ liệu", StudyEvent.TYPE_EXAM, "CTDL", DateTimeUtils.daysFromNow(2, 13, 0), DateTimeUtils.daysFromNow(2, 14, 30), "A405", "Mang thẻ sinh viên"));
-        saveEvent(newEvent("Họp nhóm Mobile", StudyEvent.TYPE_STUDY, "Mobile", DateTimeUtils.daysFromNow(1, 19, 0), DateTimeUtils.daysFromNow(1, 20, 30), "Online", "Chốt demo cuối kỳ"));
+        saveEvent(newEvent("Họp nhóm Mobile", StudyEvent.TYPE_STUDY, "Mobile", DateTimeUtils.daysFromNow(1, 19, 0), DateTimeUtils.daysFromNow(1, 20, 30), "https://meet.google.com/demo-study", "Chốt demo cuối kỳ"));
+        saveEvent(newEvent("Nộp slide thuyết trình", StudyEvent.TYPE_DEADLINE, "Đồ án Study Planner", DateTimeUtils.daysFromNow(3, 22, 0), DateTimeUtils.daysFromNow(3, 22, 30), "https://classroom.google.com/", "Nộp PDF và slide bản cuối"));
+        saveEvent(newEvent("Mua bút highlight", StudyEvent.TYPE_PERSONAL, "Chuẩn bị học tập", DateTimeUtils.daysFromNow(1, 17, 30), DateTimeUtils.daysFromNow(1, 18, 0), "Nhà sách gần trường", "Chọn màu pastel để ghi chú"));
         saveTask(newTask("Làm bài tập Chương 4", "CSDL", DateTimeUtils.daysFromNow(0, 21, 0), StudyTask.PRIORITY_HIGH, "Hoàn thành trước buổi học"));
-        saveTask(newTask("Đọc tài liệu Android", "Mobile", DateTimeUtils.daysFromNow(1, 8, 0), StudyTask.PRIORITY_MEDIUM, "Activity, XML layout, SQLite"));
+        StudyTask androidTask = newTask("Đọc tài liệu Android", "Mobile", DateTimeUtils.daysFromNow(1, 8, 0), StudyTask.PRIORITY_MEDIUM, "Activity, XML layout, SQLite");
+        androidTask.setShowOnCalendar(true);
+        saveTask(androidTask);
+        syncTaskDeadlineEvent(androidTask);
         saveTask(newTask("Ôn tập kiểm tra", "Giải tích", DateTimeUtils.daysFromNow(2, 20, 0), StudyTask.PRIORITY_HIGH, "Làm lại đề mẫu"));
         StudyTask done = newTask("Tóm tắt bài giảng", "UX/UI", DateTimeUtils.daysFromNow(-1, 18, 0), StudyTask.PRIORITY_LOW, "");
         done.setCompleted(true);
@@ -505,8 +645,8 @@ public class StudyRepository {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE profile (id INTEGER PRIMARY KEY CHECK(id = 1), name TEXT NOT NULL, email TEXT NOT NULL, goal TEXT NOT NULL)");
-            db.execSQL("CREATE TABLE tasks (id TEXT PRIMARY KEY, title TEXT NOT NULL, subject TEXT NOT NULL, due_at INTEGER NOT NULL, priority TEXT NOT NULL, note TEXT, completed INTEGER NOT NULL DEFAULT 0, important INTEGER NOT NULL DEFAULT 0, urgent INTEGER NOT NULL DEFAULT 0, tag TEXT, reminder_time INTEGER NOT NULL DEFAULT 0, repeat_option TEXT NOT NULL DEFAULT 'Không lặp', estimated_pomodoro INTEGER NOT NULL DEFAULT 0, marker_type TEXT NOT NULL DEFAULT 'flag', marker_value TEXT NOT NULL DEFAULT '')");
-            db.execSQL("CREATE TABLE events (id TEXT PRIMARY KEY, title TEXT NOT NULL, type TEXT NOT NULL, subject TEXT NOT NULL, start_at INTEGER NOT NULL, end_at INTEGER NOT NULL, room TEXT, note TEXT, reminder_enabled INTEGER NOT NULL DEFAULT 0, reminder_before_minutes INTEGER NOT NULL DEFAULT 15)");
+            db.execSQL("CREATE TABLE tasks (id TEXT PRIMARY KEY, title TEXT NOT NULL, subject TEXT NOT NULL, due_at INTEGER NOT NULL, priority TEXT NOT NULL, note TEXT, completed INTEGER NOT NULL DEFAULT 0, important INTEGER NOT NULL DEFAULT 0, urgent INTEGER NOT NULL DEFAULT 0, tag TEXT, reminder_time INTEGER NOT NULL DEFAULT 0, repeat_option TEXT NOT NULL DEFAULT 'Không lặp', estimated_pomodoro INTEGER NOT NULL DEFAULT 0, marker_type TEXT NOT NULL DEFAULT 'flag', marker_value TEXT NOT NULL DEFAULT '', show_on_calendar INTEGER NOT NULL DEFAULT 0)");
+            db.execSQL("CREATE TABLE events (id TEXT PRIMARY KEY, title TEXT NOT NULL, type TEXT NOT NULL, subject TEXT NOT NULL, start_at INTEGER NOT NULL, end_at INTEGER NOT NULL, room TEXT, note TEXT, reminder_enabled INTEGER NOT NULL DEFAULT 0, reminder_before_minutes INTEGER NOT NULL DEFAULT 15, source_task_id TEXT NOT NULL DEFAULT '')");
             db.execSQL("CREATE INDEX idx_tasks_due_at ON tasks(due_at)");
             db.execSQL("CREATE INDEX idx_events_start_at ON events(start_at)");
             db.execSQL("CREATE TABLE focus_stats (id INTEGER PRIMARY KEY CHECK(id = 1), minutes INTEGER NOT NULL DEFAULT 0, sessions INTEGER NOT NULL DEFAULT 0)");
@@ -535,8 +675,10 @@ public class StudyRepository {
                 ensureColumn(db, "tasks", "estimated_pomodoro", "INTEGER NOT NULL DEFAULT 0");
                 ensureColumn(db, "tasks", "marker_type", "TEXT NOT NULL DEFAULT 'flag'");
                 ensureColumn(db, "tasks", "marker_value", "TEXT NOT NULL DEFAULT ''");
+                ensureColumn(db, "tasks", "show_on_calendar", "INTEGER NOT NULL DEFAULT 0");
                 ensureColumn(db, "events", "reminder_enabled", "INTEGER NOT NULL DEFAULT 0");
                 ensureColumn(db, "events", "reminder_before_minutes", "INTEGER NOT NULL DEFAULT 15");
+                ensureColumn(db, "events", "source_task_id", "TEXT NOT NULL DEFAULT ''");
                 if (addedTag) {
                     db.execSQL("UPDATE tasks SET tag = subject WHERE tag IS NULL OR tag = ''");
                 }

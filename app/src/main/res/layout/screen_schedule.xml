@@ -191,7 +191,7 @@
             <com.example.cuoiky_qllichhoctap.ui.WeekCalendarView
                 android:id="@+id/weekCalendar"
                 android:layout_width="match_parent"
-                android:layout_height="1320dp" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/textConflictTitle"

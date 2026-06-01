@@ -201,14 +201,20 @@ public class AdminWebServer {
                 sendJson(exchange, 400, "{\"ok\":false,\"error\":\"Email is required\"}");
                 return;
             }
-            boolean locked = STORE.syncUser(email, field(body, "name"), field(body, "provider"), booleanField(body, "verified"));
-            sendJson(exchange, 200, "{\"ok\":true,\"locked\":" + locked + "}");
+            Store.UserAccess access = STORE.syncUser(email, field(body, "name"), field(body, "provider"), booleanField(body, "verified"));
+            sendJson(exchange, 200, "{\"ok\":true,\"locked\":" + access.locked + ",\"passwordResetRequested\":" + access.passwordResetRequested + "}");
             return;
         }
         if ("/api/mobile/issues".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             String body = body(exchange);
             STORE.createIssue(field(body, "type"), field(body, "email"), field(body, "message"));
             sendJson(exchange, 201, "{\"ok\":true}");
+            return;
+        }
+        if ("/api/mobile/users/password-reset-complete".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.clearPasswordResetRequest(field(body, "email"));
+            sendJson(exchange, 200, "{\"ok\":true}");
             return;
         }
         if ("/api/mobile/announcements".equals(path) && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -326,21 +332,25 @@ public class AdminWebServer {
             seed();
         }
 
-        synchronized boolean syncUser(String email, String name, String provider, boolean verified) {
-            String normalizedEmail = email.trim().toLowerCase(Locale.US);
+        synchronized UserAccess syncUser(String email, String name, String provider, boolean verified) {
+            String normalizedEmail = limit(email.trim().toLowerCase(Locale.US), 120);
             String id = key(normalizedEmail);
             long now = System.currentTimeMillis();
             boolean exists = has("user", id, "email");
             set("user", id, "email", normalizedEmail);
-            set("user", id, "name", empty(name, "Chưa cập nhật"));
-            set("user", id, "provider", empty(provider, "email"));
+            set("user", id, "name", limit(empty(name, "Chưa cập nhật"), 80));
+            set("user", id, "provider", loginProvider(provider));
             set("user", id, "verified", String.valueOf(verified));
             set("user", id, "createdAt", exists ? get("user", id, "createdAt") : String.valueOf(now));
             set("user", id, "lastSeenAt", String.valueOf(now));
             set("user", id, "locked", exists ? get("user", id, "locked") : "false");
+            set("user", id, "passwordResetRequested", exists ? get("user", id, "passwordResetRequested") : "false");
             audit(exists ? "Đồng bộ tài khoản" : "Ghi nhận tài khoản mới", normalizedEmail);
             save();
-            return Boolean.parseBoolean(get("user", id, "locked"));
+            return new UserAccess(
+                    Boolean.parseBoolean(get("user", id, "locked")),
+                    Boolean.parseBoolean(get("user", id, "passwordResetRequested"))
+            );
         }
 
         synchronized void userAction(String email, String action) {
@@ -354,22 +364,43 @@ public class AdminWebServer {
             } else if ("lock".equals(action) || "unlock".equals(action)) {
                 set("user", id, "locked", String.valueOf("lock".equals(action)));
                 audit("lock".equals(action) ? "Khóa tài khoản" : "Mở khóa tài khoản", email);
+            } else if ("requestReset".equals(action) || "clearReset".equals(action)) {
+                set("user", id, "passwordResetRequested", String.valueOf("requestReset".equals(action)));
+                audit("requestReset".equals(action) ? "Yêu cầu đặt lại mật khẩu" : "Gỡ yêu cầu đặt lại mật khẩu", email);
             } else {
                 throw new IllegalArgumentException("Thao tác tài khoản không hợp lệ");
             }
             save();
         }
 
+        synchronized void clearPasswordResetRequest(String email) {
+            String normalizedEmail = email.trim().toLowerCase(Locale.US);
+            if (normalizedEmail.isBlank()) {
+                throw new IllegalArgumentException("Email is required");
+            }
+            String id = key(normalizedEmail);
+            if (!has("user", id, "email")) {
+                return;
+            }
+            if (Boolean.parseBoolean(get("user", id, "passwordResetRequested"))) {
+                set("user", id, "passwordResetRequested", "false");
+                audit("Người dùng đã đặt lại mật khẩu", normalizedEmail);
+                save();
+            }
+        }
+
         synchronized void createAnnouncement(String title, String body) {
-            if (title.isBlank() || body.isBlank()) {
+            String cleanTitle = limit(empty(title, ""), 120);
+            String cleanBody = limit(empty(body, ""), 600);
+            if (cleanTitle.isBlank() || cleanBody.isBlank()) {
                 throw new IllegalArgumentException("Thông báo cần tiêu đề và nội dung");
             }
             String id = UUID.randomUUID().toString();
-            set("announcement", id, "title", title);
-            set("announcement", id, "body", body);
+            set("announcement", id, "title", cleanTitle);
+            set("announcement", id, "body", cleanBody);
             set("announcement", id, "active", "true");
             set("announcement", id, "createdAt", String.valueOf(System.currentTimeMillis()));
-            audit("Tạo thông báo", title);
+            audit("Tạo thông báo", cleanTitle);
             save();
         }
 
@@ -392,12 +423,15 @@ public class AdminWebServer {
 
         synchronized void createIssue(String type, String email, String message) {
             String id = UUID.randomUUID().toString();
-            set("issue", id, "type", empty(type, "general"));
-            set("issue", id, "email", empty(email, "không rõ"));
-            set("issue", id, "message", empty(message, "Không có mô tả lỗi"));
+            String cleanType = issueType(type);
+            String cleanEmail = limit(empty(email, "không rõ"), 120);
+            String cleanMessage = limit(empty(message, "Không có mô tả lỗi"), 900);
+            set("issue", id, "type", cleanType);
+            set("issue", id, "email", cleanEmail);
+            set("issue", id, "message", cleanMessage);
             set("issue", id, "status", "open");
             set("issue", id, "createdAt", String.valueOf(System.currentTimeMillis()));
-            audit("Ghi nhận lỗi " + empty(type, "general"), empty(email, "không rõ"));
+            audit("Ghi nhận lỗi " + cleanType, cleanEmail);
             save();
         }
 
@@ -421,12 +455,16 @@ public class AdminWebServer {
             List<String> userIds = ids("user");
             int locked = 0;
             int verified = 0;
+            int resetRequests = 0;
             for (String id : userIds) {
                 if (Boolean.parseBoolean(get("user", id, "locked"))) {
                     locked++;
                 }
                 if (Boolean.parseBoolean(get("user", id, "verified"))) {
                     verified++;
+                }
+                if (Boolean.parseBoolean(get("user", id, "passwordResetRequested"))) {
+                    resetRequests++;
                 }
             }
             int openIssues = 0;
@@ -444,6 +482,7 @@ public class AdminWebServer {
             return "{\"users\":" + userIds.size()
                     + ",\"verified\":" + verified
                     + ",\"locked\":" + locked
+                    + ",\"resetRequests\":" + resetRequests
                     + ",\"openIssues\":" + openIssues
                     + ",\"activeAnnouncements\":" + activeAnnouncements + "}";
         }
@@ -459,10 +498,21 @@ public class AdminWebServer {
                         .append("\",\"provider\":\"").append(json(get("user", id, "provider")))
                         .append("\",\"verified\":").append(Boolean.parseBoolean(get("user", id, "verified")))
                         .append(",\"locked\":").append(Boolean.parseBoolean(get("user", id, "locked")))
+                        .append(",\"passwordResetRequested\":").append(Boolean.parseBoolean(get("user", id, "passwordResetRequested")))
                         .append(",\"createdAt\":\"").append(time(get("user", id, "createdAt")))
                         .append("\",\"lastSeenAt\":\"").append(time(get("user", id, "lastSeenAt"))).append("\"}");
             }
             return json.append("]}").toString();
+        }
+
+        private static final class UserAccess {
+            final boolean locked;
+            final boolean passwordResetRequested;
+
+            UserAccess(boolean locked, boolean passwordResetRequested) {
+                this.locked = locked;
+                this.passwordResetRequested = passwordResetRequested;
+            }
         }
 
         synchronized String announcementsJson() {
@@ -640,6 +690,27 @@ public class AdminWebServer {
 
         private String empty(String value, String fallback) {
             return value == null || value.isBlank() ? fallback : value.trim();
+        }
+
+        private String issueType(String value) {
+            String type = value == null ? "" : value.trim().toLowerCase(Locale.US);
+            if ("otp".equals(type) || "ai".equals(type)) {
+                return type;
+            }
+            return "general";
+        }
+
+        private String loginProvider(String value) {
+            String provider = value == null ? "" : value.trim().toLowerCase(Locale.US);
+            if ("google".equals(provider)) {
+                return "google";
+            }
+            return "email";
+        }
+
+        private String limit(String value, int maxLength) {
+            String cleaned = value == null ? "" : value.replace('\r', ' ').replace('\n', ' ').trim();
+            return cleaned.length() <= maxLength ? cleaned : cleaned.substring(0, maxLength);
         }
     }
 }

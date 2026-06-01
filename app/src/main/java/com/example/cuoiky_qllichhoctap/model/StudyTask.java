@@ -23,19 +23,26 @@ public class StudyTask {
     private int estimatedPomodoro;
     private String markerType;
     private String markerValue;
+    private boolean showOnCalendar;
 
     public StudyTask(String id, String title, String subject, long dueAt, String priority, String note, boolean completed) {
-        this(id, title, subject, dueAt, priority, note, completed, PRIORITY_HIGH.equals(priority), false, subject, 0L, "Không lặp", 0, "flag", "");
+        this(id, title, subject, dueAt, priority, note, completed, PRIORITY_HIGH.equals(priority), false, subject, 0L, "Không lặp", 0, "flag", "", false);
     }
 
     public StudyTask(String id, String title, String subject, long dueAt, String priority, String note, boolean completed,
                      boolean important, boolean urgent, String tag, long reminderTime, String repeatOption, int estimatedPomodoro) {
-        this(id, title, subject, dueAt, priority, note, completed, important, urgent, tag, reminderTime, repeatOption, estimatedPomodoro, "flag", "");
+        this(id, title, subject, dueAt, priority, note, completed, important, urgent, tag, reminderTime, repeatOption, estimatedPomodoro, "flag", "", false);
     }
 
     public StudyTask(String id, String title, String subject, long dueAt, String priority, String note, boolean completed,
                      boolean important, boolean urgent, String tag, long reminderTime, String repeatOption, int estimatedPomodoro,
                      String markerType, String markerValue) {
+        this(id, title, subject, dueAt, priority, note, completed, important, urgent, tag, reminderTime, repeatOption, estimatedPomodoro, markerType, markerValue, false);
+    }
+
+    public StudyTask(String id, String title, String subject, long dueAt, String priority, String note, boolean completed,
+                     boolean important, boolean urgent, String tag, long reminderTime, String repeatOption, int estimatedPomodoro,
+                     String markerType, String markerValue, boolean showOnCalendar) {
         this.id = id;
         this.title = title;
         this.subject = subject;
@@ -51,6 +58,7 @@ public class StudyTask {
         this.estimatedPomodoro = Math.max(0, estimatedPomodoro);
         this.markerType = markerType == null || markerType.trim().isEmpty() ? "flag" : markerType;
         this.markerValue = markerValue == null ? "" : markerValue;
+        this.showOnCalendar = showOnCalendar;
     }
 
     public String getId() {
@@ -169,6 +177,14 @@ public class StudyTask {
         this.markerValue = markerValue == null ? "" : markerValue;
     }
 
+    public boolean isShowOnCalendar() {
+        return showOnCalendar;
+    }
+
+    public void setShowOnCalendar(boolean showOnCalendar) {
+        this.showOnCalendar = showOnCalendar;
+    }
+
     public JSONObject toJson() throws JSONException {
         JSONObject json = new JSONObject();
         json.put("id", id);
@@ -186,6 +202,7 @@ public class StudyTask {
         json.put("estimatedPomodoro", estimatedPomodoro);
         json.put("markerType", getMarkerType());
         json.put("markerValue", getMarkerValue());
+        json.put("showOnCalendar", showOnCalendar);
         return json;
     }
 
@@ -207,7 +224,8 @@ public class StudyTask {
                 json.optString("repeatOption", "Không lặp"),
                 json.optInt("estimatedPomodoro", 0),
                 json.optString("markerType", "flag"),
-                json.optString("markerValue", "")
+                json.optString("markerValue", ""),
+                json.optBoolean("showOnCalendar", false)
         );
     }
 }

@@ -36,6 +36,8 @@ public class WeekCalendarView extends View {
     private static final int START_HOUR = 5;
     private static final int END_HOUR = 23;
     private static final long DAY_MS = 24L * 60L * 60L * 1000L;
+    private static final int HEADER_HEIGHT_DP = 58;
+    private static final int BOTTOM_PADDING_DP = 22;
 
     private final List<StudyEvent> events = new ArrayList<>();
     private final List<EventHitBox> hitBoxes = new ArrayList<>();
@@ -60,7 +62,7 @@ public class WeekCalendarView extends View {
     }
 
     private void init() {
-        setMinimumHeight(dp(1260));
+        setMinimumHeight(desiredCalendarHeight());
         textPaint.setTypeface(android.graphics.Typeface.create(android.graphics.Typeface.SANS_SERIF, android.graphics.Typeface.BOLD));
     }
 
@@ -73,7 +75,17 @@ public class WeekCalendarView extends View {
         this.rangeStartMillis = this.visibleDayCount == 7
                 ? DateTimeUtils.startOfWeek(startMillis)
                 : DateTimeUtils.startOfDay(startMillis);
+        setMinimumHeight(desiredCalendarHeight());
+        requestLayout();
         invalidate();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int desiredHeight = desiredCalendarHeight();
+        int measuredHeight = resolveSize(desiredHeight, heightMeasureSpec);
+        int measuredWidth = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        setMeasuredDimension(measuredWidth, Math.max(measuredHeight, desiredHeight));
     }
 
     public void setEvents(List<StudyEvent> newEvents, Set<String> newConflictIds) {
@@ -102,11 +114,11 @@ public class WeekCalendarView extends View {
         hitBoxes.clear();
 
         int leftGutter = dp(42);
-        int headerHeight = dp(58);
+        int headerHeight = dp(HEADER_HEIGHT_DP);
         int width = getWidth();
-        int height = Math.max(getHeight(), dp(1260));
+        int height = Math.max(getHeight(), desiredCalendarHeight());
         float colWidth = (width - leftGutter - dp(8)) / (float) visibleDayCount;
-        float hourHeight = (height - headerHeight - dp(22)) / (float) (END_HOUR - START_HOUR);
+        float hourHeight = (height - headerHeight - dp(BOTTOM_PADDING_DP)) / (float) (END_HOUR - START_HOUR);
 
         paint.setColor(color(R.color.paper_light));
         canvas.drawRoundRect(new RectF(dp(4), dp(4), width - dp(4), height - dp(4)), dp(18), dp(18), paint);
@@ -227,11 +239,11 @@ public class WeekCalendarView extends View {
 
     private long slotStartAt(float x, float y) {
         int leftGutter = dp(42);
-        int headerHeight = dp(58);
+        int headerHeight = dp(HEADER_HEIGHT_DP);
         int width = getWidth();
-        int height = Math.max(getHeight(), dp(1260));
+        int height = Math.max(getHeight(), desiredCalendarHeight());
         float colWidth = (width - leftGutter - dp(8)) / (float) visibleDayCount;
-        float hourHeight = (height - headerHeight - dp(22)) / (float) (END_HOUR - START_HOUR);
+        float hourHeight = (height - headerHeight - dp(BOTTOM_PADDING_DP)) / (float) (END_HOUR - START_HOUR);
         if (x < leftGutter || y < headerHeight) {
             return -1L;
         }
@@ -334,6 +346,11 @@ public class WeekCalendarView extends View {
 
     private int color(int resId) {
         return getResources().getColor(resId, getContext().getTheme());
+    }
+
+    private int desiredCalendarHeight() {
+        int hourHeightDp = visibleDayCount == 1 ? 68 : (visibleDayCount <= 3 ? 62 : 56);
+        return dp(HEADER_HEIGHT_DP + BOTTOM_PADDING_DP + (END_HOUR - START_HOUR) * hourHeightDp);
     }
 
     private int dp(float value) {

@@ -1,10 +1,12 @@
 const state = {
-    users: []
+    users: [],
+    issues: []
 };
 
 const loginView = document.querySelector("#loginView");
 const dashboardView = document.querySelector("#dashboardView");
 const loginError = document.querySelector("#loginError");
+const actionStatus = document.querySelector("#actionStatus");
 
 async function request(path, options = {}) {
     const response = await fetch(path, {
@@ -50,6 +52,7 @@ async function loadStats() {
         ["Người dùng", stats.users],
         ["Đã xác thực", stats.verified],
         ["Đang khóa", stats.locked],
+        ["Cần reset", stats.resetRequests],
         ["Lỗi mở", stats.openIssues],
         ["Thông báo bật", stats.activeAnnouncements]
     ];
@@ -69,19 +72,31 @@ async function loadUsers() {
 
 function renderUsers() {
     const search = document.querySelector("#userSearch").value.trim().toLowerCase();
-    const users = state.users.filter(user =>
-        user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search)
-    );
+    const status = document.querySelector("#userStatusFilter").value;
+    const users = state.users.filter(user => {
+        const matchesSearch = user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search);
+        const matchesStatus =
+            status === "all" ||
+            (status === "active" && !user.locked) ||
+            (status === "locked" && user.locked) ||
+            (status === "unverified" && !user.verified) ||
+            (status === "reset" && user.passwordResetRequested);
+        return matchesSearch && matchesStatus;
+    });
     document.querySelector("#userRows").innerHTML = users.length ? users.map(user => `
         <tr>
             <td class="user-cell"><strong>${escapeHtml(user.name)}</strong><span>${escapeHtml(user.email)}</span></td>
             <td>${escapeHtml(user.provider)}</td>
             <td><span class="badge ${user.verified ? "good" : "warn"}">${user.verified ? "Đã xác thực" : "Chưa xác thực"}</span></td>
             <td>${escapeHtml(user.lastSeenAt)}</td>
-            <td><span class="badge ${user.locked ? "danger" : "good"}">${user.locked ? "Đang khóa" : "Hoạt động"}</span></td>
+            <td>
+                <span class="badge ${user.locked ? "danger" : "good"}">${user.locked ? "Đang khóa" : "Hoạt động"}</span>
+                ${user.passwordResetRequested ? `<span class="badge warn">Cần reset mật khẩu</span>` : ""}
+            </td>
             <td>
                 <div class="actions">
                     <button class="secondary-button" data-user-action="${user.locked ? "unlock" : "lock"}" data-email="${escapeAttr(user.email)}">${user.locked ? "Mở khóa" : "Khóa"}</button>
+                    <button class="secondary-button" data-user-action="${user.passwordResetRequested ? "clearReset" : "requestReset"}" data-email="${escapeAttr(user.email)}">${user.passwordResetRequested ? "Gỡ reset" : "Yêu cầu reset"}</button>
                     <button class="danger-button" data-user-action="delete" data-email="${escapeAttr(user.email)}">Xóa</button>
                 </div>
             </td>
@@ -113,8 +128,19 @@ async function loadAnnouncements() {
 
 async function loadIssues() {
     const payload = await request("/api/issues");
-    document.querySelector("#issueList").innerHTML = payload.issues.length
-        ? payload.issues.map(issue => `
+    state.issues = payload.issues;
+    renderIssues();
+}
+
+function renderIssues() {
+    const filter = document.querySelector("#issueFilter").value;
+    const issues = state.issues.filter(issue =>
+        filter === "all" ||
+        issue.status === filter ||
+        issue.type.toLowerCase() === filter
+    );
+    document.querySelector("#issueList").innerHTML = issues.length
+        ? issues.map(issue => `
             <section class="list-row">
                 <div class="list-head">
                     <div>
@@ -130,7 +156,7 @@ async function loadIssues() {
                 </div>
             </section>
         `).join("")
-        : `<p>Chưa có lỗi gửi về.</p>`;
+        : `<p>Chưa có lỗi phù hợp.</p>`;
 }
 
 async function loadAudit() {
@@ -169,18 +195,24 @@ document.querySelector("#logoutButton").addEventListener("click", async () => {
     showLogin();
 });
 
-document.querySelector("#refreshButton").addEventListener("click", refreshAll);
+document.querySelector("#refreshButton").addEventListener("click", async () => {
+    await runWithStatus("Đang làm mới dữ liệu...", "Dữ liệu đã được làm mới.", refreshAll);
+});
 document.querySelector("#userSearch").addEventListener("input", renderUsers);
+document.querySelector("#userStatusFilter").addEventListener("change", renderUsers);
+document.querySelector("#issueFilter").addEventListener("change", renderIssues);
 
 document.querySelector("#announcementForm").addEventListener("submit", async event => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await request("/api/announcements", {
-        method: "POST",
-        body: JSON.stringify({title: form.get("title"), body: form.get("body")})
+    await runWithStatus("Đang lưu thông báo...", "Đã lưu thông báo.", async () => {
+        await request("/api/announcements", {
+            method: "POST",
+            body: JSON.stringify({title: form.get("title"), body: form.get("body")})
+        });
+        event.currentTarget.reset();
+        await Promise.all([loadAnnouncements(), loadStats(), loadAudit()]);
     });
-    event.currentTarget.reset();
-    await Promise.all([loadAnnouncements(), loadStats(), loadAudit()]);
 });
 
 document.addEventListener("click", async event => {
@@ -192,23 +224,60 @@ document.addEventListener("click", async event => {
     }
     const userAction = event.target.closest("[data-user-action]");
     if (userAction) {
+        const actionLabels = {
+            delete: "xóa khỏi registry",
+            lock: "khóa",
+            unlock: "mở khóa",
+            requestReset: "yêu cầu đặt lại mật khẩu",
+            clearReset: "gỡ yêu cầu đặt lại mật khẩu"
+        };
+        const label = actionLabels[userAction.dataset.userAction] || "cập nhật";
+        if (!confirm(`Bạn chắc chắn muốn ${label} tài khoản ${userAction.dataset.email}?`)) {
+            return;
+        }
         await act("/api/users/action", {email: userAction.dataset.email, action: userAction.dataset.userAction}, [loadUsers, loadStats, loadAudit]);
         return;
     }
     const announcementAction = event.target.closest("[data-announcement-action]");
     if (announcementAction) {
+        if (announcementAction.dataset.announcementAction === "delete" && !confirm("Xóa thông báo này?")) {
+            return;
+        }
         await act("/api/announcements/action", {id: announcementAction.dataset.id, action: announcementAction.dataset.announcementAction}, [loadAnnouncements, loadStats, loadAudit]);
         return;
     }
     const issueAction = event.target.closest("[data-issue-action]");
     if (issueAction) {
+        if (issueAction.dataset.issueAction === "delete" && !confirm("Xóa bản ghi lỗi này?")) {
+            return;
+        }
         await act("/api/issues/action", {id: issueAction.dataset.id, action: issueAction.dataset.issueAction}, [loadIssues, loadStats, loadAudit]);
     }
 });
 
 async function act(path, body, loaders) {
-    await request(path, {method: "POST", body: JSON.stringify(body)});
-    await Promise.all(loaders.map(loader => loader()));
+    await runWithStatus("Đang cập nhật...", "Đã cập nhật thành công.", async () => {
+        await request(path, {method: "POST", body: JSON.stringify(body)});
+        await Promise.all(loaders.map(loader => loader()));
+    });
+}
+
+async function runWithStatus(loadingMessage, successMessage, work) {
+    setActionStatus(loadingMessage);
+    try {
+        await work();
+        setActionStatus(successMessage, "success");
+    } catch (error) {
+        setActionStatus(error.message || "Thao tác thất bại", "error");
+    }
+}
+
+function setActionStatus(message, type = "") {
+    if (!actionStatus) {
+        return;
+    }
+    actionStatus.textContent = message;
+    actionStatus.className = "action-status" + (type ? ` ${type}` : "");
 }
 
 function escapeHtml(value) {

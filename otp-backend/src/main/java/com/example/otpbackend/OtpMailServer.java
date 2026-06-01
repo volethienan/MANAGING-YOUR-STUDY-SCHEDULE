@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +25,11 @@ import jakarta.mail.internet.MimeMessage;
 
 public class OtpMailServer {
     private static final Pattern JSON_FIELD = Pattern.compile("\"%s\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"");
+    private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static final Pattern OTP = Pattern.compile("^\\d{6}$");
+    private static final int MAX_REQUESTS_PER_WINDOW = intEnv("OTP_RATE_LIMIT", 5);
+    private static final long RATE_LIMIT_WINDOW_MS = 10L * 60L * 1000L;
+    private static final Map<String, Deque<Long>> RATE_LIMITS = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws Exception {
         int port = intEnv("OTP_BACKEND_PORT", 8080);
@@ -52,9 +61,21 @@ public class OtpMailServer {
         String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         String email = jsonField(body, "email");
         String code = jsonField(body, "code");
-        String purpose = jsonField(body, "purpose");
+        String purpose = cleanPurpose(jsonField(body, "purpose"));
         if (email.isBlank() || code.isBlank()) {
             sendCors(exchange, 400, "{\"ok\":false,\"error\":\"Missing email or code\"}");
+            return;
+        }
+        if (!EMAIL.matcher(email).matches()) {
+            sendCors(exchange, 400, "{\"ok\":false,\"error\":\"Invalid email\"}");
+            return;
+        }
+        if (!OTP.matcher(code).matches()) {
+            sendCors(exchange, 400, "{\"ok\":false,\"error\":\"Invalid OTP code\"}");
+            return;
+        }
+        if (isRateLimited(exchange, email)) {
+            sendCors(exchange, 429, "{\"ok\":false,\"error\":\"Too many OTP requests. Please try again later.\"}");
             return;
         }
 
@@ -62,8 +83,26 @@ public class OtpMailServer {
             sendOtpEmail(email, code, purpose.isBlank() ? "xác thực tài khoản" : purpose);
             sendCors(exchange, 200, "{\"ok\":true}");
         } catch (Exception exception) {
-            String error = jsonEscape(exception.getMessage() == null ? "Cannot send OTP email" : exception.getMessage());
+            System.err.println("Cannot send OTP email to " + email + ": " + exception.getMessage());
+            String error = "Cannot send OTP email";
             sendCors(exchange, 500, "{\"ok\":false,\"error\":\"" + error + "\"}");
+        }
+    }
+
+    private static boolean isRateLimited(HttpExchange exchange, String email) {
+        String ip = exchange.getRemoteAddress() == null ? "unknown" : exchange.getRemoteAddress().getAddress().getHostAddress();
+        String key = ip + "|" + email.toLowerCase();
+        long now = System.currentTimeMillis();
+        Deque<Long> timestamps = RATE_LIMITS.computeIfAbsent(key, ignored -> new ArrayDeque<>());
+        synchronized (timestamps) {
+            while (!timestamps.isEmpty() && now - timestamps.peekFirst() > RATE_LIMIT_WINDOW_MS) {
+                timestamps.removeFirst();
+            }
+            if (timestamps.size() >= MAX_REQUESTS_PER_WINDOW) {
+                return true;
+            }
+            timestamps.addLast(now);
+            return false;
         }
     }
 
@@ -122,10 +161,6 @@ public class OtpMailServer {
                 .trim();
     }
 
-    private static String jsonEscape(String value) {
-        return value.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
-
     private static String requireEnv(String name) {
         String value = System.getenv(name);
         if (value == null || value.isBlank()) {
@@ -145,5 +180,13 @@ public class OtpMailServer {
         } catch (NumberFormatException exception) {
             return fallback;
         }
+    }
+
+    private static String cleanPurpose(String value) {
+        if (value == null) {
+            return "";
+        }
+        String normalized = value.replace("\r", " ").replace("\n", " ").trim();
+        return normalized.length() <= 60 ? normalized : normalized.substring(0, 60);
     }
 }

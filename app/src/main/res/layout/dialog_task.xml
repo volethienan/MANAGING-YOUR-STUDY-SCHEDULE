@@ -1,17 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="@dimen/screen_padding">
+    android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/inputTitle"
-        style="@style/StudyInput"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:background="@drawable/bg_input"
-        android:hint="Tên việc cần làm"
-        android:importantForAutofill="no"
-        android:inputType="textCapSentences" />
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+
+        <EditText
+            android:id="@+id/inputTitle"
+            style="@style/StudyInput"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:background="@drawable/bg_input"
+            android:hint="Tên việc cần làm"
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences" />
+
+        <EditText
+            android:id="@+id/inputSubject"
+            style="@style/StudyInput"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Môn học / nhóm việc"
+            android:importantForAutofill="no"
+            android:inputType="textCapWords" />
+
+        <EditText
+            android:id="@+id/inputDueAt"
+            style="@style/StudyInput"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:focusable="false"
+            android:hint="Deadline"
+            android:importantForAutofill="no"
+            android:inputType="datetime" />
+
+        <Spinner
+            android:id="@+id/spinnerPriority"
+            style="@style/StudySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input" />
+
+        <EditText
+            android:id="@+id/inputNote"
+            style="@style/StudyInput"
+            android:layout_width="match_parent"
+            android:layout_height="78dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Ghi chú"
+            android:importantForAutofill="no"
+            android:inputType="textMultiLine|textCapSentences" />
+
+        <CheckBox
+            android:id="@+id/checkImportant"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:buttonTint="@color/mint"
+            android:text="Quan trọng"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+
+        <CheckBox
+            android:id="@+id/checkUrgent"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:buttonTint="@color/mint"
+            android:text="Khẩn cấp"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/inputReminder"
+            style="@style/StudyInput"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:focusable="false"
+            android:hint="Nhắc nhở task (tùy chọn)"
+            android:importantForAutofill="no"
+            android:inputType="datetime" />
+
+        <EditText
+            android:id="@+id/inputPomodoro"
+            style="@style/StudyInput"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Số Pomodoro dự kiến"
+            android:importantForAutofill="no"
+            android:inputType="number" />
+
+        <CheckBox
+            android:id="@+id/checkShowOnCalendar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="10dp"
+            android:buttonTint="@color/mint"
+            android:text="Hiện deadline này trên lịch"
+            android:textColor="@color/ink"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

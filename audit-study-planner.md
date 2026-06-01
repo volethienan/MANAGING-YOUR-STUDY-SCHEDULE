@@ -127,3 +127,80 @@ Khong nen viet lai du an. Sua tap trung cac file sau:
 ## Ket luan
 
 Du an da co nen tot va build sach. Phan can uu tien nhat de bao ve thuyet phuc la lich/deadline/task: lam form dung ngu canh, card hien thi du thong tin, link online bam duoc, reminder chay that, va thong nhat deadline giua task voi lich.
+
+## PHAN 6. Trang thai sua chua hien tai
+
+Ngay cap nhat: 29/05/2026
+
+### Da sua trong source
+
+| Nhom | Trang thai | File chinh |
+|---|---|---|
+| Card lich day du thong tin | Da sua | `item_event.xml`, `MainActivity.java` |
+| Nhan loai lich tieng Viet | Da sua spinner/card/notification de hien "Lich hoc", "Lich thi", "Deadline", "Ca nhan" thay vi ma noi bo `study/exam/personal` | `MainActivity.java` |
+| Link hoc online bam mo duoc | Da sua bang cach dung tam field `room` nhu phong/dia diem/link | `MainActivity.createEventRow()` |
+| Link trong dialog chi tiet lich | Da them hanh dong "Mo link online" khi su kien co URL, khong chi bam duoc tren card list | `MainActivity.showEventActions()` |
+| Form lich theo loai | Da sua hint va validation co ban cho hoc/thi/deadline/ca nhan | `MainActivity.showEventDialog()` |
+| Canh bao trung lich | Da sua de deadline khong chan lich hoc/lich thi | `StudyRepository.getConflicts()` |
+| Reminder lich/task | Da them receiver, permission notification, alarm schedule/cancel/reschedule | `AndroidManifest.xml`, `EventReminderReceiver.java`, `MainActivity.java` |
+| Validation thoi diem reminder | Da chan luu reminder task trong qua khu va reminder lich co thoi diem nhac truoc da qua, tranh UI bao da bat nhac nhung thuc te khong len alarm | `MainActivity.showTaskDialog()`, `MainActivity.showEventDialog()` |
+| Quyen notification reminder | Da them thong bao ro khi nguoi dung tu choi quyen notification va nut mo cai dat thong bao app; neu cap quyen, app reschedule reminder | `MainActivity.setupNotificationPermissionLauncher()` |
+| Notification reminder UX | Da them `contentIntent` de bam notification mo lai app va `BigTextStyle` de noi dung dai khong bi cat qua som | `EventReminderReceiver.java` |
+| Deadline task hien tren lich | Da them `tasks.show_on_calendar` va `events.source_task_id`, co sync task -> event deadline | `StudyTask.java`, `StudyEvent.java`, `StudyRepository.java`, `MainActivity.java` |
+| Xoa deadline lien ket task | Da dong bo nguoc: neu xoa event deadline tao tu task tren lich, task se tat `show_on_calendar` de khong bi tao lai ngoai y muon | `StudyRepository.java`, `MainActivity.confirmDeleteEvent()` |
+| Migration SQLite | Da tang `DB_VERSION = 3` va them column an toan bang `ensureColumn`/`ensureTaskColumn`/`ensureEventColumn` | `StudyRepository.java` |
+| Tuong thich loai lich cu | Da normalize cac ma `study/exam/deadline/personal` ve loai hien tai khi doc model va khi khoi tao repository, tranh filter/card bi sai tren may da co du lieu cu | `StudyEvent.java`, `StudyRepository.java`, `ExampleUnitTest.java` |
+| Form task | Da mo rong field title, subject/tag, deadline, priority, note, important/urgent, reminder, estimated pomodoro, hien tren lich | `dialog_task.xml`, `MainActivity.showTaskDialog()` |
+| Card task | Da hien meta/details va bo gioi han chieu cao de giam cat chu | `item_task.xml`, `MainActivity.createTaskRow()` |
+| Dashboard/stat | Da tinh deadline gan nhat tu ca task va event deadline, them breakdown ca nhan | `MainActivity.java` |
+| Deadline task hoan thanh | Da xoa/bo qua event deadline lien ket khi task da hoan thanh, tranh dashboard/lich van bao deadline da xong nhu viec sap toi | `StudyRepository.syncTaskDeadlineEvent()`, `MainActivity.findNearestDeadlineEvent()` |
+| Dashboard status fallback | Da sua fallback `study` thanh "Hoc tap" khi trang thai ca nhan rong | `MainActivity.shortStatus()` |
+| Pomodoro history | Da hien dialog lich su phien gan day | `StudyRepository.java`, `MainActivity.showPomodoroHistory()` |
+| Font/theme Android | Da chuyen ve font de doc hon va sua target API lint cho theme | `themes.xml`, `values-night/themes.xml` |
+| Chieu cao lich ngay/3 ngay/tuan | Da bo `1320dp` co dinh trong XML, `WeekCalendarView` tu do chieu cao theo che do xem de giam cat chu va giam khoang trong | `screen_schedule.xml`, `WeekCalendarView.java` |
+| Dashboard Android label | Da sua label mau `study` thanh tieng Viet de tranh lo nhan ky thuat khi demo | `screen_dashboard.xml` |
+| Dashboard Android card | Da doi cac card thong ke/deadline/lich tiep theo/Pomodoro tu chieu cao co dinh sang `wrap_content` + `minHeight`, giam nguy co cat chu tieng Viet tren man nho | `screen_dashboard.xml` |
+| Du lieu mau de demo filter | Da them lich deadline, lich ca nhan va lich online co URL that de filter/card/link co du noi dung khi mo app moi | `StudyRepository.seedIfNeeded()` |
+| Du lieu mau sau dang nhap | Da seed demo cho database theo email neu tai khoan moi chua co lich/task, tranh man hinh trong khi bao ve | `StudyRepository.seedDemoDataIfEmpty()`, `MainActivity.activateStudyRepository()` |
+| Xin quyen notification | Da chan viec goi permission request lap lai khi reschedule nhieu reminder tren Android 13+ | `MainActivity.java` |
+| Cau hinh backend local | Da doi `local.properties` sang `OTP_BACKEND_URL=http://10.0.2.2:8080` va them `ADMIN_BACKEND_URL=http://10.0.2.2:8090` de demo bang emulator | `local.properties` |
+| Admin dashboard UI | Da nang style, stat card, list row, filter/select, confirm thao tac | `admin-web/src/main/resources/web/*` |
+| Admin action feedback | Da them vung trang thai thao tac cho lam moi/khoa/reset/xoa/thong bao, giup admin biet thanh cong/loi ngay tren UI | `index.html`, `app.js`, `styles.css` |
+| Admin API sanitize | Da gioi han name/email/provider khi mobile sync va gioi han title/body thong bao o server, khong chi dua vao `maxlength` phia web | `AdminWebServer.java` |
+| Admin yeu cau reset mat khau | Da them co `passwordResetRequested`: admin danh dau/go, app nhan khi sync va dan nguoi dung den man Quen mat khau/OTP. Sau khi app reset thanh cong, mobile goi endpoint de admin tu go co. Admin dashboard co stat/filter rieng cho tai khoan can reset. Khong reset truc tiep mat khau local tren thiet bi. | `AdminWebServer.java`, `index.html`, `app.js`, `AdminPortalClient.java`, `MainActivity.java` |
+| Admin announcement -> Android | Da them API client doc thong bao active moi nhat va show trong app | `AdminPortalClient.java`, `MainActivity.java` |
+| Admin issue log | Da chuan hoa issue type `otp/ai/general`, gioi han email/message o ca app client va admin server de tranh log qua dai lam vo UI | `AdminPortalClient.java`, `AdminWebServer.java` |
+| OTP loi tren Android | Da tach thong bao than thien cho nguoi dung va chi tiet ky thuat trong nut rieng; van gui loi ve admin issue log | `MainActivity.showOtpSendError()` |
+| OTP backend hardening | Da them validate email/OTP, rate limit memory, gioi han purpose, loi SMTP chung cho client | `OtpMailServer.java` |
+
+### Da kiem tra bang lenh
+
+```text
+.\gradlew.bat assembleDebug              SUCCESS
+.\gradlew.bat testDebugUnitTest          SUCCESS
+.\gradlew.bat lintDebug                  SUCCESS
+.\gradlew.bat -p admin-web build         SUCCESS
+.\gradlew.bat -p otp-backend build       SUCCESS
+GET http://localhost:18080/health        200 {"ok":true}
+GET http://localhost:18091/health        200 {"ok":true}
+POST /api/auth/login admin-web           200 {"ok":true,"username":"admin"}
+GET /api/stats admin-web sau login       200 JSON stats
+Admin requestReset smoke test            sync lan 2 tra passwordResetRequested=true
+Admin reset-complete smoke test          sync lan 3 tra passwordResetRequested=false
+```
+
+### Chua xac minh duoc tren moi truong hien tai
+
+- Chua test runtime Android tren emulator/thiet bi that.
+- Chua test notification khi app dong/man hinh khoa.
+- Chua test SMTP that vi can bien moi truong SMTP that.
+- Chua test Google login/Firebase tren thiet bi that.
+- Chua test AI OCR doc lich voi API key/network that.
+- Chua reset truc tiep mat khau tu admin-web vi source hien tai khong co auth trung tam cho tai khoan local; da co co yeu cau reset, app nhac nguoi dung tu reset bang OTP va bao admin go co sau khi reset thanh cong.
+
+### Viec nen lam tiep neu co nguoi lam chung
+
+1. Cai APK len emulator, test toan bo checklist PHAN 4.
+2. Neu notification khong bat o Android 12+ do exact alarm policy, chuyen sang WorkManager hoac hien dialog huong dan bat quyen alarm.
+3. Them field rieng `online_link` va `location` chi khi muon lam data model sach hon; ban hien tai da dung `room` de giam rui ro migration.
+4. Neu muon admin reset mat khau truc tiep that, can chuyen auth local thanh backend auth trung tam hoac them endpoint mobile chap nhan reset token do admin phat hanh.

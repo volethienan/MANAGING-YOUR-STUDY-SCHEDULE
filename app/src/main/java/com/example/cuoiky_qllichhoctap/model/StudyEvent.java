@@ -19,6 +19,7 @@ public class StudyEvent {
     private String note;
     private boolean reminderEnabled;
     private int reminderBeforeMinutes;
+    private String sourceTaskId;
 
     public StudyEvent(String id, String title, String type, String subject, long startAt, long endAt, String room, String note) {
         this(id, title, type, subject, startAt, endAt, room, note, false, 15);
@@ -26,9 +27,14 @@ public class StudyEvent {
 
     public StudyEvent(String id, String title, String type, String subject, long startAt, long endAt, String room, String note,
                       boolean reminderEnabled, int reminderBeforeMinutes) {
+        this(id, title, type, subject, startAt, endAt, room, note, reminderEnabled, reminderBeforeMinutes, "");
+    }
+
+    public StudyEvent(String id, String title, String type, String subject, long startAt, long endAt, String room, String note,
+                      boolean reminderEnabled, int reminderBeforeMinutes, String sourceTaskId) {
         this.id = id;
         this.title = title;
-        this.type = type;
+        this.type = normalizeType(type);
         this.subject = subject;
         this.startAt = startAt;
         this.endAt = endAt;
@@ -36,6 +42,7 @@ public class StudyEvent {
         this.note = note;
         this.reminderEnabled = reminderEnabled;
         this.reminderBeforeMinutes = reminderBeforeMinutes <= 0 ? 15 : reminderBeforeMinutes;
+        this.sourceTaskId = sourceTaskId == null ? "" : sourceTaskId;
     }
 
     public String getId() {
@@ -55,7 +62,7 @@ public class StudyEvent {
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.type = normalizeType(type);
     }
 
     public String getSubject() {
@@ -114,6 +121,14 @@ public class StudyEvent {
         this.reminderBeforeMinutes = reminderBeforeMinutes <= 0 ? 15 : reminderBeforeMinutes;
     }
 
+    public String getSourceTaskId() {
+        return sourceTaskId == null ? "" : sourceTaskId;
+    }
+
+    public void setSourceTaskId(String sourceTaskId) {
+        this.sourceTaskId = sourceTaskId == null ? "" : sourceTaskId;
+    }
+
     public JSONObject toJson() throws JSONException {
         JSONObject json = new JSONObject();
         json.put("id", id);
@@ -126,6 +141,7 @@ public class StudyEvent {
         json.put("note", note);
         json.put("reminderEnabled", reminderEnabled);
         json.put("reminderBeforeMinutes", reminderBeforeMinutes);
+        json.put("sourceTaskId", getSourceTaskId());
         return json;
     }
 
@@ -140,7 +156,26 @@ public class StudyEvent {
                 json.optString("room"),
                 json.optString("note"),
                 json.optBoolean("reminderEnabled", false),
-                json.optInt("reminderBeforeMinutes", 15)
+                json.optInt("reminderBeforeMinutes", 15),
+                json.optString("sourceTaskId", "")
         );
+    }
+
+    public static String normalizeType(String type) {
+        if (type == null) {
+            return TYPE_STUDY;
+        }
+        String value = type.trim();
+        String lower = value.toLowerCase();
+        if (TYPE_EXAM.equals(value) || "exam".equals(lower) || lower.contains("thi")) {
+            return TYPE_EXAM;
+        }
+        if (TYPE_DEADLINE.equals(value) || "deadline".equals(lower) || lower.contains("hạn") || lower.contains("nộp")) {
+            return TYPE_DEADLINE;
+        }
+        if (TYPE_PERSONAL.equals(value) || "personal".equals(lower) || lower.contains("cá nhân") || lower.contains("ca nhan")) {
+            return TYPE_PERSONAL;
+        }
+        return TYPE_STUDY;
     }
 }

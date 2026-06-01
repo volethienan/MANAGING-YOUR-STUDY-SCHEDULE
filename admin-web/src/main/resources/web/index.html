@@ -52,7 +52,10 @@
                     <p class="eyebrow">Bảng điều khiển</p>
                     <h2>Quản lý tài khoản và trạng thái hệ thống</h2>
                 </div>
-                <span id="adminName" class="admin-chip"></span>
+                <div class="header-actions">
+                    <p id="actionStatus" class="action-status" role="status"></p>
+                    <span id="adminName" class="admin-chip"></span>
+                </div>
             </header>
 
             <section id="overviewPanel" class="panel active-panel">
@@ -80,7 +83,16 @@
                             <h3>Tài khoản người dùng</h3>
                             <p>Tìm, khóa hoặc mở khóa các tài khoản đã đồng bộ từ app.</p>
                         </div>
-                        <input id="userSearch" class="search" placeholder="Tìm tên hoặc email">
+                        <div class="toolbar">
+                            <input id="userSearch" class="search" placeholder="Tìm tên hoặc email">
+                            <select id="userStatusFilter" class="search">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="locked">Đang khóa</option>
+                                <option value="unverified">Chưa xác thực</option>
+                                <option value="reset">Cần reset mật khẩu</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="table-wrap">
                         <table>
@@ -132,6 +144,13 @@
                             <h3>Lỗi OTP và AI</h3>
                             <p>Lỗi được app gửi về khi không gọi được OTP hoặc không đọc được ảnh lịch.</p>
                         </div>
+                        <select id="issueFilter" class="search">
+                            <option value="all">Tất cả lỗi</option>
+                            <option value="open">Chưa xử lý</option>
+                            <option value="resolved">Đã xử lý</option>
+                            <option value="otp">OTP</option>
+                            <option value="ai">AI đọc lịch</option>
+                        </select>
                     </div>
                     <div id="issueList" class="stack-list"></div>
                 </article>

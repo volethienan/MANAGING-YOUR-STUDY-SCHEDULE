@@ -51,7 +51,7 @@
                     android:maxLines="1"
                     android:paddingStart="6dp"
                     android:paddingEnd="6dp"
-                    android:text="study"
+                    android:text="học tập"
                     android:textColor="@color/muted"
                     android:textSize="9sp"
                     android:textStyle="bold" />
@@ -164,11 +164,12 @@
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="132dp"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_mint"
                 android:gravity="center_vertical"
+                android:minHeight="132dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -199,11 +200,12 @@
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="132dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_pink"
                 android:gravity="center_vertical"
+                android:minHeight="132dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -246,11 +248,12 @@
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="142dp"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_yellow"
                 android:gravity="center_vertical"
+                android:minHeight="142dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -285,11 +288,12 @@
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="142dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card"
                 android:gravity="center_vertical"
+                android:minHeight="142dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -322,10 +326,11 @@
         <LinearLayout
             android:id="@+id/quickStats"
             android:layout_width="match_parent"
-            android:layout_height="88dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:background="@drawable/bg_card"
             android:gravity="center"
+            android:minHeight="88dp"
             android:orientation="horizontal" />
 
         <TextView
