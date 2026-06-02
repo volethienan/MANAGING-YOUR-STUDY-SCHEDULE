@@ -32,6 +32,7 @@ public class AdminWebServer {
     private static final Pattern JSON_BOOLEAN = Pattern.compile("\"%s\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.forLanguageTag("vi-VN"))
             .withZone(ZoneId.systemDefault());
+    private static final Properties DOTENV = loadDotEnv();
     private static final Store STORE = new Store();
     private static final Set<String> SESSIONS = new HashSet<>();
     private static final String ADMIN_USERNAME = env("ADMIN_USERNAME", "admin");
@@ -311,6 +312,9 @@ public class AdminWebServer {
 
     private static String env(String name, String fallback) {
         String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            value = DOTENV.getProperty(name);
+        }
         return value == null || value.isBlank() ? fallback : value;
     }
 
@@ -320,6 +324,44 @@ public class AdminWebServer {
         } catch (NumberFormatException exception) {
             return fallback;
         }
+    }
+
+    private static Properties loadDotEnv() {
+        Properties values = new Properties();
+        Path[] candidates = {Paths.get(".env"), Paths.get("..", ".env")};
+        for (Path path : candidates) {
+            if (!Files.isRegularFile(path)) {
+                continue;
+            }
+            try {
+                for (String line : Files.readAllLines(path, StandardCharsets.UTF_8)) {
+                    String trimmed = line.trim();
+                    if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                        continue;
+                    }
+                    int split = trimmed.indexOf('=');
+                    if (split <= 0) {
+                        continue;
+                    }
+                    String key = trimmed.substring(0, split).trim();
+                    String value = unquote(trimmed.substring(split + 1).trim());
+                    values.setProperty(key, value);
+                }
+                break;
+            } catch (IOException exception) {
+                System.err.println("Cannot read .env at " + path + ": " + exception.getMessage());
+            }
+        }
+        return values;
+    }
+
+    private static String unquote(String value) {
+        if (value.length() >= 2
+                && ((value.startsWith("\"") && value.endsWith("\""))
+                || (value.startsWith("'") && value.endsWith("'")))) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
     }
 
     private static final class Store {
@@ -617,8 +659,8 @@ public class AdminWebServer {
         }
 
         private Path dataPath() {
-            String override = System.getenv("ADMIN_WEB_DATA");
-            if (override != null && !override.isBlank()) {
+            String override = env("ADMIN_WEB_DATA", "");
+            if (!override.isBlank()) {
                 return Paths.get(override);
             }
             return Paths.get("data", "admin-store.properties");

@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
@@ -27,6 +30,7 @@ public class OtpMailServer {
     private static final Pattern JSON_FIELD = Pattern.compile("\"%s\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"");
     private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern OTP = Pattern.compile("^\\d{6}$");
+    private static final Properties DOTENV = loadDotEnv();
     private static final int MAX_REQUESTS_PER_WINDOW = intEnv("OTP_RATE_LIMIT", 5);
     private static final long RATE_LIMIT_WINDOW_MS = 10L * 60L * 1000L;
     private static final Map<String, Deque<Long>> RATE_LIMITS = new ConcurrentHashMap<>();
@@ -162,7 +166,7 @@ public class OtpMailServer {
     }
 
     private static String requireEnv(String name) {
-        String value = System.getenv(name);
+        String value = env(name, "");
         if (value == null || value.isBlank()) {
             throw new IllegalStateException(name + " is required");
         }
@@ -171,6 +175,9 @@ public class OtpMailServer {
 
     private static String env(String name, String fallback) {
         String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            value = DOTENV.getProperty(name);
+        }
         return value == null || value.isBlank() ? fallback : value;
     }
 
@@ -180,6 +187,44 @@ public class OtpMailServer {
         } catch (NumberFormatException exception) {
             return fallback;
         }
+    }
+
+    private static Properties loadDotEnv() {
+        Properties values = new Properties();
+        Path[] candidates = {Paths.get(".env"), Paths.get("..", ".env")};
+        for (Path path : candidates) {
+            if (!Files.isRegularFile(path)) {
+                continue;
+            }
+            try {
+                for (String line : Files.readAllLines(path, StandardCharsets.UTF_8)) {
+                    String trimmed = line.trim();
+                    if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                        continue;
+                    }
+                    int split = trimmed.indexOf('=');
+                    if (split <= 0) {
+                        continue;
+                    }
+                    String key = trimmed.substring(0, split).trim();
+                    String value = unquote(trimmed.substring(split + 1).trim());
+                    values.setProperty(key, value);
+                }
+                break;
+            } catch (IOException exception) {
+                System.err.println("Cannot read .env at " + path + ": " + exception.getMessage());
+            }
+        }
+        return values;
+    }
+
+    private static String unquote(String value) {
+        if (value.length() >= 2
+                && ((value.startsWith("\"") && value.endsWith("\""))
+                || (value.startsWith("'") && value.endsWith("'")))) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
     }
 
     private static String cleanPurpose(String value) {
