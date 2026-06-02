@@ -188,6 +188,7 @@
         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginHorizontal="16dp"/>
 
         <LinearLayout
+            android:id="@+id/menuItemCountdown"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:clickable="true"

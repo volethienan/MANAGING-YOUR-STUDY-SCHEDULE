@@ -94,6 +94,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -118,6 +120,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String TASK_FILTER_MATRIX = "Ma trận ưu tiên";
     private static final String TASK_FILTER_TAG_PREFIX = "Môn: ";
     private static final String TASK_FILTER_PRIORITY_PREFIX = "Ưu tiên: ";
+    private static final String COUNTDOWN_FILTER_ALL = "Tất cả";
+    private static final String COUNTDOWN_FILTER_UPCOMING = "Sắp tới";
+    private static final String COUNTDOWN_FILTER_OVERDUE = "Quá hạn";
     private static final String[] REPEAT_OPTIONS = {"Không lặp", "Hằng ngày", "Hằng tuần", "Hằng tháng"};
     private static final String[] EVENT_TYPES = {StudyEvent.TYPE_STUDY, StudyEvent.TYPE_EXAM, StudyEvent.TYPE_DEADLINE, StudyEvent.TYPE_PERSONAL};
     private static final String[] EVENT_TYPE_LABELS = {"Lịch học", "Lịch thi", "Deadline", "Cá nhân"};
@@ -164,6 +169,32 @@ public class MainActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> notificationPermissionLauncher;
     private boolean notificationPermissionRequestInFlight;
     private DrawerLayout drawerLayout;
+
+    private static class CountdownItem {
+        final String title;
+        final String kind;
+        final String detail;
+        final long targetAt;
+        final StudyTask task;
+        final StudyEvent event;
+
+        CountdownItem(String title, String kind, String detail, long targetAt, StudyTask task, StudyEvent event) {
+            this.title = title;
+            this.kind = kind;
+            this.detail = detail;
+            this.targetAt = targetAt;
+            this.task = task;
+            this.event = event;
+        }
+
+        static CountdownItem fromTask(StudyTask task) {
+            return new CountdownItem(task.getTitle(), "Công việc", task.getTag(), task.getDueAt(), task, null);
+        }
+
+        static CountdownItem fromEvent(StudyEvent event) {
+            return new CountdownItem(event.getTitle(), event.getType(), event.getSubject(), event.getStartAt(), null, event);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -219,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.menuItemAll).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Tất cả"); });
         findViewById(R.id.menuItemToday).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Hôm nay"); });
         findViewById(R.id.menuItemDone).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Đã hoàn thành"); });
+        findViewById(R.id.menuItemCountdown).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showCountdown(COUNTDOWN_FILTER_ALL); });
         findViewById(R.id.menuBtnSettings).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showSettings(); });
         findViewById(R.id.menuBtnNewGoal).setOnClickListener(v -> toast("Tính năng Mục tiêu sẽ ra mắt sớm!"));
     }
@@ -972,6 +1004,227 @@ public class MainActivity extends AppCompatActivity {
             taskList.addView(emptyState("Chưa có công việc phù hợp"));
         }
         screen.findViewById(R.id.btnAddTask).setOnClickListener(v -> showTaskDialog(null, () -> showTasks(filter)));
+    }
+
+    private void showCountdown(String filter) {
+        View screen = inflateScreen(R.layout.screen_countdown, true, -1);
+        setupCountdownFilters(screen, filter);
+        List<CountdownItem> items = buildCountdownItems();
+        bindCountdownSummary(screen, items);
+
+        LinearLayout list = screen.findViewById(R.id.countdownList);
+        list.removeAllViews();
+        for (CountdownItem item : items) {
+            if (!matchesCountdownFilter(item, filter)) {
+                continue;
+            }
+            list.addView(createCountdownRow(item, filter, list));
+        }
+        if (list.getChildCount() == 0) {
+            list.addView(emptyState("Chưa có mốc đếm ngược phù hợp"));
+        }
+        screen.findViewById(R.id.btnAddCountdown).setOnClickListener(v -> showCreateCountdownDialog(filter));
+    }
+
+    private void setupCountdownFilters(View screen, String active) {
+        bindFilter(screen, R.id.countdownFilterAll, COUNTDOWN_FILTER_ALL, active, () -> showCountdown(COUNTDOWN_FILTER_ALL));
+        bindFilter(screen, R.id.countdownFilterUpcoming, COUNTDOWN_FILTER_UPCOMING, active, () -> showCountdown(COUNTDOWN_FILTER_UPCOMING));
+        bindFilter(screen, R.id.countdownFilterOverdue, COUNTDOWN_FILTER_OVERDUE, active, () -> showCountdown(COUNTDOWN_FILTER_OVERDUE));
+    }
+
+    private List<CountdownItem> buildCountdownItems() {
+        List<CountdownItem> items = new ArrayList<>();
+        for (StudyTask task : repository.getTasks()) {
+            if (!task.isCompleted()) {
+                items.add(CountdownItem.fromTask(task));
+            }
+        }
+        for (StudyEvent event : repository.getEvents()) {
+            if (TextUtils.isEmpty(event.getSourceTaskId())) {
+                items.add(CountdownItem.fromEvent(event));
+            }
+        }
+        Collections.sort(items, countdownComparator());
+        return items;
+    }
+
+    private Comparator<CountdownItem> countdownComparator() {
+        long now = System.currentTimeMillis();
+        return (first, second) -> {
+            boolean firstOverdue = first.targetAt < now;
+            boolean secondOverdue = second.targetAt < now;
+            if (firstOverdue != secondOverdue) {
+                return firstOverdue ? -1 : 1;
+            }
+            if (firstOverdue) {
+                return Long.compare(second.targetAt, first.targetAt);
+            }
+            return Long.compare(first.targetAt, second.targetAt);
+        };
+    }
+
+    private boolean matchesCountdownFilter(CountdownItem item, String filter) {
+        long now = System.currentTimeMillis();
+        if (COUNTDOWN_FILTER_UPCOMING.equals(filter)) {
+            return item.targetAt >= now;
+        }
+        if (COUNTDOWN_FILTER_OVERDUE.equals(filter)) {
+            return item.targetAt < now;
+        }
+        return true;
+    }
+
+    private void bindCountdownSummary(View screen, List<CountdownItem> items) {
+        int overdue = 0;
+        CountdownItem nearestUpcoming = null;
+        long now = System.currentTimeMillis();
+        for (CountdownItem item : items) {
+            if (item.targetAt < now) {
+                overdue++;
+            } else if (nearestUpcoming == null || item.targetAt < nearestUpcoming.targetAt) {
+                nearestUpcoming = item;
+            }
+        }
+        setText(screen, R.id.textCountdownSubtitle, items.isEmpty()
+                ? "Thêm deadline, lịch thi hoặc sự kiện để bắt đầu đếm ngược"
+                : items.size() + " mốc đang theo dõi · " + overdue + " quá hạn");
+        setText(screen, R.id.textCountdownNearest, nearestUpcoming == null
+                ? "Gần nhất\nChưa có mốc sắp tới"
+                : "Gần nhất\n" + countdownBadge(nearestUpcoming) + "\n" + nearestUpcoming.title);
+        setText(screen, R.id.textCountdownOverdue, "Quá hạn\n" + overdue + " mục\n" + (overdue == 0 ? "Đang ổn" : "Cần xử lý"));
+    }
+
+    private View createCountdownRow(CountdownItem item, String filter, ViewGroup parent) {
+        LinearLayout row = new LinearLayout(this);
+        row.setLayoutParams(cardLayoutParams());
+        row.setBackgroundResource(countdownBackground(item));
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.setMinimumHeight(dp(104));
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(dp(16), dp(14), dp(16), dp(14));
+        row.setRotation(item.title.hashCode() % 2 == 0 ? -0.8f : 0.8f);
+
+        TextView badge = new TextView(this);
+        LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(dp(92), dp(74));
+        badgeParams.setMargins(0, 0, dp(12), 0);
+        badge.setLayoutParams(badgeParams);
+        badge.setBackgroundResource(item.targetAt < System.currentTimeMillis() ? R.drawable.bg_card_pink : R.drawable.bg_selected_pill);
+        badge.setGravity(android.view.Gravity.CENTER);
+        badge.setText(countdownBadge(item));
+        badge.setTextColor(item.targetAt < System.currentTimeMillis() ? getColor(R.color.danger) : getColor(R.color.ink));
+        badge.setTextSize(13f);
+        badge.setTypeface(null, android.graphics.Typeface.BOLD);
+        badge.setRotation(item.targetAt < System.currentTimeMillis() ? -1.5f : 1.5f);
+
+        LinearLayout content = new LinearLayout(this);
+        content.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        content.setOrientation(LinearLayout.VERTICAL);
+
+        TextView title = new TextView(this);
+        title.setText(item.title);
+        title.setTextColor(getColor(R.color.ink));
+        title.setTextSize(16f);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setMaxLines(2);
+        title.setEllipsize(TextUtils.TruncateAt.END);
+
+        TextView meta = new TextView(this);
+        meta.setText(countdownMeta(item));
+        meta.setTextColor(getColor(R.color.muted));
+        meta.setTextSize(12f);
+        meta.setMaxLines(2);
+        meta.setEllipsize(TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams metaParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        metaParams.setMargins(0, dp(5), 0, 0);
+        meta.setLayoutParams(metaParams);
+
+        content.addView(title);
+        content.addView(meta);
+        row.addView(badge);
+        row.addView(content);
+        row.setOnClickListener(v -> {
+            if (item.task != null) {
+                showTaskActions(item.task, () -> showCountdown(filter));
+            } else if (item.event != null) {
+                showCountdownEventActions(item.event, () -> showCountdown(filter));
+            }
+        });
+        return row;
+    }
+
+    private LinearLayout.LayoutParams cardLayoutParams() {
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, dp(12));
+        return params;
+    }
+
+    private int countdownBackground(CountdownItem item) {
+        if (item.targetAt < System.currentTimeMillis()) {
+            return R.drawable.bg_danger_soft;
+        }
+        if (item.task != null) {
+            return priorityBackground(item.task.getPriority());
+        }
+        return eventBackground(item.event.getType());
+    }
+
+    private String countdownBadge(CountdownItem item) {
+        long now = System.currentTimeMillis();
+        long today = DateTimeUtils.startOfDay(now);
+        long targetDay = DateTimeUtils.startOfDay(item.targetAt);
+        long days = (targetDay - today) / (24L * 60L * 60L * 1000L);
+        if (item.targetAt < now) {
+            return days == 0 ? "Quá hạn\nhôm nay" : "Quá\n" + Math.abs(days) + " ngày";
+        }
+        if (days == 0) {
+            return "Hôm nay\n" + DateTimeUtils.formatTime(item.targetAt);
+        }
+        return "Còn\n" + days + " ngày";
+    }
+
+    private String countdownMeta(CountdownItem item) {
+        String detail = TextUtils.isEmpty(item.detail) ? "Chưa phân loại" : item.detail;
+        return item.kind + " · " + detail + " · " + DateTimeUtils.formatDayLabel(item.targetAt) + " " + DateTimeUtils.formatTime(item.targetAt);
+    }
+
+    private void showCreateCountdownDialog(String filter) {
+        String[] actions = {"Deadline công việc", "Lịch/sự kiện"};
+        new AlertDialog.Builder(this)
+                .setTitle("Thêm mốc đếm ngược")
+                .setItems(actions, (dialog, which) -> {
+                    if (which == 0) {
+                        showTaskDialog(null, () -> showCountdown(filter));
+                    } else {
+                        showEventDialog(null, () -> showCountdown(filter));
+                    }
+                })
+                .show();
+    }
+
+    private void showCountdownEventActions(StudyEvent event, Runnable onChanged) {
+        boolean hasOnlineLink = isWebUrl(event.getRoom());
+        String[] actions = hasOnlineLink
+                ? new String[]{"Mở link online", "Sửa", "Xóa"}
+                : new String[]{"Sửa", "Xóa"};
+        new AlertDialog.Builder(this)
+                .setTitle(event.getTitle())
+                .setMessage(eventDetailText(event))
+                .setItems(actions, (dialog, which) -> {
+                    if (hasOnlineLink && which == 0) {
+                        openUrl(event.getRoom());
+                    } else if ((hasOnlineLink && which == 1) || (!hasOnlineLink && which == 0)) {
+                        showEventDialog(event, onChanged);
+                    } else {
+                        confirmDelete("Xóa lịch?", event.getTitle(), () -> {
+                            repository.deleteEvent(event.getId());
+                            cancelEventReminder(event);
+                            toast("Đã xóa lịch");
+                            onChanged.run();
+                        });
+                    }
+                })
+                .setNegativeButton("Đóng", null)
+                .show();
     }
 
     private void setupTaskFilters(View screen, String active) {
