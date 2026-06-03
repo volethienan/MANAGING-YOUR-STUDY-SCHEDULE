@@ -1,5 +1,8 @@
 package com.example.cuoiky_qllichhoctap.data;
 
+import android.util.Log;
+
+import com.example.cuoiky_qllichhoctap.BuildConfig;
 import com.example.cuoiky_qllichhoctap.model.CountdownMilestone;
 import com.example.cuoiky_qllichhoctap.model.PomodoroSession;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
@@ -15,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class FirebaseStudyStore {
+    private static final String TAG = "FirebaseStudyStore";
     private static final String ROOT_NODE = "study_users";
 
     private final DatabaseReference userRef;
@@ -22,8 +26,10 @@ public class FirebaseStudyStore {
     public FirebaseStudyStore(String accountEmail) {
         String normalizedEmail = accountEmail == null ? "" : accountEmail.trim().toLowerCase(Locale.US);
         String userKey = normalizedEmail.isEmpty() ? "anonymous" : nodeKey(normalizedEmail);
-        userRef = FirebaseDatabase.getInstance().getReference(ROOT_NODE).child(userKey);
-        userRef.updateChildren(baseUserMap(normalizedEmail));
+        userRef = FirebaseDatabase.getInstance(BuildConfig.FIREBASE_DATABASE_URL)
+                .getReference(ROOT_NODE)
+                .child(userKey);
+        update(userRef, baseUserMap(normalizedEmail));
     }
 
     public void saveProfile(UserProfile profile) {
@@ -35,15 +41,15 @@ public class FirebaseStudyStore {
         values.put("email", profile.getEmail());
         values.put("goal", profile.getGoal());
         values.put("updatedAt", now());
-        meta("profile").updateChildren(values);
-        userRef.updateChildren(userSummary(profile.getEmail(), profile.getName()));
+        update(meta("profile"), values);
+        update(userRef, userSummary(profile.getEmail(), profile.getName()));
     }
 
     public void saveTask(StudyTask task) {
         if (task == null || task.getId() == null || task.getId().isEmpty()) {
             return;
         }
-        collection("tasks").child(nodeKey(task.getId())).updateChildren(taskMap(task));
+        update(collection("tasks").child(nodeKey(task.getId())), taskMap(task));
     }
 
     public void deleteTask(String taskId) {
@@ -54,7 +60,7 @@ public class FirebaseStudyStore {
         if (event == null || event.getId() == null || event.getId().isEmpty()) {
             return;
         }
-        collection("events").child(nodeKey(event.getId())).updateChildren(eventMap(event));
+        update(collection("events").child(nodeKey(event.getId())), eventMap(event));
     }
 
     public void deleteEvent(String eventId) {
@@ -65,7 +71,7 @@ public class FirebaseStudyStore {
         if (milestone == null || milestone.getId() == null || milestone.getId().isEmpty()) {
             return;
         }
-        collection("countdowns").child(nodeKey(milestone.getId())).updateChildren(countdownMap(milestone));
+        update(collection("countdowns").child(nodeKey(milestone.getId())), countdownMap(milestone));
     }
 
     public void deleteCountdown(String id) {
@@ -76,7 +82,7 @@ public class FirebaseStudyStore {
         if (session == null || session.getId() == null || session.getId().isEmpty()) {
             return;
         }
-        collection("pomodoro_sessions").child(nodeKey(session.getId())).updateChildren(pomodoroMap(session));
+        update(collection("pomodoro_sessions").child(nodeKey(session.getId())), pomodoroMap(session));
     }
 
     public void saveFocusStats(int focusMinutes, int focusSessions, int todayFocusMinutes, int todayFocusSessions, String todayKey) {
@@ -87,14 +93,14 @@ public class FirebaseStudyStore {
         summary.put("todaySessions", todayFocusSessions);
         summary.put("todayKey", todayKey);
         summary.put("updatedAt", now());
-        meta("focus_stats").updateChildren(summary);
+        update(meta("focus_stats"), summary);
 
         Map<String, Object> today = new HashMap<>();
         today.put("dayKey", todayKey);
         today.put("minutes", todayFocusMinutes);
         today.put("sessions", todayFocusSessions);
         today.put("updatedAt", now());
-        collection("focus_day_stats").child(nodeKey(todayKey)).updateChildren(today);
+        update(collection("focus_day_stats").child(nodeKey(todayKey)), today);
     }
 
     public void saveSetting(String key, boolean enabled) {
@@ -106,7 +112,7 @@ public class FirebaseStudyStore {
         values.put("enabled", enabled);
         values.put("value", enabled ? "1" : "0");
         values.put("updatedAt", now());
-        collection("settings").child(nodeKey(key)).updateChildren(values);
+        update(collection("settings").child(nodeKey(key)), values);
     }
 
     public void savePersonalization(String avatar, String dashboardBackground, String themeColor, String mascot, String studyStatus) {
@@ -117,7 +123,7 @@ public class FirebaseStudyStore {
         values.put("mascot", mascot);
         values.put("studyStatus", studyStatus);
         values.put("updatedAt", now());
-        meta("personalization").updateChildren(values);
+        update(meta("personalization"), values);
     }
 
     public void syncSnapshot(UserProfile profile, Iterable<StudyTask> tasks, Iterable<StudyEvent> events,
@@ -154,7 +160,15 @@ public class FirebaseStudyStore {
 
     private void delete(DatabaseReference reference) {
         if (reference != null) {
-            reference.removeValue();
+            reference.removeValue()
+                    .addOnFailureListener(error -> Log.e(TAG, "Cannot delete Firebase data at " + reference, error));
+        }
+    }
+
+    private void update(DatabaseReference reference, Map<String, Object> values) {
+        if (reference != null) {
+            reference.updateChildren(values)
+                    .addOnFailureListener(error -> Log.e(TAG, "Cannot sync Firebase data at " + reference, error));
         }
     }
 

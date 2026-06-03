@@ -166,6 +166,11 @@ h3 {
     grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) auto;
 }
 
+#importUserForm {
+    grid-template-columns: minmax(220px, 1.3fr) minmax(160px, 1fr) minmax(130px, .6fr) auto;
+    margin: 18px 0;
+}
+
 .form-error {
     color: var(--danger);
     min-height: 20px;

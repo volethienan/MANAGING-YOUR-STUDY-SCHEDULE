@@ -1,9 +1,8 @@
 const state = {
-    analytics: null,
+    stats: null,
     users: [],
     issues: [],
-    templates: [],
-    subjects: []
+    audit: []
 };
 
 const loginView = document.querySelector("#loginView");
@@ -47,32 +46,29 @@ function showDashboard(username) {
 
 async function refreshAll() {
     await Promise.all([
-        loadAnalytics(),
+        loadStats(),
         loadUsers(),
         loadAnnouncements(),
-        loadTemplates(),
-        loadSubjects(),
         loadIssues(),
         loadAudit()
     ]);
+    renderOverview();
 }
 
-async function loadAnalytics() {
-    state.analytics = await request("/api/analytics");
+async function loadStats() {
+    state.stats = await request("/api/stats");
     renderStats();
-    renderOverviewCharts();
-    renderReports();
 }
 
 function renderStats() {
-    const stats = state.analytics.summary;
+    const stats = state.stats;
     const items = [
         ["Tài khoản", stats.users],
-        ["DAU / MAU", `${stats.dau} / ${stats.mau}`],
-        ["Hoàn thành task", `${stats.completionRate}%`],
-        ["Phút Pomodoro", stats.focusMinutes],
-        ["Premium", stats.premium],
-        ["Lỗi mở", stats.openIssues]
+        ["Đã xác thực", stats.verified],
+        ["Đang khóa", stats.locked],
+        ["Cần reset", stats.resetRequests],
+        ["Lỗi mở", stats.openIssues],
+        ["Thông báo bật", stats.activeAnnouncements]
     ];
     document.querySelector("#statGrid").innerHTML = items.map(([label, value]) => `
         <article class="stat">
@@ -82,27 +78,22 @@ function renderStats() {
     `).join("");
 }
 
-function renderOverviewCharts() {
-    const stats = state.analytics.summary;
-    renderBars("#growthChart", state.analytics.growth);
-    renderRanks("#subjectChart", state.analytics.subjects, "Chưa có môn học nổi bật.");
-    renderRanks("#featureChart", labelFeatures(state.analytics.features), "Chưa có dữ liệu sử dụng.");
-    document.querySelector("#engagementList").innerHTML = `
-        ${metricRow("Task hoàn thành", `${stats.completedTasks}/${stats.totalTasks}`)}
-        ${metricRow("Lịch học đã tạo", stats.totalEvents)}
-        ${metricRow("Phiên Pomodoro", stats.focusSessions)}
-        ${metricRow("Thông báo đang bật", stats.activeAnnouncements)}
+function renderOverview() {
+    if (!state.stats) {
+        return;
+    }
+    const latestSync = state.users.length ? state.users[0].lastSeenAt : "Chưa có";
+    const missingLearningSnapshot = state.users.filter(user => user.learningSyncedAt === "Chưa có").length;
+    document.querySelector("#syncHealthList").innerHTML = `
+        ${metricRow("App đã kết nối admin", state.users.length)}
+        ${metricRow("Đồng bộ tài khoản mới nhất", latestSync)}
+        ${metricRow("Chưa gửi snapshot học tập", missingLearningSnapshot)}
     `;
-}
-
-function renderReports() {
-    const stats = state.analytics.summary;
-    renderBars("#hourChart", state.analytics.studyHours);
-    document.querySelector("#subscriptionReport").innerHTML = `
-        ${metricRow("Người dùng Premium", stats.premium)}
-        ${metricRow("Doanh thu ước tính", formatCurrency(stats.revenueEstimate))}
-        ${metricRow("Tài khoản bị khóa", stats.locked)}
-        ${metricRow("Tài khoản xác thực", stats.verified)}
+    document.querySelector("#adminWorkList").innerHTML = `
+        ${metricRow("Tài khoản đang khóa", state.stats.locked)}
+        ${metricRow("Yêu cầu reset mật khẩu", state.stats.resetRequests)}
+        ${metricRow("Lỗi cần xử lý", state.stats.openIssues)}
+        ${metricRow("Thông báo đang bật", state.stats.activeAnnouncements)}
     `;
 }
 
@@ -127,13 +118,20 @@ function renderUsers() {
     });
     document.querySelector("#userRows").innerHTML = users.length ? users.map(user => `
         <tr>
-            <td class="user-cell"><strong>${escapeHtml(user.name)}</strong><span>${escapeHtml(user.email)}</span><span>${escapeHtml(user.provider)} · ${escapeHtml(user.lastSeenAt)}</span></td>
-            <td><span class="badge">${escapeHtml(roleLabel(user.role))}</span></td>
-            <td><span class="badge ${user.plan === "Premium" ? "good" : ""}">${escapeHtml(user.plan)}</span></td>
+            <td class="user-cell">
+                <strong>${escapeHtml(user.name)}</strong>
+                <span>${escapeHtml(user.email)}</span>
+                <span>Đăng ký: ${escapeHtml(user.createdAt)}</span>
+            </td>
+            <td><span class="badge">${escapeHtml(providerLabel(user.provider))}</span></td>
             <td><span class="badge ${user.verified ? "good" : "warn"}">${user.verified ? "Đã xác thực" : "Chưa xác thực"}</span></td>
             <td>
                 <strong>${escapeHtml(String(user.completedTasks))}/${escapeHtml(String(user.totalTasks))} task</strong>
-                <span class="table-sub">${escapeHtml(String(user.focusMinutes))} phút · ${escapeHtml(user.topSubject)}</span>
+                <span class="table-sub">${escapeHtml(String(user.totalEvents))} lịch · ${escapeHtml(String(user.focusMinutes))} phút · ${escapeHtml(user.topSubject)}</span>
+            </td>
+            <td>
+                <strong>${escapeHtml(user.lastSeenAt)}</strong>
+                <span class="table-sub">Snapshot học tập: ${escapeHtml(user.learningSyncedAt)}</span>
             </td>
             <td>
                 <span class="badge ${user.locked ? "danger" : "good"}">${user.locked ? "Đang khóa" : "Hoạt động"}</span>
@@ -142,9 +140,7 @@ function renderUsers() {
             <td>
                 <div class="actions">
                     <button class="secondary-button" data-user-action="${user.locked ? "unlock" : "lock"}" data-email="${escapeAttr(user.email)}">${user.locked ? "Mở khóa" : "Khóa"}</button>
-                    <button class="secondary-button" data-user-action="${user.plan === "Premium" ? "makeFree" : "makePremium"}" data-email="${escapeAttr(user.email)}">${user.plan === "Premium" ? "Free" : "Premium"}</button>
-                    <button class="secondary-button" data-user-action="${user.role === "Teacher" ? "makeUser" : "makeTeacher"}" data-email="${escapeAttr(user.email)}">${user.role === "Teacher" ? "User" : "Teacher"}</button>
-                    <button class="secondary-button" data-user-action="${user.passwordResetRequested ? "clearReset" : "requestReset"}" data-email="${escapeAttr(user.email)}">${user.passwordResetRequested ? "Gỡ reset" : "Reset"}</button>
+                    <button class="secondary-button" data-user-action="${user.passwordResetRequested ? "clearReset" : "requestReset"}" data-email="${escapeAttr(user.email)}">${user.passwordResetRequested ? "Gỡ reset" : "Yêu cầu reset"}</button>
                     <button class="danger-button" data-user-action="delete" data-email="${escapeAttr(user.email)}">Xóa</button>
                 </div>
             </td>
@@ -174,44 +170,6 @@ async function loadAnnouncements() {
         : `<p>Chưa có thông báo.</p>`;
 }
 
-async function loadTemplates() {
-    const payload = await request("/api/templates");
-    state.templates = payload.templates;
-    document.querySelector("#templateList").innerHTML = state.templates.length
-        ? state.templates.map(template => `
-            <section class="list-row">
-                <div class="list-head">
-                    <div>
-                        <h4>${escapeHtml(template.title)}</h4>
-                        <span class="meta">${escapeHtml(template.audience)} · ${escapeHtml(template.createdAt)}</span>
-                    </div>
-                    <span class="badge ${template.active ? "good" : "warn"}">${template.active ? "Đang bật" : "Đang tắt"}</span>
-                </div>
-                <p>${escapeHtml(template.description)}</p>
-                <div class="actions">
-                    <button class="secondary-button" data-template-action="toggle" data-id="${escapeAttr(template.id)}">${template.active ? "Tắt" : "Bật"}</button>
-                    <button class="danger-button" data-template-action="delete" data-id="${escapeAttr(template.id)}">Xóa</button>
-                </div>
-            </section>
-        `).join("")
-        : `<p>Chưa có template.</p>`;
-}
-
-async function loadSubjects() {
-    const payload = await request("/api/subjects");
-    state.subjects = payload.subjects;
-    document.querySelector("#subjectList").innerHTML = state.subjects.length
-        ? state.subjects.map(subject => `
-            <span class="subject-chip ${subject.active ? "" : "inactive"}">
-                <strong>${escapeHtml(subject.name)}</strong>
-                <small>${escapeHtml(subject.category)}</small>
-                <button data-subject-action="toggle" data-id="${escapeAttr(subject.id)}">${subject.active ? "Tắt" : "Bật"}</button>
-                <button data-subject-action="delete" data-id="${escapeAttr(subject.id)}">Xóa</button>
-            </span>
-        `).join("")
-        : `<p>Chưa có danh mục.</p>`;
-}
-
 async function loadIssues() {
     const payload = await request("/api/issues");
     state.issues = payload.issues;
@@ -230,7 +188,7 @@ function renderIssues() {
             <section class="list-row">
                 <div class="list-head">
                     <div>
-                        <h4>${escapeHtml(issue.type.toUpperCase())} - ${escapeHtml(issue.email)}</h4>
+                        <h4>${escapeHtml(issueTypeLabel(issue.type))} - ${escapeHtml(issue.email)}</h4>
                         <span class="meta">${escapeHtml(issue.createdAt)}</span>
                     </div>
                     <span class="badge ${issue.status === "open" ? "danger" : "good"}">${issue.status === "open" ? "Chưa xử lý" : "Đã xử lý"}</span>
@@ -247,8 +205,9 @@ function renderIssues() {
 
 async function loadAudit() {
     const payload = await request("/api/audit");
-    document.querySelector("#auditList").innerHTML = payload.entries.length
-        ? payload.entries.map(entry => `
+    state.audit = payload.entries;
+    document.querySelector("#auditList").innerHTML = state.audit.length
+        ? state.audit.map(entry => `
             <div class="audit-row">
                 <div><strong>${escapeHtml(entry.action)}</strong><div class="meta">${escapeHtml(entry.detail)}</div></div>
                 <span>${escapeHtml(entry.createdAt)}</span>
@@ -297,33 +256,27 @@ document.querySelector("#announcementForm").addEventListener("submit", async eve
             body: JSON.stringify({title: form.get("title"), body: form.get("body")})
         });
         event.currentTarget.reset();
-        await Promise.all([loadAnnouncements(), loadAnalytics(), loadAudit()]);
+        await Promise.all([loadAnnouncements(), loadStats(), loadAudit()]);
+        renderOverview();
     });
 });
 
-document.querySelector("#templateForm").addEventListener("submit", async event => {
+document.querySelector("#importUserForm").addEventListener("submit", async event => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await runWithStatus("Đang lưu template...", "Đã lưu template.", async () => {
-        await request("/api/templates", {
+    await runWithStatus("Đang thêm tài khoản vào admin...", "Đã thêm tài khoản vào admin.", async () => {
+        await request("/api/users/import", {
             method: "POST",
-            body: JSON.stringify({title: form.get("title"), audience: form.get("audience"), description: form.get("description")})
+            body: JSON.stringify({
+                email: form.get("email"),
+                name: form.get("name"),
+                provider: form.get("provider"),
+                verified: true
+            })
         });
         event.currentTarget.reset();
-        await Promise.all([loadTemplates(), loadAudit()]);
-    });
-});
-
-document.querySelector("#subjectForm").addEventListener("submit", async event => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    await runWithStatus("Đang lưu danh mục...", "Đã lưu danh mục.", async () => {
-        await request("/api/subjects", {
-            method: "POST",
-            body: JSON.stringify({name: form.get("name"), category: form.get("category")})
-        });
-        event.currentTarget.reset();
-        await Promise.all([loadSubjects(), loadAudit()]);
+        await Promise.all([loadUsers(), loadStats(), loadAudit()]);
+        renderOverview();
     });
 });
 
@@ -341,17 +294,14 @@ document.addEventListener("click", async event => {
             lock: "khóa",
             unlock: "mở khóa",
             requestReset: "yêu cầu đặt lại mật khẩu",
-            clearReset: "gỡ yêu cầu đặt lại mật khẩu",
-            makePremium: "nâng lên Premium",
-            makeFree: "chuyển về Free",
-            makeTeacher: "đổi vai trò thành Teacher",
-            makeUser: "đổi vai trò thành User"
+            clearReset: "gỡ yêu cầu đặt lại mật khẩu"
         };
         const label = actionLabels[userAction.dataset.userAction] || "cập nhật";
         if (!confirm(`Bạn chắc chắn muốn ${label} tài khoản ${userAction.dataset.email}?`)) {
             return;
         }
-        await act("/api/users/action", {email: userAction.dataset.email, action: userAction.dataset.userAction}, [loadUsers, loadAnalytics, loadAudit]);
+        await act("/api/users/action", {email: userAction.dataset.email, action: userAction.dataset.userAction}, [loadUsers, loadStats, loadAudit]);
+        renderOverview();
         return;
     }
     const announcementAction = event.target.closest("[data-announcement-action]");
@@ -359,23 +309,8 @@ document.addEventListener("click", async event => {
         if (announcementAction.dataset.announcementAction === "delete" && !confirm("Xóa thông báo này?")) {
             return;
         }
-        await act("/api/announcements/action", {id: announcementAction.dataset.id, action: announcementAction.dataset.announcementAction}, [loadAnnouncements, loadAnalytics, loadAudit]);
-        return;
-    }
-    const templateAction = event.target.closest("[data-template-action]");
-    if (templateAction) {
-        if (templateAction.dataset.templateAction === "delete" && !confirm("Xóa template này?")) {
-            return;
-        }
-        await act("/api/templates/action", {id: templateAction.dataset.id, action: templateAction.dataset.templateAction}, [loadTemplates, loadAudit]);
-        return;
-    }
-    const subjectAction = event.target.closest("[data-subject-action]");
-    if (subjectAction) {
-        if (subjectAction.dataset.subjectAction === "delete" && !confirm("Xóa danh mục này?")) {
-            return;
-        }
-        await act("/api/subjects/action", {id: subjectAction.dataset.id, action: subjectAction.dataset.subjectAction}, [loadSubjects, loadAudit]);
+        await act("/api/announcements/action", {id: announcementAction.dataset.id, action: announcementAction.dataset.announcementAction}, [loadAnnouncements, loadStats, loadAudit]);
+        renderOverview();
         return;
     }
     const issueAction = event.target.closest("[data-issue-action]");
@@ -383,7 +318,8 @@ document.addEventListener("click", async event => {
         if (issueAction.dataset.issueAction === "delete" && !confirm("Xóa bản ghi lỗi này?")) {
             return;
         }
-        await act("/api/issues/action", {id: issueAction.dataset.id, action: issueAction.dataset.issueAction}, [loadIssues, loadAnalytics, loadAudit]);
+        await act("/api/issues/action", {id: issueAction.dataset.id, action: issueAction.dataset.issueAction}, [loadIssues, loadStats, loadAudit]);
+        renderOverview();
     }
 });
 
@@ -404,48 +340,17 @@ async function runWithStatus(loadingMessage, successMessage, work) {
     }
 }
 
-function renderBars(selector, items) {
-    const max = Math.max(1, ...items.map(item => item.value));
-    document.querySelector(selector).innerHTML = items.length
-        ? items.map(item => `
-            <div class="bar-row">
-                <span>${escapeHtml(item.label)}</span>
-                <div><i style="width:${Math.max(6, Math.round(item.value / max * 100))}%"></i></div>
-                <strong>${escapeHtml(String(item.value))}</strong>
-            </div>
-        `).join("")
-        : `<p>Chưa có dữ liệu.</p>`;
-}
-
-function renderRanks(selector, items, emptyText) {
-    const max = Math.max(1, ...items.map(item => item.value));
-    document.querySelector(selector).innerHTML = items.length
-        ? items.map(item => `
-            <div class="rank-row">
-                <span>${escapeHtml(item.label)}</span>
-                <div><i style="width:${Math.max(8, Math.round(item.value / max * 100))}%"></i></div>
-                <strong>${escapeHtml(String(item.value))}</strong>
-            </div>
-        `).join("")
-        : `<p>${escapeHtml(emptyText)}</p>`;
-}
-
-function labelFeatures(items) {
-    const labels = {tasks: "Task", schedule: "Lịch học", pomodoro: "Pomodoro", ai: "AI đọc lịch"};
-    return items.map(item => ({label: labels[item.label] || item.label, value: item.value}));
-}
-
 function metricRow(label, value) {
     return `<div class="metric-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
 }
 
-function roleLabel(role) {
-    const labels = {Admin: "Quản trị viên", Teacher: "Giáo viên", User: "Người dùng"};
-    return labels[role] || role || "Người dùng";
+function providerLabel(provider) {
+    return provider === "google" ? "Google" : "Email/OTP";
 }
 
-function formatCurrency(value) {
-    return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+function issueTypeLabel(type) {
+    const labels = {otp: "OTP", ai: "AI đọc lịch", general: "Chung"};
+    return labels[type] || type.toUpperCase();
 }
 
 function setActionStatus(message, type = "") {

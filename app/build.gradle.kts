@@ -29,6 +29,7 @@ android {
         buildConfigField("String", "GEMINI_API_KEY", "\"${localProps.getProperty("GEMINI_API_KEY", "")}\"")
         buildConfigField("String", "OTP_BACKEND_URL", "\"${localProps.getProperty("OTP_BACKEND_URL", "http://10.0.2.2:8080")}\"")
         buildConfigField("String", "ADMIN_BACKEND_URL", "\"${localProps.getProperty("ADMIN_BACKEND_URL", "http://10.0.2.2:8090")}\"")
+        buildConfigField("String", "FIREBASE_DATABASE_URL", "\"${localProps.getProperty("FIREBASE_DATABASE_URL", "https://mobile-263d4-default-rtdb.firebaseio.com")}\"")
     }
 
     buildFeatures {

@@ -40,8 +40,7 @@
             <nav aria-label="Quản trị">
                 <button class="nav-item active" data-target="overviewPanel">Tổng quan</button>
                 <button class="nav-item" data-target="usersPanel">Người dùng</button>
-                <button class="nav-item" data-target="contentPanel">Nội dung</button>
-                <button class="nav-item" data-target="reportsPanel">Báo cáo</button>
+                <button class="nav-item" data-target="announcementsPanel">Thông báo</button>
                 <button class="nav-item" data-target="issuesPanel">Feedback & lỗi</button>
             </nav>
             <button id="logoutButton" class="quiet-button">Đăng xuất</button>
@@ -51,7 +50,7 @@
             <header class="workspace-header">
                 <div>
                     <p class="eyebrow">Bảng điều khiển</p>
-                    <h2>Analytics, người dùng và nội dung học tập</h2>
+                    <h2>Quản trị tài khoản và trạng thái hệ thống</h2>
                 </div>
                 <div class="header-actions">
                     <p id="actionStatus" class="action-status" role="status"></p>
@@ -65,24 +64,25 @@
                     <article class="surface">
                         <div class="surface-header">
                             <div>
-                                <h3>Tăng trưởng đăng ký</h3>
-                                <p>7 ngày gần nhất từ dữ liệu tài khoản đồng bộ.</p>
+                                <h3>Trạng thái đồng bộ</h3>
+                                <p>Theo dõi lần app Android gửi registry về admin backend.</p>
                             </div>
                             <button id="refreshButton" class="quiet-button">Làm mới</button>
                         </div>
-                        <div id="growthChart" class="bar-chart"></div>
+                        <div id="syncHealthList" class="metric-list"></div>
                     </article>
                     <article class="surface">
-                        <h3>Tương tác học tập</h3>
-                        <div id="engagementList" class="metric-list"></div>
+                        <h3>Việc cần xử lý</h3>
+                        <div id="adminWorkList" class="metric-list"></div>
                     </article>
                     <article class="surface">
-                        <h3>Môn học nổi bật</h3>
-                        <div id="subjectChart" class="rank-list"></div>
+                        <h3>Hoạt động quản trị gần đây</h3>
+                        <div id="auditList" class="audit-list"></div>
                     </article>
-                    <article class="surface">
-                        <h3>Tính năng được dùng</h3>
-                        <div id="featureChart" class="rank-list"></div>
+                    <article class="surface system-note">
+                        <h3>Nguồn dữ liệu</h3>
+                        <p>Admin web lưu registry tài khoản, khóa/reset, thông báo và lỗi trong file local. Dữ liệu task/lịch chi tiết của từng người dùng nằm ở Firebase Realtime Database.</p>
+                        <code>ADMIN_BACKEND_URL=http://10.0.2.2:8090</code>
                     </article>
                 </div>
             </section>
@@ -92,7 +92,7 @@
                     <div class="surface-header">
                         <div>
                             <h3>Tài khoản người dùng</h3>
-                            <p>Tìm, khóa hoặc mở khóa các tài khoản đã đồng bộ từ app.</p>
+                            <p>Danh sách tài khoản app đã đồng bộ với admin web.</p>
                         </div>
                         <div class="toolbar">
                             <input id="userSearch" class="search" placeholder="Tìm tên hoặc email">
@@ -105,15 +105,24 @@
                             </select>
                         </div>
                     </div>
+                    <form id="importUserForm" class="inline-form">
+                        <input name="email" type="email" placeholder="Email Firebase/Auth" required maxlength="120">
+                        <input name="name" placeholder="Tên hiển thị" maxlength="80">
+                        <select name="provider">
+                            <option value="email">Email/OTP</option>
+                            <option value="google">Google</option>
+                        </select>
+                        <button type="submit">Thêm vào admin</button>
+                    </form>
                     <div class="table-wrap">
                         <table>
                             <thead>
                             <tr>
                                 <th>Người dùng</th>
-                                <th>Vai trò</th>
-                                <th>Gói</th>
+                                <th>Provider</th>
                                 <th>Xác thực</th>
-                                <th>Học tập</th>
+                                <th>Snapshot học tập</th>
+                                <th>App sync gần nhất</th>
                                 <th>Trạng thái</th>
                                 <th></th>
                             </tr>
@@ -124,10 +133,10 @@
                 </article>
             </section>
 
-            <section id="contentPanel" class="panel">
+            <section id="announcementsPanel" class="panel">
                 <div class="two-column content-layout">
                     <article class="surface">
-                        <h3>Push Notifications</h3>
+                        <h3>Thông báo gửi về app</h3>
                         <form id="announcementForm">
                             <label>
                                 Tiêu đề
@@ -139,48 +148,10 @@
                             </label>
                             <button type="submit">Tạo thông báo</button>
                         </form>
+                    </article>
+                    <article class="surface">
+                        <h3>Danh sách thông báo</h3>
                         <div id="announcementList" class="stack-list"></div>
-                    </article>
-                    <article class="surface">
-                        <h3>Templates lịch học</h3>
-                        <form id="templateForm" class="compact-form">
-                            <input name="title" placeholder="Tên template" required maxlength="120">
-                            <input name="audience" placeholder="Đối tượng: cấp 3, sinh viên..." maxlength="80">
-                            <textarea name="description" rows="3" placeholder="Mô tả ngắn" maxlength="500"></textarea>
-                            <button type="submit">Thêm template</button>
-                        </form>
-                        <div id="templateList" class="stack-list"></div>
-                    </article>
-                    <article class="surface wide-surface">
-                        <h3>Danh mục môn học / kỹ năng / tag</h3>
-                        <form id="subjectForm" class="inline-form">
-                            <input name="name" placeholder="Tên môn học hoặc tag" required maxlength="80">
-                            <input name="category" placeholder="Nhóm: Môn học, Kỹ năng, Tag" maxlength="80">
-                            <button type="submit">Thêm</button>
-                        </form>
-                        <div id="subjectList" class="chip-list"></div>
-                    </article>
-                </div>
-            </section>
-
-            <section id="reportsPanel" class="panel">
-                <div class="two-column">
-                    <article class="surface">
-                        <h3>Khung giờ học phổ biến</h3>
-                        <div id="hourChart" class="bar-chart"></div>
-                    </article>
-                    <article class="surface">
-                        <h3>Subscription & doanh thu</h3>
-                        <div id="subscriptionReport" class="metric-list"></div>
-                    </article>
-                    <article class="surface">
-                        <h3>Hoạt động gần đây</h3>
-                        <div id="auditList" class="audit-list"></div>
-                    </article>
-                    <article class="surface system-note">
-                        <h3>Phạm vi dữ liệu</h3>
-                        <p>App gửi snapshot tổng hợp lên admin. Dashboard không hiển thị chi tiết lịch cá nhân từng người để giảm dữ liệu nhạy cảm.</p>
-                        <code>ADMIN_BACKEND_URL=http://10.0.2.2:8090</code>
                     </article>
                 </div>
             </section>
@@ -189,7 +160,7 @@
                 <article class="surface">
                     <div class="surface-header">
                         <div>
-                            <h3>Feedback / Report</h3>
+                            <h3>Feedback / lỗi</h3>
                             <p>Lỗi OTP, AI đọc lịch và phản hồi người dùng gửi về.</p>
                         </div>
                         <select id="issueFilter" class="search">
