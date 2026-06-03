@@ -36,6 +36,27 @@ public class StudyRepository {
     private static final String KEY_STUDY_STATUS = "study_status";
     private static final String DB_NAME = "study_planner.db";
     private static final int DB_VERSION = 4;
+    private static final String[] SAMPLE_TASK_TITLES = {
+            "Làm bài tập Chương 4",
+            "Đọc tài liệu Android",
+            "Ôn tập kiểm tra",
+            "Tóm tắt bài giảng",
+            "Nộp báo cáo UX"
+    };
+    private static final String[] SAMPLE_EVENT_TITLES = {
+            "Toán rời rạc",
+            "Thi Cấu trúc dữ liệu",
+            "Họp nhóm Mobile",
+            "Nộp slide thuyết trình",
+            "Mua bút highlight",
+            "Đọc tài liệu Android",
+            "Lập trình Mobile"
+    };
+    private static final String[] SAMPLE_COUNTDOWN_TITLES = {
+            "Thi cuối kỳ Mobile",
+            "Sinh nhật bạn thân",
+            "Ngày bảo vệ đồ án"
+    };
 
     private final SharedPreferences prefs;
     private final StudyDbHelper dbHelper;
@@ -54,6 +75,7 @@ public class StudyRepository {
         dbHelper = new StudyDbHelper(context, DB_NAME.replace(".db", suffix + ".db"));
         firebaseStore = accountScoped ? new FirebaseStudyStore(normalizedAccount) : null;
         ensureRuntimeTables();
+        purgeSampleData();
         if (!accountScoped) {
             seedIfNeeded();
         }
@@ -511,19 +533,9 @@ public class StudyRepository {
     }
 
     public void addOcrSampleEvents() {
-        if (hasEventTitle("Lập trình Mobile") || hasEventTitle("Thi Cấu trúc dữ liệu") || hasTaskTitle("Nộp báo cáo UX")) {
-            return;
-        }
-        saveEvent(newEvent("Lập trình Mobile", StudyEvent.TYPE_STUDY, "Mobile", DateTimeUtils.daysFromNow(1, 9, 30), DateTimeUtils.daysFromNow(1, 11, 30), "B203", "Tạo từ ảnh thời khóa biểu"));
-        saveEvent(newEvent("Thi Cấu trúc dữ liệu", StudyEvent.TYPE_EXAM, "CTDL", DateTimeUtils.daysFromNow(3, 13, 0), DateTimeUtils.daysFromNow(3, 14, 30), "A405", "Mang thẻ sinh viên"));
-        saveTask(newTask("Nộp báo cáo UX", "UX/UI", DateTimeUtils.daysFromNow(2, 22, 0), StudyTask.PRIORITY_HIGH, "Tạo từ ảnh lịch"));
     }
 
     public void seedDemoDataIfEmpty() {
-        if (!getEvents().isEmpty() || !getTasks().isEmpty()) {
-            return;
-        }
-        seedDemoScheduleData();
     }
 
     private boolean hasEventTitle(String title) {
@@ -567,6 +579,56 @@ public class StudyRepository {
         ensureEventColumn("reminder_before_minutes", "INTEGER NOT NULL DEFAULT 15");
         ensureEventColumn("source_task_id", "TEXT NOT NULL DEFAULT ''");
         normalizeLegacyEventTypes();
+    }
+
+    private void purgeSampleData() {
+        purgeSampleEvents();
+        purgeSampleTasks();
+        purgeSampleCountdowns();
+    }
+
+    private void purgeSampleEvents() {
+        for (String title : SAMPLE_EVENT_TITLES) {
+            for (String id : idsByTitle("events", title)) {
+                db().delete("events", "id = ?", new String[]{id});
+                if (firebaseStore != null) {
+                    firebaseStore.deleteEvent(id);
+                }
+            }
+        }
+    }
+
+    private void purgeSampleTasks() {
+        for (String title : SAMPLE_TASK_TITLES) {
+            for (String id : idsByTitle("tasks", title)) {
+                db().delete("events", "source_task_id = ?", new String[]{id});
+                db().delete("tasks", "id = ?", new String[]{id});
+                if (firebaseStore != null) {
+                    firebaseStore.deleteTask(id);
+                }
+            }
+        }
+    }
+
+    private void purgeSampleCountdowns() {
+        for (String title : SAMPLE_COUNTDOWN_TITLES) {
+            for (String id : idsByTitle("countdowns", title)) {
+                db().delete("countdowns", "id = ?", new String[]{id});
+                if (firebaseStore != null) {
+                    firebaseStore.deleteCountdown(id);
+                }
+            }
+        }
+    }
+
+    private List<String> idsByTitle(String table, String title) {
+        List<String> ids = new ArrayList<>();
+        try (Cursor cursor = db().query(table, new String[]{"id"}, "title = ?", new String[]{title}, null, null, null)) {
+            while (cursor.moveToNext()) {
+                ids.add(cursor.getString(0));
+            }
+        }
+        return ids;
     }
 
     private void ensureTaskColumn(String column, String definition) {
@@ -720,27 +782,6 @@ public class StudyRepository {
             }
         }
         saveProfile(defaultProfile());
-        seedDemoScheduleData();
-    }
-
-    private void seedDemoScheduleData() {
-        saveEvent(newEvent("Toán rời rạc", StudyEvent.TYPE_STUDY, "Toán", DateTimeUtils.daysFromNow(0, 9, 30), DateTimeUtils.daysFromNow(0, 11, 30), "B203", "Ôn chương 4"));
-        saveEvent(newEvent("Thi Cấu trúc dữ liệu", StudyEvent.TYPE_EXAM, "CTDL", DateTimeUtils.daysFromNow(2, 13, 0), DateTimeUtils.daysFromNow(2, 14, 30), "A405", "Mang thẻ sinh viên"));
-        saveEvent(newEvent("Họp nhóm Mobile", StudyEvent.TYPE_STUDY, "Mobile", DateTimeUtils.daysFromNow(1, 19, 0), DateTimeUtils.daysFromNow(1, 20, 30), "https://meet.google.com/demo-study", "Chốt demo cuối kỳ"));
-        saveEvent(newEvent("Nộp slide thuyết trình", StudyEvent.TYPE_DEADLINE, "Đồ án Study Planner", DateTimeUtils.daysFromNow(3, 22, 0), DateTimeUtils.daysFromNow(3, 22, 30), "https://classroom.google.com/", "Nộp PDF và slide bản cuối"));
-        saveEvent(newEvent("Mua bút highlight", StudyEvent.TYPE_PERSONAL, "Chuẩn bị học tập", DateTimeUtils.daysFromNow(1, 17, 30), DateTimeUtils.daysFromNow(1, 18, 0), "Nhà sách gần trường", "Chọn màu pastel để ghi chú"));
-        saveCountdownMilestone(newCountdownMilestone("Thi cuối kỳ Mobile", CountdownMilestone.TYPE_EXAM, DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(10, 0, 0)), "Ôn lại SQLite, Activity và XML layout"));
-        saveCountdownMilestone(newCountdownMilestone("Sinh nhật bạn thân", CountdownMilestone.TYPE_BIRTHDAY, DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(18, 0, 0)), "Chuẩn bị thiệp nhỏ"));
-        saveCountdownMilestone(newCountdownMilestone("Ngày bảo vệ đồ án", CountdownMilestone.TYPE_EVENT, DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(25, 0, 0)), "Chốt demo và slide"));
-        saveTask(newTask("Làm bài tập Chương 4", "CSDL", DateTimeUtils.daysFromNow(0, 21, 0), StudyTask.PRIORITY_HIGH, "Hoàn thành trước buổi học"));
-        StudyTask androidTask = newTask("Đọc tài liệu Android", "Mobile", DateTimeUtils.daysFromNow(1, 8, 0), StudyTask.PRIORITY_MEDIUM, "Activity, XML layout, SQLite");
-        androidTask.setShowOnCalendar(true);
-        saveTask(androidTask);
-        syncTaskDeadlineEvent(androidTask);
-        saveTask(newTask("Ôn tập kiểm tra", "Giải tích", DateTimeUtils.daysFromNow(2, 20, 0), StudyTask.PRIORITY_HIGH, "Làm lại đề mẫu"));
-        StudyTask done = newTask("Tóm tắt bài giảng", "UX/UI", DateTimeUtils.daysFromNow(-1, 18, 0), StudyTask.PRIORITY_LOW, "");
-        done.setCompleted(true);
-        saveTask(done);
     }
 
     private boolean hasProfile() {
@@ -765,7 +806,7 @@ public class StudyRepository {
     }
 
     private UserProfile defaultProfile() {
-        return new UserProfile("Minh Anh", "student@email.com", "Quản lý lịch học và deadline");
+        return new UserProfile("Người dùng", "", "Quản lý lịch học và deadline");
     }
 
     private static class StudyDbHelper extends SQLiteOpenHelper {

@@ -2579,30 +2579,15 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void confirmOcrImport() {
-        new AlertDialog.Builder(this)
-                .setTitle("Tạo lịch từ hình ảnh")
-                .setMessage("Demo OCR sẽ thêm 2 sự kiện và 1 deadline mẫu vào dữ liệu của bạn.")
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Tạo lịch", (dialog, which) -> {
-                    repository.addOcrSampleEvents();
-                    toast("Đã đồng bộ dữ liệu từ ảnh mẫu");
-                    showSchedule("Tất cả");
-                })
-                .show();
-    }
-
     private void showImageImportOptions() {
-        String[] actions = {"Chụp ảnh", "Tải ảnh từ máy", "Dùng dữ liệu mẫu"};
+        String[] actions = {"Chụp ảnh", "Tải ảnh từ máy"};
         new AlertDialog.Builder(this)
                 .setTitle("Tạo lịch tự động")
                 .setItems(actions, (dialog, which) -> {
                     if (which == 0) {
                         openCamera();
-                    } else if (which == 1) {
-                        galleryLauncher.launch("image/*");
                     } else {
-                        confirmOcrImport();
+                        galleryLauncher.launch("image/*");
                     }
                 })
                 .show();
@@ -3940,7 +3925,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         repository = new StudyRepository(this, accountEmail);
-        repository.seedDemoDataIfEmpty();
         repository.syncSnapshotToFirebase();
         rescheduleAllReminders();
     }

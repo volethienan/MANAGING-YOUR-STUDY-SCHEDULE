@@ -2,7 +2,7 @@
 
 ## 1. Tổng Quan
 
-Ứng dụng Study Planner sử dụng SQLite cục bộ trên Android để lưu dữ liệu xác thực email, hồ sơ, task, lịch học, thống kê Pomodoro và cài đặt. Ngoài SQLite, app dùng SharedPreferences để lưu trạng thái mở lần đầu, session và lựa chọn cá nhân hóa.
+Ứng dụng Study Planner sử dụng SQLite cục bộ trên Android để lưu cache dữ liệu xác thực email, hồ sơ, task, lịch học, thống kê Pomodoro và cài đặt. Ngoài SQLite, app dùng SharedPreferences để lưu trạng thái mở lần đầu, session và lựa chọn cá nhân hóa. Với dữ liệu học tập theo tài khoản, app đồng bộ lên Firebase Realtime Database theo từng email đã mã hóa để dữ liệu giữa các user không bị lẫn nhau.
 
 Backend OTP không lưu dữ liệu lâu dài; backend chỉ nhận request gửi OTP và chuyển tiếp qua SMTP.
 
@@ -243,11 +243,7 @@ Ví dụ:
 
 ## 7. Dữ Liệu Mẫu
 
-Khi chưa có profile và chưa scoped theo tài khoản, app seed dữ liệu mẫu:
-
-- Event: Toán rời rạc, Thi Cấu trúc dữ liệu, Họp nhóm Mobile.
-- Task: Làm bài tập Chương 4, Đọc tài liệu Android, Ôn tập kiểm tra, Tóm tắt bài giảng.
-- Profile mặc định: Minh Anh, `student@email.com`, mục tiêu quản lý lịch học và deadline.
+App không tự seed dữ liệu mẫu. Dữ liệu task, lịch học, countdown và Pomodoro chỉ được tạo khi người dùng thao tác trong app hoặc import từ ảnh thật.
 
 ## 8. Chính Sách Bảo Mật Dữ Liệu
 
@@ -260,7 +256,7 @@ Khi chưa có profile và chưa scoped theo tài khoản, app seed dữ liệu m
 
 | Hạn chế | Đề xuất |
 | --- | --- |
-| Dữ liệu local không đồng bộ cloud | Thêm Firebase Firestore hoặc backend riêng |
+| Dữ liệu cloud hiện dùng Realtime Database cơ bản | Bổ sung Firebase Auth email/password và rule bảo mật theo `auth.uid` |
 | Chưa có migration phức tạp | Dùng Room Database để quản lý migration rõ hơn |
 | Session local tách với Firebase session | Đồng bộ hóa session và trạng thái Firebase chặt hơn |
 | Backend OTP không lưu log kiểm toán | Thêm logging và rate limit nếu triển khai thật |
