@@ -56,7 +56,7 @@ Nếu app báo Google Sign-In không hoàn tất:
 
 - Kiểm tra kết nối Internet.
 - Kiểm tra thiết bị/emulator có Google Play Services.
-- Nếu bạn không tự hủy đăng nhập, nguyên nhân thường là Firebase SHA-1/OAuth chưa đúng.
+- Nếu người dùng không tự hủy đăng nhập, nguyên nhân thường là Firebase SHA-1/OAuth chưa đúng.
 
 ## 6. Quên Mật Khẩu
 

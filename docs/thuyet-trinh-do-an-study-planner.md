@@ -103,7 +103,7 @@ Nếu giáo viên hỏi: "Firebase có xem database được không?", trả l�
 
 ## 5. Hướng dẫn cây thư mục và vai trò từng file
 
-Phần này giúp bạn nhìn cây thư mục trong Android Studio và biết file nào dùng để làm gì.
+Phần này giúp người đọc quan sát cây thư mục trong Android Studio và biết file nào dùng để làm gì.
 
 ### 5.1 Cây thư mục tổng quan
 
@@ -191,7 +191,7 @@ Khai báo thông tin app:
 
 ### 5.3 Package Java chính
 
-Trong Android Studio, bạn thấy:
+Trong Android Studio có thể thấy:
 
 ```text
 app/src/main/java/com/example/cuoiky_qllichhoctap/
@@ -717,7 +717,7 @@ Chứa tài liệu đồ án:
 | `09-readme-ma-nguon.md` | README mã nguồn chi tiết |
 | `10-web-quan-tri.md` | Tài liệu web admin |
 | `bao-cao-hoan-chinh.*` | Bộ báo cáo LaTeX/PDF |
-| `thuyet-trinh-do-an-study-planner.md` | File bạn đang đọc, dùng để ôn thuyết trình |
+| `thuyet-trinh-do-an-study-planner.md` | File tài liệu tổng hợp dùng để ôn thuyết trình |
 
 ---
 
@@ -2120,4 +2120,3 @@ Dữ liệu local như dashboard, lịch, task, Pomodoro vẫn dùng được. C
 ## 18. Tóm tắt để nói trong 30 giây
 
 > Study Planner là app Android hỗ trợ sinh viên quản lý lịch học, lịch thi, deadline, task và Pomodoro. App dùng SQLite local để lưu dữ liệu học tập, Firebase Authentication để đăng nhập Google, một OTP backend Java để gửi mã OTP qua email và admin web để quản lý registry tài khoản, thông báo, lỗi OTP/AI. Điểm nổi bật là app có cảnh báo trùng lịch, có thể tạo lịch từ ảnh bằng Gemini API, đồng bộ deadline task sang lịch và thống kê thời gian tập trung. Hiện tại Firebase chưa dùng làm database; nếu mở rộng, em sẽ tích hợp Firestore để đồng bộ dữ liệu giữa nhiều thiết bị.
-
