@@ -1208,7 +1208,6 @@ public class MainActivity extends AppCompatActivity {
                 : new String[]{"Sửa", "Xóa"};
         new AlertDialog.Builder(this)
                 .setTitle(event.getTitle())
-                .setMessage(eventDetailText(event))
                 .setItems(actions, (dialog, which) -> {
                     if (hasOnlineLink && which == 0) {
                         openUrl(event.getRoom());
@@ -2318,7 +2317,6 @@ public class MainActivity extends AppCompatActivity {
                 : new String[]{"Sửa", "Xóa"};
         new AlertDialog.Builder(this)
                 .setTitle(event.getTitle())
-                .setMessage(eventDetailText(event))
                 .setItems(actions, (dialog, which) -> {
                     if (hasOnlineLink && which == 0) {
                         openUrl(event.getRoom());
