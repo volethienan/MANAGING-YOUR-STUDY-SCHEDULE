@@ -17,8 +17,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -142,38 +144,70 @@ public class AdminPortalClient {
     }
 
     private JSONObject get(String path) throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(trimSlash(BuildConfig.ADMIN_BACKEND_URL) + path).openConnection();
-        connection.setRequestMethod("GET");
-        connection.setConnectTimeout(4000);
-        connection.setReadTimeout(7000);
-        int status = connection.getResponseCode();
-        InputStream stream = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
-        String response = readAll(stream);
-        connection.disconnect();
-        if (status < 200 || status >= 300) {
-            throw new IllegalStateException("Admin backend HTTP " + status + ": " + response);
+        Exception lastError = null;
+        for (String baseUrl : backendUrls()) {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) new URL(trimSlash(baseUrl) + path).openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(2500);
+                connection.setReadTimeout(5000);
+                int status = connection.getResponseCode();
+                InputStream stream = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
+                String response = readAll(stream);
+                connection.disconnect();
+                if (status < 200 || status >= 300) {
+                    throw new IllegalStateException("Admin backend HTTP " + status + ": " + response);
+                }
+                return new JSONObject(response);
+            } catch (Exception exception) {
+                lastError = exception;
+            }
         }
-        return new JSONObject(response);
+        throw lastError == null ? new IllegalStateException("Không kết nối được web quản trị") : lastError;
     }
 
     private JSONObject post(String path, JSONObject payload) throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) new URL(trimSlash(BuildConfig.ADMIN_BACKEND_URL) + path).openConnection();
-        connection.setRequestMethod("POST");
-        connection.setConnectTimeout(4000);
-        connection.setReadTimeout(7000);
-        connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-        connection.setDoOutput(true);
-        try (OutputStream output = connection.getOutputStream()) {
-            output.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+        Exception lastError = null;
+        for (String baseUrl : backendUrls()) {
+            try {
+                HttpURLConnection connection = (HttpURLConnection) new URL(trimSlash(baseUrl) + path).openConnection();
+                connection.setRequestMethod("POST");
+                connection.setConnectTimeout(2500);
+                connection.setReadTimeout(5000);
+                connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+                connection.setDoOutput(true);
+                try (OutputStream output = connection.getOutputStream()) {
+                    output.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                int status = connection.getResponseCode();
+                InputStream stream = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
+                String response = readAll(stream);
+                connection.disconnect();
+                if (status < 200 || status >= 300) {
+                    throw new IllegalStateException("Admin backend HTTP " + status + ": " + response);
+                }
+                return new JSONObject(response);
+            } catch (Exception exception) {
+                lastError = exception;
+            }
         }
-        int status = connection.getResponseCode();
-        InputStream stream = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
-        String response = readAll(stream);
-        connection.disconnect();
-        if (status < 200 || status >= 300) {
-            throw new IllegalStateException("Admin backend HTTP " + status + ": " + response);
+        throw lastError == null ? new IllegalStateException("Không kết nối được web quản trị") : lastError;
+    }
+
+    private List<String> backendUrls() {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        String configured = BuildConfig.ADMIN_BACKEND_URL == null ? "" : BuildConfig.ADMIN_BACKEND_URL.trim();
+        if (!configured.isEmpty()) {
+            for (String url : configured.split(",")) {
+                String cleaned = url.trim();
+                if (!cleaned.isEmpty()) {
+                    urls.add(cleaned);
+                }
+            }
         }
-        return new JSONObject(response);
+        urls.add("http://127.0.0.1:8090");
+        urls.add("http://10.0.2.2:8090");
+        return new ArrayList<>(urls);
     }
 
     private JSONObject userPayload(String email, String name, String provider, boolean verified) throws Exception {

@@ -241,8 +241,41 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.menuItemToday).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Hôm nay"); });
         findViewById(R.id.menuItemDone).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Đã hoàn thành"); });
         findViewById(R.id.menuItemCountdown).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showCountdown(COUNTDOWN_FILTER_ALL); });
-        findViewById(R.id.menuBtnSettings).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showSettings(); });
-        findViewById(R.id.menuBtnNewGoal).setOnClickListener(v -> toast("Tính năng Mục tiêu sẽ ra mắt sớm!"));
+        findViewById(R.id.menuItemReportIssue).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showReportIssueDialog(); });
+    }
+
+    private void showReportIssueDialog() {
+        View form = getLayoutInflater().inflate(R.layout.dialog_report_issue, null, false);
+        EditText input = form.findViewById(R.id.inputIssueMessage);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Báo lỗi / góp ý")
+                .setView(form)
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Gửi", (dialog, which) -> {
+                    String message = input.getText().toString().trim();
+                    if (message.isEmpty()) {
+                        toast("Vui lòng nhập nội dung phản ánh");
+                        return;
+                    }
+                    String email = currentAccountEmail();
+                    adminPortalClient.reportIssue("general", email, message);
+                    toast("Đã gửi phản ánh đến web quản trị");
+                })
+                .show();
+    }
+
+    private String currentAccountEmail() {
+        AuthUser localUser = authRepository == null ? null : authRepository.getCurrentUser();
+        if (localUser != null && !TextUtils.isEmpty(localUser.getEmail())) {
+            return localUser.getEmail();
+        }
+        FirebaseUser firebaseUser = firebaseAuth == null ? null : firebaseAuth.getCurrentUser();
+        if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            return firebaseUser.getEmail();
+        }
+        UserProfile profile = repository == null ? null : repository.getProfile();
+        return profile == null ? "không rõ" : profile.getEmail();
     }
 
     private void updateSideMenuHeader(UserProfile profile) {
