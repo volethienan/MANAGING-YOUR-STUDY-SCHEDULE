@@ -40,6 +40,7 @@ public class StudyRepository {
     private final SharedPreferences prefs;
     private final StudyDbHelper dbHelper;
     private final boolean accountScoped;
+    private final FirebaseStudyStore firebaseStore;
 
     public StudyRepository(Context context) {
         this(context, "");
@@ -51,6 +52,7 @@ public class StudyRepository {
         String suffix = accountScoped ? "_" + Integer.toHexString(normalizedAccount.hashCode()) : "";
         prefs = context.getSharedPreferences(PREFS + suffix, Context.MODE_PRIVATE);
         dbHelper = new StudyDbHelper(context, DB_NAME.replace(".db", suffix + ".db"));
+        firebaseStore = accountScoped ? new FirebaseStudyStore(normalizedAccount) : null;
         ensureRuntimeTables();
         if (!accountScoped) {
             seedIfNeeded();
@@ -89,6 +91,7 @@ public class StudyRepository {
         values.put("email", profile.getEmail());
         values.put("goal", profile.getGoal());
         db().insertWithOnConflict("profile", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        syncProfileToFirebase(profile);
     }
 
     public List<StudyTask> getTasks() {
@@ -149,11 +152,24 @@ public class StudyRepository {
         values.put("marker_value", task.getMarkerValue());
         values.put("show_on_calendar", task.isShowOnCalendar() ? 1 : 0);
         db().insertWithOnConflict("tasks", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        syncTaskToFirebase(task);
     }
 
     public void deleteTask(String id) {
+        List<String> linkedEventIds = new ArrayList<>();
+        try (Cursor cursor = db().query("events", new String[]{"id"}, "source_task_id = ?", new String[]{id}, null, null, null)) {
+            while (cursor.moveToNext()) {
+                linkedEventIds.add(cursor.getString(0));
+            }
+        }
         db().delete("events", "source_task_id = ?", new String[]{id});
         db().delete("tasks", "id = ?", new String[]{id});
+        if (firebaseStore != null) {
+            firebaseStore.deleteTask(id);
+            for (String eventId : linkedEventIds) {
+                firebaseStore.deleteEvent(eventId);
+            }
+        }
     }
 
     public List<StudyEvent> getEvents() {
@@ -192,10 +208,14 @@ public class StudyRepository {
         values.put("reminder_before_minutes", event.getReminderBeforeMinutes());
         values.put("source_task_id", event.getSourceTaskId());
         db().insertWithOnConflict("events", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        syncEventToFirebase(event);
     }
 
     public void deleteEvent(String id) {
         db().delete("events", "id = ?", new String[]{id});
+        if (firebaseStore != null) {
+            firebaseStore.deleteEvent(id);
+        }
     }
 
     public List<CountdownMilestone> getCountdownMilestones() {
@@ -222,10 +242,16 @@ public class StudyRepository {
         values.put("target_date", milestone.getTargetDate());
         values.put("note", milestone.getNote());
         db().insertWithOnConflict("countdowns", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        if (firebaseStore != null) {
+            firebaseStore.saveCountdown(milestone);
+        }
     }
 
     public void deleteCountdownMilestone(String id) {
         db().delete("countdowns", "id = ?", new String[]{id});
+        if (firebaseStore != null) {
+            firebaseStore.deleteCountdown(id);
+        }
     }
 
     public CountdownMilestone newCountdownMilestone(String title, String type, long targetDate, String note) {
@@ -367,6 +393,7 @@ public class StudyRepository {
         dayValues.put("minutes", getTodayFocusMinutes() + minutes);
         dayValues.put("sessions", getTodayFocusSessions() + 1);
         db().insertWithOnConflict("focus_day_stats", null, dayValues, SQLiteDatabase.CONFLICT_REPLACE);
+        syncFocusStatsToFirebase();
     }
 
     public void savePomodoroSession(com.example.cuoiky_qllichhoctap.model.PomodoroSession session) {
@@ -383,6 +410,9 @@ public class StudyRepository {
         values.put("sound_type", session.getSoundType());
         values.put("created_at", System.currentTimeMillis());
         db().insertWithOnConflict("pomodoro_sessions", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        if (firebaseStore != null) {
+            firebaseStore.savePomodoroSession(session);
+        }
     }
 
     public int getCompletedPomodoros(String taskId) {
@@ -467,6 +497,9 @@ public class StudyRepository {
                 .putString(KEY_MASCOT, mascot)
                 .putString(KEY_STUDY_STATUS, studyStatus)
                 .apply();
+        if (firebaseStore != null) {
+            firebaseStore.savePersonalization(avatar, dashboardBackground, themeColor, mascot, studyStatus);
+        }
     }
 
     public StudyTask newTask(String title, String subject, long dueAt, String priority, String note) {
@@ -585,6 +618,64 @@ public class StudyRepository {
         values.put("key", key);
         values.put("value", enabled ? "1" : "0");
         db().insertWithOnConflict("settings", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        if (firebaseStore != null) {
+            firebaseStore.saveSetting(key, enabled);
+        }
+    }
+
+    public void syncSnapshotToFirebase() {
+        if (firebaseStore == null) {
+            return;
+        }
+        firebaseStore.syncSnapshot(
+                getProfile(),
+                getTasks(),
+                getEvents(),
+                getCountdownMilestones(),
+                getRecentPomodoroSessions(50),
+                getFocusMinutes(),
+                getFocusSessions(),
+                getTodayFocusMinutes(),
+                getTodayFocusSessions(),
+                todayFocusKey(),
+                isNotifyEnabled(),
+                isSyncEnabled(),
+                getAvatarChoice(),
+                getDashboardBackgroundChoice(),
+                getThemeColorChoice(),
+                getMascotChoice(),
+                getStudyStatus()
+        );
+    }
+
+    private void syncProfileToFirebase(UserProfile profile) {
+        if (firebaseStore != null) {
+            firebaseStore.saveProfile(profile);
+        }
+    }
+
+    private void syncTaskToFirebase(StudyTask task) {
+        if (firebaseStore != null) {
+            firebaseStore.saveTask(task);
+        }
+    }
+
+    private void syncEventToFirebase(StudyEvent event) {
+        if (firebaseStore != null) {
+            firebaseStore.saveEvent(event);
+        }
+    }
+
+    private void syncFocusStatsToFirebase() {
+        if (firebaseStore != null) {
+            firebaseStore.saveFocusStats(
+                    getFocusMinutes(),
+                    getFocusSessions(),
+                    getTodayFocusMinutes(),
+                    getTodayFocusSessions(),
+                    todayFocusKey()
+            );
+        }
     }
 
     private void ensureFocusRow() {

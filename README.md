@@ -9,6 +9,7 @@ Android Java/XML study planner app with a Studygram-inspired interface.
 - Pomodoro focus timer and progress statistics.
 - Create schedules from camera/gallery images using Gemini image understanding.
 - Conflict detection for overlapping study events.
+- Firebase Realtime Database sync for account-scoped study data.
 - Admin web for account registry, account lock state, announcements, and OTP/AI issue monitoring.
 
 ## Gemini API setup
@@ -35,9 +36,25 @@ Debug APK:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Firebase data storage
+
+The app still writes to local SQLite first so it can work as an offline cache, then syncs account-scoped data to Firebase Realtime Database.
+After logging in, open Firebase Console > Realtime Database > Data and check:
+
+```text
+study_users/{encodedEmail}/meta/profile
+study_users/{encodedEmail}/tasks/{encodedTaskId}
+study_users/{encodedEmail}/events/{encodedEventId}
+study_users/{encodedEmail}/countdowns/{encodedCountdownId}
+study_users/{encodedEmail}/pomodoro_sessions/{encodedSessionId}
+study_users/{encodedEmail}/settings/{encodedKey}
+```
+
+For a demo, create or edit a task/event in the Android app, then refresh Realtime Database to show the updated node.
+
 ## Admin web
 
-The Android app keeps study data on each device. The separate `admin-web` service receives a central account registry and OTP/AI issue reports from the app when `ADMIN_BACKEND_URL` is configured.
+The Android app keeps SQLite as a local cache and syncs study data to Firebase Realtime Database. The separate `admin-web` service receives a central account registry, learning snapshots, and OTP/AI issue reports from the app when `ADMIN_BACKEND_URL` is configured.
 
 Run the local admin web:
 

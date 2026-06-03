@@ -3941,6 +3941,7 @@ public class MainActivity extends AppCompatActivity {
         }
         repository = new StudyRepository(this, accountEmail);
         repository.seedDemoDataIfEmpty();
+        repository.syncSnapshotToFirebase();
         rescheduleAllReminders();
     }
 
