@@ -3,9 +3,11 @@
     <color name="paper">#FFF7EA</color>
     <color name="paper_light">#FFFAF3</color>
     <color name="dot_grid">#D7C2A8</color>
-    <color name="ink">#1F2937</color>
-    <color name="muted">#333333</color>
+    <color name="ink">#3B2F2A</color>
+    <color name="muted">#5F564D</color>
     <color name="line">#D7C2A8</color>
+    <color name="soft_shadow">#E8D7BF</color>
+    <color name="border_strong">#A88F6D</color>
     <color name="rose">#BE123C</color>
     <color name="accent_blue">#0369A1</color>
     <color name="yellow">#FFF59D</color>
@@ -16,9 +18,10 @@
     <color name="blue">#B3E5FC</color>
     <color name="coral">#FFB4A8</color>
     <color name="danger">#BE123C</color>
-    <color name="input_text">#111827</color>
-    <color name="input_hint">#333333</color>
-    <color name="dialog_text">#111827</color>
+    <color name="input_text">#332B25</color>
+    <color name="input_hint">#6B6258</color>
+    <color name="dialog_text">#332B25</color>
+    <color name="launcher_icon_background">#F6FAFF</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 </resources>

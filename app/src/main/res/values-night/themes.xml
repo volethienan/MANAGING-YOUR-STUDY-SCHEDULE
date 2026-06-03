@@ -35,12 +35,30 @@
         <item name="android:textColor">@color/input_text</item>
         <item name="android:textColorHint">@color/input_hint</item>
         <item name="android:background">@drawable/bg_input</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:singleLine">false</item>
     </style>
 
     <style name="StudySpinner">
         <item name="android:fontFamily">@font/mali_regular</item>
         <item name="android:background">@drawable/bg_input</item>
         <item name="android:popupBackground">@color/paper_light</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:textColor">@color/input_text</item>
+    </style>
+
+    <style name="StudyCheck">
+        <item name="android:fontFamily">@font/mali_regular</item>
+        <item name="android:background">@drawable/bg_check_option</item>
+        <item name="android:buttonTint">@color/mint</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">50dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
     </style>
 
     <style name="StudyReadableText">

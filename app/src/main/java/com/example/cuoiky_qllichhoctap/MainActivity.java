@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +63,7 @@ import com.example.cuoiky_qllichhoctap.data.GeminiScheduleExtractor;
 import com.example.cuoiky_qllichhoctap.data.AdminPortalClient;
 import com.example.cuoiky_qllichhoctap.data.AuthRepository;
 import com.example.cuoiky_qllichhoctap.data.StudyRepository;
+import com.example.cuoiky_qllichhoctap.model.CountdownMilestone;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
 import com.example.cuoiky_qllichhoctap.model.StudyTask;
 import com.example.cuoiky_qllichhoctap.model.AuthUser;
@@ -122,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TASK_FILTER_PRIORITY_PREFIX = "Ưu tiên: ";
     private static final String COUNTDOWN_FILTER_ALL = "Tất cả";
     private static final String COUNTDOWN_FILTER_UPCOMING = "Sắp tới";
-    private static final String COUNTDOWN_FILTER_OVERDUE = "Quá hạn";
+    private static final String COUNTDOWN_FILTER_PAST = "Đã qua";
     private static final String[] REPEAT_OPTIONS = {"Không lặp", "Hằng ngày", "Hằng tuần", "Hằng tháng"};
     private static final String[] EVENT_TYPES = {StudyEvent.TYPE_STUDY, StudyEvent.TYPE_EXAM, StudyEvent.TYPE_DEADLINE, StudyEvent.TYPE_PERSONAL};
     private static final String[] EVENT_TYPE_LABELS = {"Lịch học", "Lịch thi", "Deadline", "Cá nhân"};
@@ -161,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
     private long scheduleWeekStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
     private String scheduleFilter = "Tất cả";
     private String scheduleViewMode = CALENDAR_WEEK;
+    private boolean showTodayScheduleInTasks = false;
+    private final Set<String> checkedTodayScheduleIds = new HashSet<>();
     private String lastShownAnnouncementId = "";
     private Uri pendingCameraUri;
     private ActivityResultLauncher<Intent> cameraLauncher;
@@ -172,27 +176,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static class CountdownItem {
         final String title;
-        final String kind;
-        final String detail;
         final long targetAt;
-        final StudyTask task;
-        final StudyEvent event;
+        final CountdownMilestone milestone;
 
-        CountdownItem(String title, String kind, String detail, long targetAt, StudyTask task, StudyEvent event) {
-            this.title = title;
-            this.kind = kind;
-            this.detail = detail;
-            this.targetAt = targetAt;
-            this.task = task;
-            this.event = event;
-        }
-
-        static CountdownItem fromTask(StudyTask task) {
-            return new CountdownItem(task.getTitle(), "Công việc", task.getTag(), task.getDueAt(), task, null);
-        }
-
-        static CountdownItem fromEvent(StudyEvent event) {
-            return new CountdownItem(event.getTitle(), event.getType(), event.getSubject(), event.getStartAt(), null, event);
+        CountdownItem(CountdownMilestone milestone) {
+            this.title = milestone.getTitle();
+            this.targetAt = milestone.getTargetDate();
+            this.milestone = milestone;
         }
     }
 
@@ -269,6 +259,12 @@ public class MainActivity extends AppCompatActivity {
             pomodoroTimer.cancel();
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        syncLearningSnapshotToAdmin();
+        super.onPause();
     }
 
     private View inflateScreen(int layoutId, boolean showBottomNav, int selectedNav) {
@@ -449,6 +445,7 @@ public class MainActivity extends AppCompatActivity {
     private void registerWithOtp(String name, String email, String password) {
         try {
             String code = authRepository.beginRegistration(name, email, password);
+            adminPortalClient.syncRegisteredUser(email, name, "email", false);
             deliverOtpEmail(email, code, "xác thực tài khoản");
             showOtpVerification(email);
         } catch (IllegalArgumentException exception) {
@@ -751,11 +748,49 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void syncLearningSnapshotToAdmin() {
+        if (adminPortalClient == null || repository == null) {
+            return;
+        }
+        AuthUser localUser = authRepository == null ? null : authRepository.getCurrentUser();
+        FirebaseUser firebaseUser = firebaseAuth == null ? null : firebaseAuth.getCurrentUser();
+        String email = "";
+        String name = "";
+        String provider = "email";
+        if (localUser != null) {
+            email = localUser.getEmail();
+            name = localUser.getName();
+        } else if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            email = firebaseUser.getEmail();
+            name = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? email : firebaseUser.getDisplayName();
+            provider = "google";
+        }
+        if (TextUtils.isEmpty(email)) {
+            return;
+        }
+        UserProfile profile = repository.getProfile();
+        if (TextUtils.isEmpty(name) && profile != null && !TextUtils.isEmpty(profile.getName())) {
+            name = profile.getName();
+        }
+        adminPortalClient.syncLearningSnapshot(
+                email,
+                name,
+                provider,
+                repository.getTasks(),
+                repository.getEvents(),
+                repository.getFocusMinutes(),
+                repository.getFocusSessions(),
+                repository.getTodayFocusMinutes(),
+                repository.getTodayFocusSessions(),
+                repository.getRecentPomodoroSessions(20));
+    }
+
     private void showDashboard() {
         View screen = inflateScreen(R.layout.screen_dashboard, true, SCREEN_DASHBOARD);
         UserProfile profile = repository.getProfile();
         List<StudyTask> tasks = repository.getTasks();
         List<StudyEvent> events = repository.getEvents();
+        syncLearningSnapshotToAdmin();
         int themeColor = getColor(themeColorRes(repository.getThemeColorChoice()));
 
         int todayTotal = countAllTodayTasks(tasks);
@@ -790,7 +825,7 @@ public class MainActivity extends AppCompatActivity {
             setText(screen, R.id.textNextEventMeta, "Thêm lịch học để bắt đầu theo dõi");
         } else {
             setText(screen, R.id.textNextEvent, nextEvent.getTitle());
-            setText(screen, R.id.textNextEventMeta, DateTimeUtils.formatDayLabel(nextEvent.getStartAt()) + " • " + DateTimeUtils.formatTime(nextEvent.getStartAt()) + " - " + DateTimeUtils.formatTime(nextEvent.getEndAt()) + " • " + nextEvent.getRoom());
+            setText(screen, R.id.textNextEventMeta, eventTimeMeta(nextEvent));
         }
 
         StudyTask nextTask = findNearestDeadlineTask(tasks);
@@ -872,23 +907,27 @@ public class MainActivity extends AppCompatActivity {
         });
 
         List<StudyEvent> visibleEvents = visibleRangeEvents(filter);
+        Set<String> visibleConflictIds = conflictIds(visibleEvents);
         WeekCalendarView weekCalendar = screen.findViewById(R.id.weekCalendar);
         weekCalendar.setRange(scheduleWeekStartMillis, visibleDays);
-        weekCalendar.setEvents(visibleEvents, conflictIds(visibleEvents));
+        weekCalendar.setEvents(visibleEvents, visibleConflictIds);
         weekCalendar.setOnEventClickListener(this::showEventActions);
         weekCalendar.setOnEmptySlotClickListener(startAt -> showEventDialog(null, () -> showSchedule(scheduleFilter), startAt));
         weekCalendar.setOnEventMoveRequestListener((event, newStartAt) -> showMoveEventConfirmation(event, newStartAt));
 
+        TextView conflictTitle = screen.findViewById(R.id.textConflictTitle);
         LinearLayout eventList = screen.findViewById(R.id.eventList);
         eventList.removeAllViews();
 
-        for (StudyEvent event : visibleEvents) {
+        List<StudyEvent> conflictEvents = conflictEvents(visibleEvents, visibleConflictIds);
+        conflictTitle.setVisibility(conflictEvents.isEmpty() ? View.GONE : View.VISIBLE);
+        eventList.setVisibility(conflictEvents.isEmpty() ? View.GONE : View.VISIBLE);
+        conflictTitle.setText("Kiểm tra xung đột (" + conflictEvents.size() + ")");
+
+        for (StudyEvent event : conflictEvents) {
             View row = createEventRow(event, eventList);
             row.setOnClickListener(v -> showEventActions(event));
             eventList.addView(row);
-        }
-        if (eventList.getChildCount() == 0) {
-            eventList.addView(emptyState(scheduleVisibleDays() == 1 ? "Hôm nay chưa có lịch nào." : "Chưa có lịch trong khoảng này."));
         }
         screen.findViewById(R.id.btnAddEvent).setOnClickListener(v -> showEventDialog(null, () -> showSchedule(filter)));
         screen.findViewById(R.id.btnImportImage).setOnClickListener(v -> showImageImportOptions());
@@ -968,13 +1007,28 @@ public class MainActivity extends AppCompatActivity {
         return ids;
     }
 
+    private List<StudyEvent> conflictEvents(List<StudyEvent> events, Set<String> conflictIds) {
+        List<StudyEvent> result = new ArrayList<>();
+        for (StudyEvent event : events) {
+            if (conflictIds.contains(event.getId())) {
+                result.add(event);
+            }
+        }
+        return result;
+    }
+
     private void showTasks(String filter) {
         View screen = inflateScreen(R.layout.screen_tasks, true, SCREEN_TASKS);
         setupTaskFilters(screen, filter);
+        setupTaskScheduleToggle(screen, filter);
         LinearLayout taskList = screen.findViewById(R.id.taskList);
         taskList.removeAllViews();
 
+        detachTasksFromCalendar();
         List<StudyTask> tasks = repository.getTasks();
+        if (showTodayScheduleInTasks) {
+            addTodaySchedulePreview(taskList);
+        }
         if (TASK_FILTER_MATRIX.equals(filter)) {
             addQuadrantSection(taskList, tasks, "Quan trọng và khẩn cấp", true, true);
             addQuadrantSection(taskList, tasks, "Quan trọng nhưng không khẩn cấp", true, false);
@@ -984,6 +1038,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        int taskRows = 0;
         for (StudyTask task : tasks) {
             if (!matchesTaskFilter(task, filter)) {
                 continue;
@@ -999,11 +1054,107 @@ public class MainActivity extends AppCompatActivity {
                 showTaskActions(task, refreshTasks);
             });
             taskList.addView(row);
+            taskRows++;
         }
-        if (taskList.getChildCount() == 0) {
+        if (taskRows == 0) {
             taskList.addView(emptyState("Chưa có công việc phù hợp"));
         }
         screen.findViewById(R.id.btnAddTask).setOnClickListener(v -> showTaskDialog(null, () -> showTasks(filter)));
+    }
+
+    private void detachTasksFromCalendar() {
+        for (StudyTask task : repository.getTasks()) {
+            if (!task.isShowOnCalendar()) {
+                continue;
+            }
+            task.setShowOnCalendar(false);
+            repository.saveTask(task);
+            syncTaskCalendarEvent(task);
+        }
+    }
+
+    private void setupTaskScheduleToggle(View screen, String filter) {
+        TextView toggle = screen.findViewById(R.id.toggleTodaySchedule);
+        toggle.setText(showTodayScheduleInTasks ? "Hiện lịch hôm nay: Bật" : "Hiện lịch hôm nay: Tắt");
+        toggle.setBackgroundResource(showTodayScheduleInTasks ? R.drawable.bg_selected_pill : R.drawable.bg_outline_pill);
+        toggle.setOnClickListener(v -> {
+            showTodayScheduleInTasks = !showTodayScheduleInTasks;
+            showTasks(filter);
+        });
+    }
+
+    private void addTodaySchedulePreview(LinearLayout taskList) {
+        List<StudyEvent> todayEvents = todayScheduleEvents();
+        if (todayEvents.isEmpty()) {
+            taskList.addView(taskSectionHeader("Lịch hôm nay"));
+            taskList.addView(emptyState("Hôm nay chưa có lịch."));
+            return;
+        }
+        taskList.addView(taskSectionHeader("Lịch hôm nay"));
+        for (StudyEvent event : todayEvents) {
+            taskList.addView(createTodayScheduleTaskRow(event, taskList));
+        }
+        taskList.addView(taskSectionHeader("To-do list"));
+    }
+
+    private View createTodayScheduleTaskRow(StudyEvent event, ViewGroup parent) {
+        View row = LayoutInflater.from(this).inflate(R.layout.item_task, parent, false);
+        if (row instanceof SwipeActionLayout) {
+            ((SwipeActionLayout) row).setSwipeEnabled(false);
+        }
+
+        TextView title = row.findViewById(R.id.textTitle);
+        TextView meta = row.findViewById(R.id.textMeta);
+        TextView details = row.findViewById(R.id.textDetails);
+        TextView marker = row.findViewById(R.id.textMarker);
+        CheckBox done = row.findViewById(R.id.checkDone);
+        View taskActions = row.findViewById(R.id.taskActions);
+        View foreground = row.findViewById(R.id.taskForeground);
+
+        taskActions.setVisibility(View.GONE);
+        details.setVisibility(View.GONE);
+        marker.setVisibility(View.GONE);
+        title.setText(event.getTitle());
+        meta.setText(DateTimeUtils.formatTime(event.getStartAt()) + " - " + DateTimeUtils.formatTime(event.getEndAt()));
+
+        String eventId = event.getId();
+        boolean checked = checkedTodayScheduleIds.contains(eventId);
+        done.setChecked(checked);
+        applyTodayScheduleTaskState(title, meta, checked);
+        done.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                checkedTodayScheduleIds.add(eventId);
+            } else {
+                checkedTodayScheduleIds.remove(eventId);
+            }
+            applyTodayScheduleTaskState(title, meta, isChecked);
+        });
+        foreground.setOnClickListener(v -> done.setChecked(!done.isChecked()));
+        return row;
+    }
+
+    private void applyTodayScheduleTaskState(TextView title, TextView meta, boolean checked) {
+        float alpha = checked ? 0.55f : 1f;
+        title.setAlpha(alpha);
+        meta.setAlpha(alpha);
+        if (checked) {
+            title.setPaintFlags(title.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            title.setPaintFlags(title.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+    }
+
+    private List<StudyEvent> todayScheduleEvents() {
+        List<StudyEvent> result = new ArrayList<>();
+        for (StudyEvent event : repository.getEvents()) {
+            if (!TextUtils.isEmpty(event.getSourceTaskId())) {
+                continue;
+            }
+            if (DateTimeUtils.isToday(event.getStartAt())) {
+                result.add(event);
+            }
+        }
+        return result;
     }
 
     private void showCountdown(String filter) {
@@ -1021,7 +1172,7 @@ public class MainActivity extends AppCompatActivity {
             list.addView(createCountdownRow(item, filter, list));
         }
         if (list.getChildCount() == 0) {
-            list.addView(emptyState("Chưa có mốc đếm ngược phù hợp"));
+            list.addView(emptyState("Chưa có sự kiện đếm ngược phù hợp"));
         }
         screen.findViewById(R.id.btnAddCountdown).setOnClickListener(v -> showCreateCountdownDialog(filter));
     }
@@ -1029,34 +1180,27 @@ public class MainActivity extends AppCompatActivity {
     private void setupCountdownFilters(View screen, String active) {
         bindFilter(screen, R.id.countdownFilterAll, COUNTDOWN_FILTER_ALL, active, () -> showCountdown(COUNTDOWN_FILTER_ALL));
         bindFilter(screen, R.id.countdownFilterUpcoming, COUNTDOWN_FILTER_UPCOMING, active, () -> showCountdown(COUNTDOWN_FILTER_UPCOMING));
-        bindFilter(screen, R.id.countdownFilterOverdue, COUNTDOWN_FILTER_OVERDUE, active, () -> showCountdown(COUNTDOWN_FILTER_OVERDUE));
+        bindFilter(screen, R.id.countdownFilterOverdue, COUNTDOWN_FILTER_PAST, active, () -> showCountdown(COUNTDOWN_FILTER_PAST));
     }
 
     private List<CountdownItem> buildCountdownItems() {
         List<CountdownItem> items = new ArrayList<>();
-        for (StudyTask task : repository.getTasks()) {
-            if (!task.isCompleted()) {
-                items.add(CountdownItem.fromTask(task));
-            }
-        }
-        for (StudyEvent event : repository.getEvents()) {
-            if (TextUtils.isEmpty(event.getSourceTaskId())) {
-                items.add(CountdownItem.fromEvent(event));
-            }
+        for (CountdownMilestone milestone : repository.getCountdownMilestones()) {
+            items.add(new CountdownItem(milestone));
         }
         Collections.sort(items, countdownComparator());
         return items;
     }
 
     private Comparator<CountdownItem> countdownComparator() {
-        long now = System.currentTimeMillis();
+        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
         return (first, second) -> {
-            boolean firstOverdue = first.targetAt < now;
-            boolean secondOverdue = second.targetAt < now;
-            if (firstOverdue != secondOverdue) {
-                return firstOverdue ? -1 : 1;
+            boolean firstPast = DateTimeUtils.startOfDay(first.targetAt) < today;
+            boolean secondPast = DateTimeUtils.startOfDay(second.targetAt) < today;
+            if (firstPast != secondPast) {
+                return firstPast ? 1 : -1;
             }
-            if (firstOverdue) {
+            if (firstPast) {
                 return Long.compare(second.targetAt, first.targetAt);
             }
             return Long.compare(first.targetAt, second.targetAt);
@@ -1064,34 +1208,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean matchesCountdownFilter(CountdownItem item, String filter) {
-        long now = System.currentTimeMillis();
+        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
+        long targetDay = DateTimeUtils.startOfDay(item.targetAt);
         if (COUNTDOWN_FILTER_UPCOMING.equals(filter)) {
-            return item.targetAt >= now;
+            return targetDay >= today;
         }
-        if (COUNTDOWN_FILTER_OVERDUE.equals(filter)) {
-            return item.targetAt < now;
+        if (COUNTDOWN_FILTER_PAST.equals(filter)) {
+            return targetDay < today;
         }
         return true;
     }
 
     private void bindCountdownSummary(View screen, List<CountdownItem> items) {
-        int overdue = 0;
+        int past = 0;
         CountdownItem nearestUpcoming = null;
-        long now = System.currentTimeMillis();
+        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
         for (CountdownItem item : items) {
-            if (item.targetAt < now) {
-                overdue++;
+            if (DateTimeUtils.startOfDay(item.targetAt) < today) {
+                past++;
             } else if (nearestUpcoming == null || item.targetAt < nearestUpcoming.targetAt) {
                 nearestUpcoming = item;
             }
         }
         setText(screen, R.id.textCountdownSubtitle, items.isEmpty()
-                ? "Thêm deadline, lịch thi hoặc sự kiện để bắt đầu đếm ngược"
-                : items.size() + " mốc đang theo dõi · " + overdue + " quá hạn");
+                ? "Cài sự kiện đầu tiên để bắt đầu đếm ngược"
+                : items.size() + " sự kiện đang theo dõi · " + past + " đã qua");
         setText(screen, R.id.textCountdownNearest, nearestUpcoming == null
-                ? "Gần nhất\nChưa có mốc sắp tới"
+                ? "Gần nhất\nChưa có sự kiện sắp tới"
                 : "Gần nhất\n" + countdownBadge(nearestUpcoming) + "\n" + nearestUpcoming.title);
-        setText(screen, R.id.textCountdownOverdue, "Quá hạn\n" + overdue + " mục\n" + (overdue == 0 ? "Đang ổn" : "Cần xử lý"));
+        setText(screen, R.id.textCountdownOverdue, "Đã qua\n" + past + " sự kiện\n" + (past == 0 ? "Sổ vẫn mới" : "Lưu kỷ niệm"));
     }
 
     private View createCountdownRow(CountdownItem item, String filter, ViewGroup parent) {
@@ -1108,13 +1253,14 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(dp(92), dp(74));
         badgeParams.setMargins(0, 0, dp(12), 0);
         badge.setLayoutParams(badgeParams);
-        badge.setBackgroundResource(item.targetAt < System.currentTimeMillis() ? R.drawable.bg_card_pink : R.drawable.bg_selected_pill);
+        boolean past = DateTimeUtils.startOfDay(item.targetAt) < DateTimeUtils.startOfDay(System.currentTimeMillis());
+        badge.setBackgroundResource(past ? R.drawable.bg_card_pink : R.drawable.bg_selected_pill);
         badge.setGravity(android.view.Gravity.CENTER);
         badge.setText(countdownBadge(item));
-        badge.setTextColor(item.targetAt < System.currentTimeMillis() ? getColor(R.color.danger) : getColor(R.color.ink));
+        badge.setTextColor(past ? getColor(R.color.danger) : getColor(R.color.ink));
         badge.setTextSize(13f);
         badge.setTypeface(null, android.graphics.Typeface.BOLD);
-        badge.setRotation(item.targetAt < System.currentTimeMillis() ? -1.5f : 1.5f);
+        badge.setRotation(past ? -1.5f : 1.5f);
 
         LinearLayout content = new LinearLayout(this);
         content.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
@@ -1142,13 +1288,7 @@ public class MainActivity extends AppCompatActivity {
         content.addView(meta);
         row.addView(badge);
         row.addView(content);
-        row.setOnClickListener(v -> {
-            if (item.task != null) {
-                showTaskActions(item.task, () -> showCountdown(filter));
-            } else if (item.event != null) {
-                showCountdownEventActions(item.event, () -> showCountdown(filter));
-            }
-        });
+        row.setOnClickListener(v -> showCountdownActions(item.milestone, () -> showCountdown(filter)));
         return row;
     }
 
@@ -1159,65 +1299,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int countdownBackground(CountdownItem item) {
-        if (item.targetAt < System.currentTimeMillis()) {
-            return R.drawable.bg_danger_soft;
+        if (DateTimeUtils.startOfDay(item.targetAt) < DateTimeUtils.startOfDay(System.currentTimeMillis())) {
+            return R.drawable.bg_card;
         }
-        if (item.task != null) {
-            return priorityBackground(item.task.getPriority());
-        }
-        return eventBackground(item.event.getType());
+        int choice = Math.abs(item.title.hashCode()) % 4;
+        if (choice == 0) return R.drawable.bg_card_lavender;
+        if (choice == 1) return R.drawable.bg_card_pink;
+        if (choice == 2) return R.drawable.bg_card_mint;
+        return R.drawable.bg_card_yellow;
     }
 
     private String countdownBadge(CountdownItem item) {
-        long now = System.currentTimeMillis();
-        long today = DateTimeUtils.startOfDay(now);
+        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
         long targetDay = DateTimeUtils.startOfDay(item.targetAt);
         long days = (targetDay - today) / (24L * 60L * 60L * 1000L);
-        if (item.targetAt < now) {
-            return days == 0 ? "Quá hạn\nhôm nay" : "Quá\n" + Math.abs(days) + " ngày";
+        if (days < 0) {
+            return "Qua\n" + Math.abs(days) + " ngày";
         }
         if (days == 0) {
-            return "Hôm nay\n" + DateTimeUtils.formatTime(item.targetAt);
+            return "Hôm nay\nD-day";
         }
         return "Còn\n" + days + " ngày";
     }
 
     private String countdownMeta(CountdownItem item) {
-        String detail = TextUtils.isEmpty(item.detail) ? "Chưa phân loại" : item.detail;
-        return item.kind + " · " + detail + " · " + DateTimeUtils.formatDayLabel(item.targetAt) + " " + DateTimeUtils.formatTime(item.targetAt);
+        return "Ngày đếm ngược · " + DateTimeUtils.formatDate(item.targetAt);
     }
 
     private void showCreateCountdownDialog(String filter) {
-        String[] actions = {"Deadline công việc", "Lịch/sự kiện"};
-        new AlertDialog.Builder(this)
-                .setTitle("Thêm mốc đếm ngược")
-                .setItems(actions, (dialog, which) -> {
-                    if (which == 0) {
-                        showTaskDialog(null, () -> showCountdown(filter));
-                    } else {
-                        showEventDialog(null, () -> showCountdown(filter));
-                    }
-                })
-                .show();
+        showCountdownDialog(null, () -> showCountdown(filter));
     }
 
-    private void showCountdownEventActions(StudyEvent event, Runnable onChanged) {
-        boolean hasOnlineLink = isWebUrl(event.getRoom());
-        String[] actions = hasOnlineLink
-                ? new String[]{"Mở link online", "Sửa", "Xóa"}
-                : new String[]{"Sửa", "Xóa"};
+    private void showCountdownActions(CountdownMilestone milestone, Runnable onChanged) {
+        String[] actions = {"Sửa sự kiện", "Xóa sự kiện"};
         new AlertDialog.Builder(this)
-                .setTitle(event.getTitle())
+                .setTitle(milestone.getTitle())
+                .setMessage(countdownDetailText(milestone))
                 .setItems(actions, (dialog, which) -> {
-                    if (hasOnlineLink && which == 0) {
-                        openUrl(event.getRoom());
-                    } else if ((hasOnlineLink && which == 1) || (!hasOnlineLink && which == 0)) {
-                        showEventDialog(event, onChanged);
+                    if (which == 0) {
+                        showCountdownDialog(milestone, onChanged);
                     } else {
-                        confirmDelete("Xóa lịch?", event.getTitle(), () -> {
-                            repository.deleteEvent(event.getId());
-                            cancelEventReminder(event);
-                            toast("Đã xóa lịch");
+                        confirmDelete("Xóa sự kiện đếm ngược?", milestone.getTitle(), () -> {
+                            repository.deleteCountdownMilestone(milestone.getId());
+                            toast("Đã xóa sự kiện đếm ngược");
                             onChanged.run();
                         });
                     }
@@ -1226,15 +1350,60 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showCountdownDialog(CountdownMilestone editingMilestone, Runnable onSaved) {
+        View view = getLayoutInflater().inflate(R.layout.dialog_countdown, null);
+        EditText title = view.findViewById(R.id.inputTitle);
+        EditText targetDate = view.findViewById(R.id.inputTargetDate);
+
+        long defaultTarget = DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(7, 0, 0));
+        targetDate.setText(DateTimeUtils.formatDate(defaultTarget));
+        if (editingMilestone != null) {
+            title.setText(editingMilestone.getTitle());
+            targetDate.setText(DateTimeUtils.formatDate(editingMilestone.getTargetDate()));
+        }
+        targetDate.setOnClickListener(v -> pickDate(targetDate));
+
+        StudyFormDialog formDialog = createStudyFormDialog(
+                editingMilestone == null ? "Cài sự kiện đếm ngược" : "Sửa sự kiện đếm ngược",
+                view,
+                "Lưu");
+        Dialog dialog = formDialog.dialog;
+        formDialog.positive.setOnClickListener(v -> {
+            String titleValue = textOf(title);
+            if (TextUtils.isEmpty(titleValue)) {
+                toast("Vui lòng nhập tên sự kiện");
+                return;
+            }
+            long target = DateTimeUtils.startOfDay(DateTimeUtils.combineDateAndTime(targetDate.getText().toString(), "00:00", defaultTarget));
+            CountdownMilestone milestone = editingMilestone == null
+                    ? repository.newCountdownMilestone(titleValue, CountdownMilestone.TYPE_EVENT, target, "")
+                    : editingMilestone;
+            milestone.setTitle(titleValue);
+            milestone.setType(CountdownMilestone.TYPE_EVENT);
+            milestone.setTargetDate(target);
+            milestone.setNote("");
+            repository.saveCountdownMilestone(milestone);
+            toast("Đã lưu sự kiện đếm ngược");
+            dialog.dismiss();
+            onSaved.run();
+        });
+        dialog.show();
+    }
+
+    private String countdownDetailText(CountdownMilestone milestone) {
+        return "Ngày: " + DateTimeUtils.formatDate(milestone.getTargetDate())
+                + "\n" + countdownBadge(new CountdownItem(milestone)).replace("\n", " ");
+    }
+
     private void setupTaskFilters(View screen, String active) {
         bindFilter(screen, R.id.filterAll, TASK_FILTER_ALL, active, () -> showTasks(TASK_FILTER_ALL));
         bindFilter(screen, R.id.filterToday, TASK_FILTER_TODAY, active, () -> showTasks(TASK_FILTER_TODAY));
         bindFilter(screen, R.id.filterSoon, TASK_FILTER_SOON, active, () -> showTasks(TASK_FILTER_SOON));
         bindFilter(screen, R.id.filterOverdue, TASK_FILTER_OVERDUE, active, () -> showTasks(TASK_FILTER_OVERDUE));
         bindFilter(screen, R.id.filterDone, TASK_FILTER_DONE, active, () -> showTasks(TASK_FILTER_DONE));
-        bindFilter(screen, R.id.filterMatrix, TASK_FILTER_MATRIX, active, () -> showTasks(TASK_FILTER_MATRIX));
-        bindDynamicTaskFilter(screen, R.id.filterTag, active.startsWith(TASK_FILTER_TAG_PREFIX), this::showTagFilterDialog);
-        bindDynamicTaskFilter(screen, R.id.filterPriority, active.startsWith(TASK_FILTER_PRIORITY_PREFIX), this::showPriorityFilterDialog);
+        screen.findViewById(R.id.filterTag).setVisibility(View.GONE);
+        screen.findViewById(R.id.filterPriority).setVisibility(View.GONE);
+        screen.findViewById(R.id.filterMatrix).setVisibility(View.GONE);
     }
 
     private void addQuadrantSection(LinearLayout taskList, List<StudyTask> tasks, String title, boolean important, boolean urgent) {
@@ -1913,6 +2082,8 @@ public class MainActivity extends AppCompatActivity {
         int personalEvents = countEventsByType(events, StudyEvent.TYPE_PERSONAL);
 
         setText(screen, R.id.textStatsSubtitle, statsSubtitle(completion, overdue, repository.getTodayFocusMinutes()));
+        setText(screen, R.id.textCompletedMetric, completed + "\nviệc đã hoàn thành");
+        setText(screen, R.id.textOpenMetric, pending + "\nviệc chưa hoàn thành");
         setText(screen, R.id.textCompletionPercent, completion + "%");
         setText(screen, R.id.textCompletionMeta, totalTasks == 0
                 ? "Chưa có việc học để thống kê"
@@ -1928,7 +2099,7 @@ public class MainActivity extends AppCompatActivity {
         DonutChartView taskDonut = screen.findViewById(R.id.chartTaskDonut);
         taskDonut.setData(totalTasks + "", "việc", new String[]{"Hoàn thành", "Đang làm", "Quá hạn"}, new int[]{completed, pendingOnTrack, overdue});
         ComparisonBarChartView compareBars = screen.findViewById(R.id.chartCompareBars);
-        compareBars.setData("So sánh nhanh", new String[]{"Xong", "Mở", "Lịch", "Tập trung"}, new int[]{completed, pending, events.size(), repository.getTodayFocusSessions()});
+        compareBars.setData("Số việc hôm nay", new String[]{"Xong", "Còn lại"}, new int[]{todayDone, todayRemaining});
 
         setText(screen, R.id.textTaskSummary, totalTasks + " việc · " + pending + " đang mở · " + overdue + " quá hạn");
         setText(screen, R.id.textCompletedTasks, "Hoàn thành: " + completed + " việc");
@@ -1978,90 +2149,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showTaskDialog(StudyTask editingTask, Runnable onSaved) {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_task, null);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_task_simple, null);
         EditText title = dialogView.findViewById(R.id.inputTitle);
-        EditText subject = dialogView.findViewById(R.id.inputSubject);
-        EditText dueAt = dialogView.findViewById(R.id.inputDueAt);
-        Spinner priority = dialogView.findViewById(R.id.spinnerPriority);
-        EditText note = dialogView.findViewById(R.id.inputNote);
-        CheckBox important = dialogView.findViewById(R.id.checkImportant);
-        CheckBox urgent = dialogView.findViewById(R.id.checkUrgent);
-        EditText reminder = dialogView.findViewById(R.id.inputReminder);
-        EditText pomodoro = dialogView.findViewById(R.id.inputPomodoro);
-        CheckBox showOnCalendar = dialogView.findViewById(R.id.checkShowOnCalendar);
-        String[] priorities = {StudyTask.PRIORITY_HIGH, StudyTask.PRIORITY_MEDIUM, StudyTask.PRIORITY_LOW};
-        priority.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, priorities));
         long defaultDueAt = DateTimeUtils.daysFromNow(0, 23, 59);
-        dueAt.setText(DateTimeUtils.formatDateTime(defaultDueAt));
         if (editingTask != null) {
             title.setText(editingTask.getTitle());
-            subject.setText(editingTask.getSubject());
-            dueAt.setText(DateTimeUtils.formatDateTime(editingTask.getDueAt()));
-            priority.setSelection(indexOf(priorities, editingTask.getPriority()));
-            note.setText(editingTask.getNote());
-            important.setChecked(editingTask.isImportant());
-            urgent.setChecked(editingTask.isUrgent());
-            if (editingTask.getReminderTime() > 0) {
-                reminder.setText(DateTimeUtils.formatDateTime(editingTask.getReminderTime()));
-            }
-            if (editingTask.getEstimatedPomodoro() > 0) {
-                pomodoro.setText(String.valueOf(editingTask.getEstimatedPomodoro()));
-            }
-            showOnCalendar.setChecked(editingTask.isShowOnCalendar());
             title.setSelection(title.getText().length());
-        } else {
-            showOnCalendar.setChecked(true);
         }
-        dueAt.setOnClickListener(v -> pickDateTime(dueAt));
-        reminder.setOnClickListener(v -> pickDateTime(reminder));
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(editingTask == null ? "Thêm việc cần làm" : "Sửa việc cần làm")
-                .setView(dialogView)
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Lưu", null)
-                .create();
-        dialog.setOnShowListener(dialogInterface -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    if (isBlank(title)) {
-                        toast("Vui lòng nhập tên việc cần làm");
-                        return;
-                    }
-                    if (isBlank(subject)) {
-                        toast("Vui lòng nhập môn học hoặc nhóm việc");
-                        return;
-                    }
-                    long parsedDueAt = DateTimeUtils.parseDateTime(textOf(dueAt), defaultDueAt);
-                    long reminderAt = TextUtils.isEmpty(textOf(reminder))
-                            ? 0L
-                            : DateTimeUtils.parseDateTime(textOf(reminder), 0L);
-                    if (reminderAt > 0 && reminderAt <= System.currentTimeMillis()) {
-                        toast("Thời điểm nhắc việc đã qua. Hãy chọn thời gian nhắc trong tương lai hoặc để trống.");
-                        return;
-                    }
-                    StudyTask task = editingTask == null
-                            ? repository.newTask(textOf(title), textOf(subject), parsedDueAt, String.valueOf(priority.getSelectedItem()), textOf(note))
-                            : editingTask;
-                    task.setTitle(textOf(title));
-                    task.setSubject(textOf(subject));
-                    task.setTag(textOf(subject));
-                    task.setDueAt(parsedDueAt);
-                    task.setPriority(String.valueOf(priority.getSelectedItem()));
-                    task.setNote(textOf(note));
-                    task.setImportant(important.isChecked());
-                    task.setUrgent(urgent.isChecked());
-                    task.setReminderTime(reminderAt);
-                    task.setEstimatedPomodoro(parsePositiveInt(textOf(pomodoro)));
-                    task.setShowOnCalendar(showOnCalendar.isChecked());
-                    if (editingTask == null) {
-                        task.setMarkerType("flag");
-                        task.setMarkerValue("");
-                    }
-                    repository.saveTask(task);
-                    scheduleTaskReminder(task);
-                    syncTaskCalendarEvent(task);
-                    dialog.dismiss();
-                    onSaved.run();
-                }));
+        StudyFormDialog formDialog = createStudyFormDialog(
+                editingTask == null ? "Thêm việc cần làm" : "Sửa việc cần làm",
+                dialogView,
+                "Lưu");
+        Dialog dialog = formDialog.dialog;
+        formDialog.positive.setOnClickListener(v -> {
+            if (isBlank(title)) {
+                toast("Vui lòng nhập tên việc cần làm");
+                return;
+            }
+            StudyTask task = editingTask == null
+                    ? repository.newTask(textOf(title), "To-do", defaultDueAt, StudyTask.PRIORITY_MEDIUM, "")
+                    : editingTask;
+            task.setTitle(textOf(title));
+            if (TextUtils.isEmpty(task.getSubject())) {
+                task.setSubject("To-do");
+            }
+            if (TextUtils.isEmpty(task.getTag())) {
+                task.setTag("To-do");
+            }
+            if (task.getDueAt() <= 0) {
+                task.setDueAt(defaultDueAt);
+            }
+            if (TextUtils.isEmpty(task.getPriority())) {
+                task.setPriority(StudyTask.PRIORITY_MEDIUM);
+            }
+            task.setShowOnCalendar(false);
+            if (editingTask == null) {
+                task.setMarkerType("flag");
+                task.setMarkerValue("");
+            }
+            repository.saveTask(task);
+            cancelTaskReminder(task);
+            syncTaskCalendarEvent(task);
+            dialog.dismiss();
+            onSaved.run();
+        });
         dialog.show();
         title.requestFocus();
     }
@@ -2074,7 +2206,6 @@ public class MainActivity extends AppCompatActivity {
     private void showEventDialog(StudyEvent editingEvent, Runnable onSaved, long preferredStartAt) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_event, null);
         EditText title = dialogView.findViewById(R.id.inputTitle);
-        EditText subject = dialogView.findViewById(R.id.inputSubject);
         EditText date = dialogView.findViewById(R.id.inputDate);
         EditText start = dialogView.findViewById(R.id.inputStart);
         EditText end = dialogView.findViewById(R.id.inputEnd);
@@ -2092,7 +2223,6 @@ public class MainActivity extends AppCompatActivity {
         reminderBefore.setSelection(indexOf(REMINDER_LABELS, "15 phút"));
         if (editingEvent != null) {
             title.setText(editingEvent.getTitle());
-            subject.setText(editingEvent.getSubject());
             room.setText(editingEvent.getRoom());
             note.setText(editingEvent.getNote());
             type.setSelection(indexOf(EVENT_TYPES, editingEvent.getType()));
@@ -2100,11 +2230,11 @@ public class MainActivity extends AppCompatActivity {
             reminder.setChecked(editingEvent.isReminderEnabled());
             reminderBefore.setSelection(indexOfReminder(editingEvent.getReminderBeforeMinutes()));
         }
-        updateEventDialogHints(selectedEventType(type), title, subject, room, note);
+        updateEventDialogHints(selectedEventType(type), title, room, note);
         type.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                updateEventDialogHints(EVENT_TYPES[Math.max(0, Math.min(EVENT_TYPES.length - 1, position))], title, subject, room, note);
+                updateEventDialogHints(EVENT_TYPES[Math.max(0, Math.min(EVENT_TYPES.length - 1, position))], title, room, note);
             }
 
             @Override
@@ -2115,90 +2245,82 @@ public class MainActivity extends AppCompatActivity {
         start.setOnClickListener(v -> pickTime(start));
         end.setOnClickListener(v -> pickTime(end));
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(editingEvent == null ? "Thêm lịch / sự kiện" : "Sửa sự kiện")
-                .setView(dialogView)
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Lưu", null)
-                .create();
-        dialog.setOnShowListener(dialogInterface -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    if (isBlank(title)) {
-                        toast("Vui lòng nhập tên sự kiện");
-                        return;
-                    }
-                    String selectedType = selectedEventType(type);
-                    if ((StudyEvent.TYPE_STUDY.equals(selectedType) || StudyEvent.TYPE_EXAM.equals(selectedType)) && isBlank(subject)) {
-                        toast("Vui lòng nhập môn học");
-                        return;
-                    }
-                    long startAt = DateTimeUtils.combineDateAndTime(textOf(date), textOf(start), defaultStart);
-                    long endAt = DateTimeUtils.combineDateAndTime(textOf(date), textOf(end), defaultEnd);
-                    if (endAt <= startAt) {
-                        endAt = startAt + 60L * 60L * 1000L;
-                    }
-                    StudyEvent event = editingEvent == null
-                            ? repository.newEvent(textOf(title), selectedType, textOf(subject), startAt, endAt, textOf(room), textOf(note))
-                            : new StudyEvent(
-                                    editingEvent.getId(),
-                                    textOf(title),
-                                    selectedType,
-                                    textOf(subject),
-                                    startAt,
-                                    endAt,
-                                    textOf(room),
-                                    textOf(note),
-                                    editingEvent.isReminderEnabled(),
-                                    editingEvent.getReminderBeforeMinutes(),
-                                    editingEvent.getSourceTaskId()
-                            );
-                    event.setReminderEnabled(reminder.isChecked());
-                    event.setReminderBeforeMinutes(REMINDER_MINUTES[reminderBefore.getSelectedItemPosition()]);
-                    if (event.isReminderEnabled() && event.getStartAt() - event.getReminderBeforeMinutes() * 60L * 1000L <= System.currentTimeMillis()) {
-                        toast("Thời điểm nhắc trước lịch đã qua. Hãy chọn mức nhắc gần hơn hoặc tắt nhắc nhở.");
-                        return;
-                    }
-                    List<StudyEvent> conflicts = repository.getConflicts(event);
-                    if (!conflicts.isEmpty()) {
-                        showConflictBeforeSave(event, conflicts, () -> {
-                            repository.saveEvent(event);
-                            scheduleEventReminder(event);
-                            dialog.dismiss();
-                            onSaved.run();
-                        });
-                        return;
-                    }
+        StudyFormDialog formDialog = createStudyFormDialog(
+                editingEvent == null ? "Thêm lịch / sự kiện" : "Sửa sự kiện",
+                dialogView,
+                "Lưu");
+        Dialog dialog = formDialog.dialog;
+        formDialog.positive.setOnClickListener(v -> {
+            if (isBlank(title)) {
+                toast("Vui lòng nhập tên sự kiện");
+                return;
+            }
+            String selectedType = selectedEventType(type);
+            long startAt = DateTimeUtils.combineDateAndTime(textOf(date), textOf(start), defaultStart);
+            long endAt = DateTimeUtils.combineDateAndTime(textOf(date), textOf(end), defaultEnd);
+            if (endAt <= startAt) {
+                endAt = startAt + 60L * 60L * 1000L;
+            }
+            String subjectValue = textOf(title);
+            StudyEvent event = editingEvent == null
+                    ? repository.newEvent(textOf(title), selectedType, subjectValue, startAt, endAt, textOf(room), textOf(note))
+                    : new StudyEvent(
+                            editingEvent.getId(),
+                            textOf(title),
+                            selectedType,
+                            subjectValue,
+                            startAt,
+                            endAt,
+                            textOf(room),
+                            textOf(note),
+                            editingEvent.isReminderEnabled(),
+                            editingEvent.getReminderBeforeMinutes(),
+                            editingEvent.getSourceTaskId()
+                    );
+            event.setReminderEnabled(reminder.isChecked());
+            event.setReminderBeforeMinutes(REMINDER_MINUTES[reminderBefore.getSelectedItemPosition()]);
+            if (event.isReminderEnabled() && event.getStartAt() - event.getReminderBeforeMinutes() * 60L * 1000L <= System.currentTimeMillis()) {
+                toast("Thời điểm nhắc trước lịch đã qua. Hãy chọn mức nhắc gần hơn hoặc tắt nhắc nhở.");
+                return;
+            }
+            List<StudyEvent> conflicts = repository.getConflicts(event);
+            if (!conflicts.isEmpty()) {
+                showConflictBeforeSave(event, conflicts, () -> {
                     repository.saveEvent(event);
                     scheduleEventReminder(event);
                     dialog.dismiss();
                     onSaved.run();
-                }));
+                });
+                return;
+            }
+            repository.saveEvent(event);
+            scheduleEventReminder(event);
+            dialog.dismiss();
+            onSaved.run();
+        });
         dialog.show();
     }
 
-    private void updateEventDialogHints(String selectedType, EditText title, EditText subject, EditText room, EditText note) {
+    private void updateEventDialogHints(String selectedType, EditText title, EditText room, EditText note) {
         if (StudyEvent.TYPE_DEADLINE.equals(selectedType)) {
             title.setHint("Tên deadline");
-            subject.setHint("Môn học / nội dung liên quan");
             room.setHint("Link nộp bài / nơi nộp");
             note.setHint("Yêu cầu, tài liệu cần nộp");
             return;
         }
         if (StudyEvent.TYPE_PERSONAL.equals(selectedType)) {
             title.setHint("Tên việc cá nhân");
-            subject.setHint("Nhóm việc / nội dung");
             room.setHint("Địa điểm / link liên quan");
             note.setHint("Ghi chú cá nhân");
             return;
         }
         if (StudyEvent.TYPE_EXAM.equals(selectedType)) {
             title.setHint("Tên kỳ thi");
-            subject.setHint("Môn thi");
             room.setHint("Phòng thi / địa điểm");
             note.setHint("Ghi chú: giấy tờ, tài liệu, lưu ý");
             return;
         }
         title.setHint("Tên buổi học");
-        subject.setHint("Môn học");
         room.setHint("Phòng học / địa điểm / link học online");
         note.setHint("Ghi chú");
     }
@@ -2218,25 +2340,21 @@ public class MainActivity extends AppCompatActivity {
         email.setText(profile.getEmail());
         goal.setText(profile.getGoal());
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Sửa hồ sơ")
-                .setView(dialogView)
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Lưu", null)
-                .create();
-        dialog.setOnShowListener(dialogInterface -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    if (isBlank(name) || isBlank(email)) {
-                        toast("Vui lòng nhập tên và email");
-                        return;
-                    }
-                    if (!isValidEmail(textOf(email))) {
-                        toast("Email chưa đúng định dạng");
-                        return;
-                    }
-                    repository.saveProfile(new UserProfile(textOf(name), textOf(email), textOf(goal)));
-                    dialog.dismiss();
-                    showSettings();
-                }));
+        StudyFormDialog formDialog = createStudyFormDialog("Sửa hồ sơ", dialogView, "Lưu");
+        Dialog dialog = formDialog.dialog;
+        formDialog.positive.setOnClickListener(v -> {
+            if (isBlank(name) || isBlank(email)) {
+                toast("Vui lòng nhập tên và email");
+                return;
+            }
+            if (!isValidEmail(textOf(email))) {
+                toast("Email chưa đúng định dạng");
+                return;
+            }
+            repository.saveProfile(new UserProfile(textOf(name), textOf(email), textOf(goal)));
+            dialog.dismiss();
+            showSettings();
+        });
         dialog.show();
     }
 
@@ -2254,13 +2372,9 @@ public class MainActivity extends AppCompatActivity {
         bindSpinner(theme, THEME_COLORS, repository.getThemeColorChoice());
         status.setText(repository.getStudyStatus());
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Cá nhân hóa")
-                .setView(dialogView)
-                .setNegativeButton("Hủy", null)
-                .setPositiveButton("Lưu", null)
-                .create();
-        dialog.setOnShowListener(dialogInterface -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+        StudyFormDialog formDialog = createStudyFormDialog("Cá nhân hóa", dialogView, "Lưu");
+        Dialog dialog = formDialog.dialog;
+        formDialog.positive.setOnClickListener(v -> {
             String studyStatus = textOf(status);
             if (TextUtils.isEmpty(studyStatus)) {
                 studyStatus = "Sẵn sàng học tập";
@@ -2275,7 +2389,7 @@ public class MainActivity extends AppCompatActivity {
             dialog.dismiss();
             toast("Đã lưu cá nhân hóa");
             showSettings();
-        }));
+        });
         dialog.show();
     }
 
@@ -2311,23 +2425,59 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showEventActions(StudyEvent event) {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_event_detail, null);
         boolean hasOnlineLink = isWebUrl(event.getRoom());
-        String[] actions = hasOnlineLink
-                ? new String[]{"Mở link online", "Sửa", "Xóa"}
-                : new String[]{"Sửa", "Xóa"};
-        new AlertDialog.Builder(this)
-                .setTitle(event.getTitle())
-                .setItems(actions, (dialog, which) -> {
-                    if (hasOnlineLink && which == 0) {
-                        openUrl(event.getRoom());
-                    } else if ((hasOnlineLink && which == 1) || (!hasOnlineLink && which == 0)) {
-                        showEventDialog(event, () -> showSchedule(scheduleFilter));
-                    } else {
-                        confirmDeleteEvent(event);
-                    }
-                })
-                .setNegativeButton("Đóng", null)
-                .show();
+
+        setText(dialogView, R.id.textEventType, eventTypeLabel(event.getType()));
+        setText(dialogView, R.id.textEventTitle, event.getTitle());
+        setText(dialogView, R.id.textEventTime,
+                DateTimeUtils.formatDayLabel(event.getStartAt())
+                        + " • " + DateTimeUtils.formatDateTime(event.getStartAt())
+                        + " - " + DateTimeUtils.formatTime(event.getEndAt()));
+        boolean hasLocation = !TextUtils.isEmpty(event.getRoom());
+        TextView locationLabel = dialogView.findViewById(R.id.textEventLocationLabel);
+        TextView location = dialogView.findViewById(R.id.textEventLocation);
+        String locationValue = hasLocation ? event.getRoom() : "";
+        locationLabel.setVisibility(hasLocation ? View.VISIBLE : View.GONE);
+        location.setVisibility(hasLocation ? View.VISIBLE : View.GONE);
+        locationLabel.setText(hasOnlineLink ? "LINK ONLINE" : "ĐỊA ĐIỂM");
+        location.setText(locationValue);
+        location.setTextColor(getColor(hasOnlineLink ? R.color.accent_blue : R.color.ink));
+        location.setOnClickListener(v -> {
+            if (hasOnlineLink) {
+                openUrl(event.getRoom());
+            }
+        });
+        setText(dialogView, R.id.textEventReminder, event.isReminderEnabled()
+                ? "Nhắc trước: " + reminderLabel(event.getReminderBeforeMinutes())
+                : "Nhắc nhở: Tắt");
+        setText(dialogView, R.id.textEventNote, TextUtils.isEmpty(event.getNote())
+                ? "Ghi chú: Chưa có ghi chú"
+                : "Ghi chú: " + event.getNote());
+
+        TextView openLink = dialogView.findViewById(R.id.btnOpenLink);
+        openLink.setVisibility(hasOnlineLink ? View.VISIBLE : View.GONE);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        openLink.setOnClickListener(v -> openUrl(event.getRoom()));
+        dialogView.findViewById(R.id.btnEditEvent).setOnClickListener(v -> {
+            dialog.dismiss();
+            showEventDialog(event, () -> showSchedule(scheduleFilter));
+        });
+        dialogView.findViewById(R.id.btnDeleteEvent).setOnClickListener(v -> {
+            dialog.dismiss();
+            confirmDeleteEvent(event);
+        });
+        dialogView.findViewById(R.id.btnCloseEvent).setOnClickListener(v -> dialog.dismiss());
+        dialog.setOnShowListener(d -> {
+            android.view.Window window = dialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+            }
+        });
+        dialog.show();
     }
 
     private void confirmDeleteEvent(StudyEvent event) {
@@ -2374,17 +2524,28 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    private String eventTimeMeta(StudyEvent event) {
+        String meta = DateTimeUtils.formatDayLabel(event.getStartAt())
+                + " • " + DateTimeUtils.formatTime(event.getStartAt())
+                + " - " + DateTimeUtils.formatTime(event.getEndAt());
+        if (!TextUtils.isEmpty(event.getRoom())) {
+            meta += " • " + event.getRoom();
+        }
+        return meta;
+    }
+
     private String eventDetailText(StudyEvent event) {
         String reminder = event.isReminderEnabled()
                 ? "\nNhắc trước: " + reminderLabel(event.getReminderBeforeMinutes())
                 : "\nNhắc nhở: Tắt";
-        String room = TextUtils.isEmpty(event.getRoom()) ? "Chưa có địa điểm" : event.getRoom();
+        String room = TextUtils.isEmpty(event.getRoom()) ? "" : event.getRoom();
+        String locationLine = TextUtils.isEmpty(room) ? "" : "\n" + (isWebUrl(room) ? "Link online: " : "Địa điểm: ") + room;
         String note = TextUtils.isEmpty(event.getNote()) ? "" : "\nGhi chú: " + event.getNote();
         String subject = TextUtils.isEmpty(event.getSubject()) ? "Chưa có nội dung liên quan" : event.getSubject();
         return eventTypeLabel(event.getType())
                 + " • " + subject
                 + "\n" + DateTimeUtils.formatDateTime(event.getStartAt()) + " - " + DateTimeUtils.formatTime(event.getEndAt())
-                + "\n" + (isWebUrl(room) ? "Link online: " : "Địa điểm: ") + room
+                + locationLine
                 + reminder
                 + note;
     }
@@ -2590,7 +2751,7 @@ public class MainActivity extends AppCompatActivity {
         TextView actionDelete = row.findViewById(R.id.btnTaskDelete);
         View taskActions = row.findViewById(R.id.taskActions);
         title.setText(task.getTitle());
-        meta.setText(task.getTag() + " • Deadline " + DateTimeUtils.formatDateTime(task.getDueAt()));
+        meta.setText("To-do");
         details.setText(taskDetails(task));
         bindTaskMarker(marker, task);
         if (row instanceof SwipeActionLayout) {
@@ -2837,10 +2998,11 @@ public class MainActivity extends AppCompatActivity {
         setText(row, R.id.textTitle, event.getTitle());
         setText(row, R.id.textType, eventTypeLabel(event.getType()));
         setText(row, R.id.textTime, DateTimeUtils.formatDayLabel(event.getStartAt()) + " • " + DateTimeUtils.formatTime(event.getStartAt()) + " - " + DateTimeUtils.formatTime(event.getEndAt()));
-        setText(row, R.id.textSubject, eventSubjectLabel(event));
+        setEventSubjectText(row, event);
         TextView location = row.findViewById(R.id.textLocation);
-        String locationValue = TextUtils.isEmpty(event.getRoom()) ? "Chưa có địa điểm/link" : event.getRoom();
-        location.setText((isWebUrl(locationValue) ? "Link online: " : "Địa điểm: ") + locationValue);
+        String locationValue = TextUtils.isEmpty(event.getRoom()) ? "" : event.getRoom();
+        location.setVisibility(TextUtils.isEmpty(locationValue) ? View.GONE : View.VISIBLE);
+        location.setText(TextUtils.isEmpty(locationValue) ? "" : (isWebUrl(locationValue) ? "Link online: " : "Địa điểm: ") + locationValue);
         location.setOnClickListener(v -> {
             if (isWebUrl(locationValue)) {
                 openUrl(locationValue);
@@ -2854,6 +3016,19 @@ public class MainActivity extends AppCompatActivity {
         setText(row, R.id.textNote, conflict + "Ghi chú: " + note);
         row.setRotation(event.getId().hashCode() % 2 == 0 ? -0.8f : 0.8f);
         return row;
+    }
+
+    private void setEventSubjectText(View row, StudyEvent event) {
+        TextView subjectView = row.findViewById(R.id.textSubject);
+        String subject = event.getSubject() == null ? "" : event.getSubject().trim();
+        String title = event.getTitle() == null ? "" : event.getTitle().trim();
+        if (TextUtils.isEmpty(subject) || subject.equalsIgnoreCase(title)) {
+            subjectView.setVisibility(View.GONE);
+            subjectView.setText("");
+            return;
+        }
+        subjectView.setVisibility(View.VISIBLE);
+        subjectView.setText(eventSubjectLabel(event));
     }
 
     private String eventSubjectLabel(StudyEvent event) {
@@ -2884,16 +3059,40 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(value)) {
             return false;
         }
-        String normalized = value.trim().toLowerCase(Locale.US);
-        return normalized.startsWith("http://") || normalized.startsWith("https://");
+        String normalized = normalizeUrl(value);
+        return Patterns.WEB_URL.matcher(normalized).matches();
     }
 
     private void openUrl(String url) {
         try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(normalizeUrl(url))));
         } catch (Exception exception) {
             toast("Không mở được link này");
         }
+    }
+
+    private static class StudyFormDialog {
+        final Dialog dialog;
+        final TextView positive;
+        final TextView negative;
+
+        StudyFormDialog(Dialog dialog, TextView positive, TextView negative) {
+            this.dialog = dialog;
+            this.positive = positive;
+            this.negative = negative;
+        }
+    }
+
+    private String normalizeUrl(String url) {
+        if (url == null) {
+            return "";
+        }
+        String value = url.trim();
+        String lower = value.toLowerCase(Locale.US);
+        if (lower.startsWith("http://") || lower.startsWith("https://")) {
+            return value;
+        }
+        return "https://" + value;
     }
 
     private TextView statBlock(String label, String value) {
@@ -2937,13 +3136,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String taskDetails(StudyTask task) {
-        String status = task.isCompleted() ? "Đã hoàn thành" : "Đang làm";
-        String quadrant = quadrantLabel(task);
-        String pomodoro = task.getEstimatedPomodoro() > 0 ? " • " + task.getEstimatedPomodoro() + " Pomodoro" : "";
-        String reminder = task.getReminderTime() > 0 ? " • Nhắc " + DateTimeUtils.formatDateTime(task.getReminderTime()) : "";
-        String repeat = "Không lặp".equals(task.getRepeatOption()) ? "" : " • " + task.getRepeatOption();
-        String calendar = task.isShowOnCalendar() ? " • Có trên lịch" : "";
-        return status + " • " + quadrant + pomodoro + reminder + repeat + calendar;
+        return task.isCompleted() ? "Đã hoàn thành" : "Đang làm";
     }
 
     private String quadrantLabel(StudyTask task) {
@@ -3446,8 +3639,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String eventReminderMessage(StudyEvent event) {
-        String place = TextUtils.isEmpty(event.getRoom()) ? "Chưa có địa điểm" : event.getRoom();
-        return eventTypeLabel(event.getType()) + " lúc " + DateTimeUtils.formatTime(event.getStartAt()) + " • " + place;
+        String message = eventTypeLabel(event.getType()) + " lúc " + DateTimeUtils.formatTime(event.getStartAt());
+        if (!TextUtils.isEmpty(event.getRoom())) {
+            message += " • " + event.getRoom();
+        }
+        return message;
     }
 
     private void scheduleTaskReminder(StudyTask task) {
@@ -3571,6 +3767,126 @@ public class MainActivity extends AppCompatActivity {
 
     private void setText(View root, int id, String text) {
         ((TextView) root.findViewById(id)).setText(text);
+    }
+
+    private StudyFormDialog createStudyFormDialog(String titleText, View formView, String positiveText) {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+
+        LinearLayout shell = new LinearLayout(this);
+        shell.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        shell.setOrientation(LinearLayout.VERTICAL);
+        shell.setBackgroundColor(getColor(R.color.paper_light));
+        shell.setPadding(dp(16), dp(16), dp(16), dp(14));
+
+        TextView title = new TextView(this);
+        title.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        title.setText(titleText);
+        title.setTextColor(getColor(R.color.ink));
+        title.setTextSize(24f);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setPadding(dp(4), dp(2), dp(4), dp(12));
+        shell.addView(title);
+
+        shell.addView(formView);
+
+        LinearLayout actions = new LinearLayout(this);
+        LinearLayout.LayoutParams actionsParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(48));
+        actionsParams.setMargins(0, dp(12), 0, 0);
+        actions.setLayoutParams(actionsParams);
+        actions.setBaselineAligned(false);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+
+        TextView negative = dialogActionButton("Hủy", R.drawable.bg_outline_pill, R.color.rose);
+        TextView positive = dialogActionButton(positiveText, R.drawable.bg_selected_pill, R.color.ink);
+        actions.addView(negative);
+        actions.addView(positive);
+        shell.addView(actions);
+
+        dialog.setContentView(shell);
+        dialog.setOnShowListener(shown -> {
+            android.view.Window window = dialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+        });
+        negative.setOnClickListener(v -> dialog.dismiss());
+        return new StudyFormDialog(dialog, positive, negative);
+    }
+
+    private TextView dialogActionButton(String text, int backgroundRes, int textColorRes) {
+        TextView button = new TextView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        params.setMargins(dp(6), 0, dp(6), 0);
+        button.setLayoutParams(params);
+        button.setBackgroundResource(backgroundRes);
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setText(text);
+        button.setTextColor(getColor(textColorRes));
+        button.setTextSize(15f);
+        button.setTypeface(null, android.graphics.Typeface.BOLD);
+        return button;
+    }
+
+    private void styleStudyDialog(AlertDialog dialog) {
+        if (dialog == null) {
+            return;
+        }
+        android.view.Window window = dialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(getColor(R.color.paper_light)));
+        }
+        setDialogPanelBackground(dialog, "parentPanel");
+        setDialogPanelBackground(dialog, "topPanel");
+        setDialogPanelBackground(dialog, "contentPanel");
+        setDialogPanelBackground(dialog, "customPanel");
+        setDialogPanelBackground(dialog, "buttonPanel");
+
+        TextView title = findAndroidDialogText(dialog, "alertTitle");
+        if (title != null) {
+            title.setTextColor(getColor(R.color.ink));
+        }
+        TextView message = dialog.findViewById(android.R.id.message);
+        if (message != null) {
+            message.setTextColor(getColor(R.color.muted));
+        }
+        styleDialogButton(dialog.getButton(AlertDialog.BUTTON_POSITIVE), R.color.accent_blue);
+        styleDialogButton(dialog.getButton(AlertDialog.BUTTON_NEGATIVE), R.color.rose);
+        styleDialogButton(dialog.getButton(AlertDialog.BUTTON_NEUTRAL), R.color.muted);
+    }
+
+    private void setDialogPanelBackground(AlertDialog dialog, String idName) {
+        int id = getResources().getIdentifier(idName, "id", "android");
+        if (id == 0) {
+            return;
+        }
+        View panel = dialog.findViewById(id);
+        if (panel != null) {
+            panel.setBackgroundColor(getColor(R.color.paper_light));
+        }
+    }
+
+    private TextView findAndroidDialogText(AlertDialog dialog, String idName) {
+        int id = getResources().getIdentifier(idName, "id", "android");
+        if (id == 0) {
+            return null;
+        }
+        return dialog.findViewById(id);
+    }
+
+    private void styleDialogButton(android.widget.Button button, int colorRes) {
+        if (button == null) {
+            return;
+        }
+        button.setTextColor(getColor(colorRes));
+        button.setBackgroundColor(Color.TRANSPARENT);
     }
 
     private boolean canEnterWithFirebaseUser(FirebaseUser user) {

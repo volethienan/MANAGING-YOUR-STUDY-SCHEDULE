@@ -6,8 +6,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_form_panel"
         android:orientation="vertical"
-        android:padding="@dimen/screen_padding">
+        android:padding="18dp">
 
         <EditText
             android:id="@+id/inputTitle"
@@ -64,22 +65,19 @@
 
         <CheckBox
             android:id="@+id/checkImportant"
+            style="@style/StudyCheck"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="50dp"
             android:layout_marginTop="10dp"
-            android:buttonTint="@color/mint"
-            android:text="Quan trọng"
-            android:textColor="@color/ink"
-            android:textStyle="bold" />
+            android:text="Quan trọng" />
 
         <CheckBox
             android:id="@+id/checkUrgent"
+            style="@style/StudyCheck"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:buttonTint="@color/mint"
-            android:text="Khẩn cấp"
-            android:textColor="@color/ink"
-            android:textStyle="bold" />
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:text="Khẩn cấp" />
 
         <EditText
             android:id="@+id/inputReminder"
@@ -106,12 +104,10 @@
 
         <CheckBox
             android:id="@+id/checkShowOnCalendar"
+            style="@style/StudyCheck"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="50dp"
             android:layout_marginTop="10dp"
-            android:buttonTint="@color/mint"
-            android:text="Hiện deadline này trên lịch"
-            android:textColor="@color/ink"
-            android:textStyle="bold" />
+            android:text="Hiện deadline này trên lịch" />
     </LinearLayout>
 </ScrollView>

@@ -8,6 +8,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_form_panel"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:padding="28dp">
@@ -63,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
-            android:backgroundTint="@color/ink"
+            android:backgroundTint="@color/accent_blue"
             android:text="Xác nhận"
             android:textColor="@color/white"
             android:textStyle="bold"

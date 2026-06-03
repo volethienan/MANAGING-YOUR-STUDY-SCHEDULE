@@ -1,0 +1,159 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Soft background circle -->
+    <path
+        android:fillColor="#F6FAFF"
+        android:pathData="M256,24 C384,24 488,128 488,256 C488,384 384,488 256,488 C128,488 24,384 24,256 C24,128 128,24 256,24 Z" />
+
+    <!-- Calendar base shadow -->
+    <path
+        android:fillColor="#220B3A78"
+        android:pathData="M112,104 L400,104 L400,334 L112,334 Z" />
+
+    <!-- Calendar page -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M96,92 L416,92 L416,328 L96,328 Z" />
+
+    <!-- Calendar top bar -->
+    <path
+        android:fillColor="#1D62D9"
+        android:pathData="M96,92 L416,92 L416,156 L96,156 Z" />
+
+    <!-- Calendar rings -->
+    <path
+        android:fillColor="#06235E"
+        android:pathData="M148,50 C148,42 154,36 162,36 C170,36 176,42 176,50 L176,112 C176,120 170,126 162,126 C154,126 148,120 148,112 Z" />
+    <path
+        android:fillColor="#06235E"
+        android:pathData="M242,50 C242,42 248,36 256,36 C264,36 270,42 270,50 L270,112 C270,120 264,126 256,126 C248,126 242,120 242,112 Z" />
+    <path
+        android:fillColor="#06235E"
+        android:pathData="M336,50 C336,42 342,36 350,36 C358,36 364,42 364,50 L364,112 C364,120 358,126 350,126 C342,126 336,120 336,112 Z" />
+
+    <!-- Checklist boxes -->
+    <path
+        android:fillColor="#43B13D"
+        android:pathData="M128,184 L162,184 L162,218 L128,218 Z" />
+    <path
+        android:fillColor="#43B13D"
+        android:pathData="M128,236 L162,236 L162,270 L128,270 Z" />
+    <path
+        android:fillColor="#43B13D"
+        android:pathData="M128,288 L162,288 L162,322 L128,322 Z" />
+
+    <!-- Check marks -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M137,200 L146,209 L160,193 L166,199 L146,220 L131,205 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M137,252 L146,261 L160,245 L166,251 L146,272 L131,257 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M137,304 L146,313 L160,297 L166,303 L146,324 L131,309 Z" />
+
+    <!-- Checklist text lines -->
+    <path
+        android:strokeColor="#AEB9D3"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M184,201 L262,201" />
+    <path
+        android:strokeColor="#AEB9D3"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M184,253 L262,253" />
+    <path
+        android:strokeColor="#AEB9D3"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M184,305 L246,305" />
+
+    <!-- Divider -->
+    <path
+        android:strokeColor="#B5C1DA"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M292,178 L292,316" />
+
+    <!-- Mini calendar grid -->
+    <path android:fillColor="#B4BDD5" android:pathData="M318,184 L348,184 L348,214 L318,214 Z" />
+    <path android:fillColor="#B4BDD5" android:pathData="M358,184 L388,184 L388,214 L358,214 Z" />
+    <path android:fillColor="#B4BDD5" android:pathData="M318,224 L348,224 L348,254 L318,254 Z" />
+    <path android:fillColor="#43B13D" android:pathData="M358,224 L388,224 L388,254 L358,254 Z" />
+    <path android:fillColor="#B4BDD5" android:pathData="M318,264 L348,264 L348,294 L318,294 Z" />
+    <path android:fillColor="#B4BDD5" android:pathData="M358,264 L388,264 L388,294 L358,294 Z" />
+
+    <!-- Book shadow/base -->
+    <path
+        android:fillColor="#0A3A9B"
+        android:pathData="M76,338 L213,338 C236,338 247,354 256,366 C265,354 276,338 299,338 L436,338 L454,412 L300,412 C278,412 266,427 256,438 C246,427 234,412 212,412 L58,412 Z" />
+
+    <!-- Left book page -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M86,326 C132,312 186,314 234,334 C246,339 253,349 256,364 L256,424 C236,403 207,392 168,392 L72,392 Z" />
+
+    <!-- Right book page -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M426,326 C380,312 326,314 278,334 C266,339 259,349 256,364 L256,424 C276,403 305,392 344,392 L440,392 Z" />
+
+    <!-- Page highlights -->
+    <path
+        android:fillColor="#DDE7FF"
+        android:pathData="M92,360 C136,348 188,351 236,370 L236,384 C188,368 137,365 88,377 Z" />
+    <path
+        android:fillColor="#DDE7FF"
+        android:pathData="M420,360 C376,348 324,351 276,370 L276,384 C324,368 375,365 424,377 Z" />
+
+    <!-- Pencil body -->
+    <path
+        android:fillColor="#1D62D9"
+        android:pathData="M303,337 L384,256 L414,286 L333,367 Z" />
+    <path
+        android:fillColor="#06235E"
+        android:pathData="M326,360 L407,279 L414,286 L333,367 Z" />
+
+    <!-- Pencil tip -->
+    <path
+        android:fillColor="#F3C17B"
+        android:pathData="M282,374 L303,337 L333,367 Z" />
+    <path
+        android:fillColor="#06235E"
+        android:pathData="M282,374 L297,365 L291,359 Z" />
+
+    <!-- Pencil eraser -->
+    <path
+        android:fillColor="#43B13D"
+        android:pathData="M384,256 L404,236 C411,229 423,229 430,236 L434,240 C441,247 441,259 434,266 L414,286 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M376,264 L386,254 L416,284 L406,294 Z" />
+
+    <!-- Small graduation cap accent -->
+    <path
+        android:fillColor="#1D62D9"
+        android:pathData="M216,446 L256,430 L296,446 L256,462 Z" />
+    <path
+        android:fillColor="#0A3A9B"
+        android:pathData="M232,454 L256,464 L280,454 L280,472 C264,482 248,482 232,472 Z" />
+    <path
+        android:strokeColor="#43B13D"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M296,446 L306,458 L306,474" />
+    <path
+        android:fillColor="#43B13D"
+        android:pathData="M300,474 L312,474 L306,486 Z" />
+</vector>

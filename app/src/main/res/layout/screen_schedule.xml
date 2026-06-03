@@ -237,7 +237,7 @@
             android:layout_height="54dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/ink"
+            android:backgroundTint="@color/accent_blue"
             android:text="Thêm lịch"
             android:textColor="@color/white"
             android:textStyle="bold"

@@ -8,6 +8,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_form_panel"
         android:orientation="vertical"
         android:padding="28dp">
 
@@ -66,19 +68,18 @@
 
         <CheckBox
             android:id="@+id/checkTerms"
+            style="@style/StudyCheck"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:buttonTint="@color/mint"
-            android:text="Đồng ý điều khoản sử dụng"
-            android:textColor="@color/muted" />
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
+            android:text="Đồng ý điều khoản sử dụng" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="18dp"
-            android:backgroundTint="@color/ink"
+            android:backgroundTint="@color/accent_blue"
             android:text="Đăng ký và nhận OTP"
             android:textColor="@color/white"
             android:textStyle="bold"

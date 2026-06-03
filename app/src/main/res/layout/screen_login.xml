@@ -8,6 +8,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_form_panel"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:padding="28dp">
@@ -72,13 +74,12 @@
 
         <CheckBox
             android:id="@+id/checkRemember"
+            style="@style/StudyCheck"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:buttonTint="@color/mint"
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
             android:checked="true"
-            android:text="Ghi nhớ đăng nhập"
-            android:textColor="@color/muted" />
+            android:text="Ghi nhớ đăng nhập" />
 
         <TextView
             android:id="@+id/textForgotPassword"
@@ -95,7 +96,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
-            android:backgroundTint="@color/ink"
+            android:backgroundTint="@color/accent_blue"
             android:text="Đăng nhập"
             android:textColor="@color/white"
             android:textStyle="bold"

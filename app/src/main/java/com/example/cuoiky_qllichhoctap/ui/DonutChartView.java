@@ -15,6 +15,7 @@ import java.util.Locale;
 public class DonutChartView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF rect = new RectF();
     private final int[] colors = {R.color.mint, R.color.yellow, R.color.rose};
     private String centerText = "0";
     private String centerLabel = "task";
@@ -49,18 +50,18 @@ public class DonutChartView extends View {
         super.onDraw(canvas);
         int width = getWidth();
         int height = Math.max(getHeight(), dp(220));
-        int chartSize = Math.min(width - dp(140), height - dp(28));
+        int chartSize = Math.min(width - dp(150), height - dp(38));
         if (chartSize < dp(120)) {
-            chartSize = Math.min(width, height) - dp(32);
+            chartSize = Math.min(width, height) - dp(46);
         }
-        float left = dp(16);
+        float left = dp(8);
         float top = (height - chartSize) / 2f;
         RectF oval = new RectF(left, top, left + chartSize, top + chartSize);
-        float stroke = Math.max(dp(18), chartSize * 0.15f);
+        float stroke = Math.max(dp(22), chartSize * 0.18f);
 
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(stroke);
-        paint.setStrokeCap(Paint.Cap.BUTT);
+        paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setColor(color(R.color.paper_light));
         canvas.drawArc(oval, -90, 360, false, paint);
 
@@ -76,7 +77,7 @@ public class DonutChartView extends View {
                 }
                 paint.setColor(color(colors[i % colors.length]));
                 float sweep = values[i] * 360f / total;
-                canvas.drawArc(oval, start, sweep, false, paint);
+                canvas.drawArc(oval, start + 2f, Math.max(2f, sweep - 4f), false, paint);
                 start += sweep;
             }
         }
@@ -84,7 +85,7 @@ public class DonutChartView extends View {
         paint.setStyle(Paint.Style.FILL);
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setColor(color(R.color.ink));
-        textPaint.setTextSize(sp(24));
+        textPaint.setTextSize(sp(26));
         canvas.drawText(centerText, oval.centerX(), oval.centerY() - dp(2), textPaint);
         textPaint.setColor(color(R.color.muted));
         textPaint.setTextSize(sp(11));
@@ -100,7 +101,8 @@ public class DonutChartView extends View {
             float rowTop = y + i * dp(48);
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(color(colors[i % colors.length]));
-            canvas.drawRoundRect(new RectF(x, rowTop, x + dp(14), rowTop + dp(14)), dp(4), dp(4), paint);
+            rect.set(x, rowTop, x + dp(14), rowTop + dp(14));
+            canvas.drawRoundRect(rect, dp(4), dp(4), paint);
 
             textPaint.setColor(color(R.color.ink));
             canvas.drawText(labels[i], x + dp(22), rowTop + dp(12), textPaint);

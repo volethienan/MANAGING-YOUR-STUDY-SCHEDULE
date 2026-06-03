@@ -39,9 +39,10 @@
             </div>
             <nav aria-label="Quản trị">
                 <button class="nav-item active" data-target="overviewPanel">Tổng quan</button>
-                <button class="nav-item" data-target="usersPanel">Tài khoản</button>
-                <button class="nav-item" data-target="announcementsPanel">Thông báo</button>
-                <button class="nav-item" data-target="issuesPanel">Lỗi hệ thống</button>
+                <button class="nav-item" data-target="usersPanel">Người dùng</button>
+                <button class="nav-item" data-target="contentPanel">Nội dung</button>
+                <button class="nav-item" data-target="reportsPanel">Báo cáo</button>
+                <button class="nav-item" data-target="issuesPanel">Feedback & lỗi</button>
             </nav>
             <button id="logoutButton" class="quiet-button">Đăng xuất</button>
         </aside>
@@ -50,7 +51,7 @@
             <header class="workspace-header">
                 <div>
                     <p class="eyebrow">Bảng điều khiển</p>
-                    <h2>Quản lý tài khoản và trạng thái hệ thống</h2>
+                    <h2>Analytics, người dùng và nội dung học tập</h2>
                 </div>
                 <div class="header-actions">
                     <p id="actionStatus" class="action-status" role="status"></p>
@@ -60,18 +61,28 @@
 
             <section id="overviewPanel" class="panel active-panel">
                 <div id="statGrid" class="stat-grid"></div>
-                <div class="two-column">
+                <div class="two-column dashboard-grid">
                     <article class="surface">
                         <div class="surface-header">
-                            <h3>Hoạt động gần đây</h3>
+                            <div>
+                                <h3>Tăng trưởng đăng ký</h3>
+                                <p>7 ngày gần nhất từ dữ liệu tài khoản đồng bộ.</p>
+                            </div>
                             <button id="refreshButton" class="quiet-button">Làm mới</button>
                         </div>
-                        <div id="auditList" class="audit-list"></div>
+                        <div id="growthChart" class="bar-chart"></div>
                     </article>
-                    <article class="surface system-note">
-                        <h3>Phạm vi quản trị</h3>
-                        <p>Web quản trị nhận tài khoản và lỗi từ app Android qua backend quản trị. Lịch học, task và Pomodoro chi tiết vẫn lưu trên thiết bị người dùng.</p>
-                        <code>ADMIN_BACKEND_URL=http://10.0.2.2:8090</code>
+                    <article class="surface">
+                        <h3>Tương tác học tập</h3>
+                        <div id="engagementList" class="metric-list"></div>
+                    </article>
+                    <article class="surface">
+                        <h3>Môn học nổi bật</h3>
+                        <div id="subjectChart" class="rank-list"></div>
+                    </article>
+                    <article class="surface">
+                        <h3>Tính năng được dùng</h3>
+                        <div id="featureChart" class="rank-list"></div>
                     </article>
                 </div>
             </section>
@@ -99,9 +110,10 @@
                             <thead>
                             <tr>
                                 <th>Người dùng</th>
-                                <th>Nguồn đăng nhập</th>
+                                <th>Vai trò</th>
+                                <th>Gói</th>
                                 <th>Xác thực</th>
-                                <th>Lần gần nhất</th>
+                                <th>Học tập</th>
                                 <th>Trạng thái</th>
                                 <th></th>
                             </tr>
@@ -112,10 +124,10 @@
                 </article>
             </section>
 
-            <section id="announcementsPanel" class="panel">
-                <div class="two-column announcement-layout">
+            <section id="contentPanel" class="panel">
+                <div class="two-column content-layout">
                     <article class="surface">
-                        <h3>Tạo thông báo</h3>
+                        <h3>Push Notifications</h3>
                         <form id="announcementForm">
                             <label>
                                 Tiêu đề
@@ -125,14 +137,50 @@
                                 Nội dung
                                 <textarea name="body" rows="5" required maxlength="600"></textarea>
                             </label>
-                            <button type="submit">Lưu thông báo</button>
+                            <button type="submit">Tạo thông báo</button>
                         </form>
+                        <div id="announcementList" class="stack-list"></div>
                     </article>
                     <article class="surface">
-                        <div class="surface-header">
-                            <h3>Thông báo hiện có</h3>
-                        </div>
-                        <div id="announcementList" class="stack-list"></div>
+                        <h3>Templates lịch học</h3>
+                        <form id="templateForm" class="compact-form">
+                            <input name="title" placeholder="Tên template" required maxlength="120">
+                            <input name="audience" placeholder="Đối tượng: cấp 3, sinh viên..." maxlength="80">
+                            <textarea name="description" rows="3" placeholder="Mô tả ngắn" maxlength="500"></textarea>
+                            <button type="submit">Thêm template</button>
+                        </form>
+                        <div id="templateList" class="stack-list"></div>
+                    </article>
+                    <article class="surface wide-surface">
+                        <h3>Danh mục môn học / kỹ năng / tag</h3>
+                        <form id="subjectForm" class="inline-form">
+                            <input name="name" placeholder="Tên môn học hoặc tag" required maxlength="80">
+                            <input name="category" placeholder="Nhóm: Môn học, Kỹ năng, Tag" maxlength="80">
+                            <button type="submit">Thêm</button>
+                        </form>
+                        <div id="subjectList" class="chip-list"></div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="reportsPanel" class="panel">
+                <div class="two-column">
+                    <article class="surface">
+                        <h3>Khung giờ học phổ biến</h3>
+                        <div id="hourChart" class="bar-chart"></div>
+                    </article>
+                    <article class="surface">
+                        <h3>Subscription & doanh thu</h3>
+                        <div id="subscriptionReport" class="metric-list"></div>
+                    </article>
+                    <article class="surface">
+                        <h3>Hoạt động gần đây</h3>
+                        <div id="auditList" class="audit-list"></div>
+                    </article>
+                    <article class="surface system-note">
+                        <h3>Phạm vi dữ liệu</h3>
+                        <p>App gửi snapshot tổng hợp lên admin. Dashboard không hiển thị chi tiết lịch cá nhân từng người để giảm dữ liệu nhạy cảm.</p>
+                        <code>ADMIN_BACKEND_URL=http://10.0.2.2:8090</code>
                     </article>
                 </div>
             </section>
@@ -141,8 +189,8 @@
                 <article class="surface">
                     <div class="surface-header">
                         <div>
-                            <h3>Lỗi OTP và AI</h3>
-                            <p>Lỗi được app gửi về khi không gọi được OTP hoặc không đọc được ảnh lịch.</p>
+                            <h3>Feedback / Report</h3>
+                            <p>Lỗi OTP, AI đọc lịch và phản hồi người dùng gửi về.</p>
                         </div>
                         <select id="issueFilter" class="search">
                             <option value="all">Tất cả lỗi</option>

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -30,6 +32,7 @@ import java.util.regex.Pattern;
 public class AdminWebServer {
     private static final Pattern JSON_STRING = Pattern.compile("\"%s\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"");
     private static final Pattern JSON_BOOLEAN = Pattern.compile("\"%s\"\\s*:\\s*(true|false)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern JSON_NUMBER = Pattern.compile("\"%s\"\\s*:\\s*(-?\\d+)");
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.forLanguageTag("vi-VN"))
             .withZone(ZoneId.systemDefault());
     private static final Properties DOTENV = loadDotEnv();
@@ -151,6 +154,10 @@ public class AdminWebServer {
             sendJson(exchange, 200, STORE.statsJson());
             return;
         }
+        if ("/api/analytics".equals(path) && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 200, STORE.analyticsJson());
+            return;
+        }
         if ("/api/users".equals(path) && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
             sendJson(exchange, 200, STORE.usersJson());
             return;
@@ -174,6 +181,38 @@ public class AdminWebServer {
         if ("/api/announcements/action".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             String body = body(exchange);
             STORE.announcementAction(field(body, "id"), field(body, "action"));
+            sendJson(exchange, 200, "{\"ok\":true}");
+            return;
+        }
+        if ("/api/templates".equals(path) && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 200, STORE.templatesJson());
+            return;
+        }
+        if ("/api/templates".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.createTemplate(field(body, "title"), field(body, "audience"), field(body, "description"));
+            sendJson(exchange, 201, "{\"ok\":true}");
+            return;
+        }
+        if ("/api/templates/action".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.templateAction(field(body, "id"), field(body, "action"));
+            sendJson(exchange, 200, "{\"ok\":true}");
+            return;
+        }
+        if ("/api/subjects".equals(path) && "GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+            sendJson(exchange, 200, STORE.subjectsJson());
+            return;
+        }
+        if ("/api/subjects".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.createSubject(field(body, "name"), field(body, "category"));
+            sendJson(exchange, 201, "{\"ok\":true}");
+            return;
+        }
+        if ("/api/subjects/action".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.subjectAction(field(body, "id"), field(body, "action"));
             sendJson(exchange, 200, "{\"ok\":true}");
             return;
         }
@@ -215,6 +254,12 @@ public class AdminWebServer {
         if ("/api/mobile/users/password-reset-complete".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             String body = body(exchange);
             STORE.clearPasswordResetRequest(field(body, "email"));
+            sendJson(exchange, 200, "{\"ok\":true}");
+            return;
+        }
+        if ("/api/mobile/learning/sync".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.syncLearningSnapshot(body);
             sendJson(exchange, 200, "{\"ok\":true}");
             return;
         }
@@ -302,6 +347,19 @@ public class AdminWebServer {
         return matcher.find() && Boolean.parseBoolean(matcher.group(1));
     }
 
+    private static int intField(String body, String name) {
+        Pattern pattern = Pattern.compile(String.format(JSON_NUMBER.pattern(), Pattern.quote(name)));
+        Matcher matcher = pattern.matcher(body);
+        if (!matcher.find()) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
+    }
+
     private static String json(String value) {
         return value == null ? "" : value
                 .replace("\\", "\\\\")
@@ -387,12 +445,41 @@ public class AdminWebServer {
             set("user", id, "lastSeenAt", String.valueOf(now));
             set("user", id, "locked", exists ? get("user", id, "locked") : "false");
             set("user", id, "passwordResetRequested", exists ? get("user", id, "passwordResetRequested") : "false");
+            set("user", id, "role", exists ? empty(get("user", id, "role"), "User") : "User");
+            set("user", id, "plan", exists ? empty(get("user", id, "plan"), "Free") : "Free");
             audit(exists ? "Đồng bộ tài khoản" : "Ghi nhận tài khoản mới", normalizedEmail);
             save();
             return new UserAccess(
                     Boolean.parseBoolean(get("user", id, "locked")),
                     Boolean.parseBoolean(get("user", id, "passwordResetRequested"))
             );
+        }
+
+        synchronized void syncLearningSnapshot(String body) {
+            String email = field(body, "email").trim().toLowerCase(Locale.US);
+            if (email.isBlank()) {
+                throw new IllegalArgumentException("Email is required");
+            }
+            String id = key(email);
+            if (!has("user", id, "email")) {
+                syncUser(email, field(body, "name"), field(body, "provider"), true);
+            }
+            set("user", id, "learningSyncedAt", String.valueOf(System.currentTimeMillis()));
+            setInt("user", id, "totalTasks", intField(body, "totalTasks"));
+            setInt("user", id, "completedTasks", intField(body, "completedTasks"));
+            setInt("user", id, "totalEvents", intField(body, "totalEvents"));
+            setInt("user", id, "studyEvents", intField(body, "studyEvents"));
+            setInt("user", id, "examEvents", intField(body, "examEvents"));
+            setInt("user", id, "deadlineEvents", intField(body, "deadlineEvents"));
+            setInt("user", id, "focusMinutes", intField(body, "focusMinutes"));
+            setInt("user", id, "focusSessions", intField(body, "focusSessions"));
+            setInt("user", id, "todayFocusMinutes", intField(body, "todayFocusMinutes"));
+            setInt("user", id, "todayFocusSessions", intField(body, "todayFocusSessions"));
+            setInt("user", id, "preferredHour", intField(body, "preferredHour"));
+            set("user", id, "topSubject", limit(empty(field(body, "topSubject"), "Chưa có"), 80));
+            set("user", id, "featureUsage", limit(empty(field(body, "featureUsage"), "schedule,tasks"), 120));
+            audit("Đồng bộ thống kê học tập", email);
+            save();
         }
 
         synchronized void userAction(String email, String action) {
@@ -409,6 +496,13 @@ public class AdminWebServer {
             } else if ("requestReset".equals(action) || "clearReset".equals(action)) {
                 set("user", id, "passwordResetRequested", String.valueOf("requestReset".equals(action)));
                 audit("requestReset".equals(action) ? "Yêu cầu đặt lại mật khẩu" : "Gỡ yêu cầu đặt lại mật khẩu", email);
+            } else if ("makePremium".equals(action) || "makeFree".equals(action)) {
+                set("user", id, "plan", "makePremium".equals(action) ? "Premium" : "Free");
+                audit("makePremium".equals(action) ? "Nâng gói Premium" : "Chuyển về Free", email);
+            } else if ("makeAdmin".equals(action) || "makeUser".equals(action) || "makeTeacher".equals(action)) {
+                String role = "makeAdmin".equals(action) ? "Admin" : ("makeTeacher".equals(action) ? "Teacher" : "User");
+                set("user", id, "role", role);
+                audit("Cập nhật vai trò", email + " -> " + role);
             } else {
                 throw new IllegalArgumentException("Thao tác tài khoản không hợp lệ");
             }
@@ -538,13 +632,115 @@ public class AdminWebServer {
                 json.append("{\"email\":\"").append(json(get("user", id, "email")))
                         .append("\",\"name\":\"").append(json(get("user", id, "name")))
                         .append("\",\"provider\":\"").append(json(get("user", id, "provider")))
+                        .append("\",\"role\":\"").append(json(empty(get("user", id, "role"), "User")))
+                        .append("\",\"plan\":\"").append(json(empty(get("user", id, "plan"), "Free")))
                         .append("\",\"verified\":").append(Boolean.parseBoolean(get("user", id, "verified")))
                         .append(",\"locked\":").append(Boolean.parseBoolean(get("user", id, "locked")))
                         .append(",\"passwordResetRequested\":").append(Boolean.parseBoolean(get("user", id, "passwordResetRequested")))
+                        .append(",\"totalTasks\":").append(intValue(get("user", id, "totalTasks")))
+                        .append(",\"completedTasks\":").append(intValue(get("user", id, "completedTasks")))
+                        .append(",\"totalEvents\":").append(intValue(get("user", id, "totalEvents")))
+                        .append(",\"focusMinutes\":").append(intValue(get("user", id, "focusMinutes")))
+                        .append(",\"focusSessions\":").append(intValue(get("user", id, "focusSessions")))
+                        .append(",\"topSubject\":\"").append(json(empty(get("user", id, "topSubject"), "Chưa có")))
+                        .append("\",\"learningSyncedAt\":\"").append(time(get("user", id, "learningSyncedAt")))
                         .append(",\"createdAt\":\"").append(time(get("user", id, "createdAt")))
                         .append("\",\"lastSeenAt\":\"").append(time(get("user", id, "lastSeenAt"))).append("\"}");
             }
             return json.append("]}").toString();
+        }
+
+        synchronized String analyticsJson() {
+            List<String> userIds = ids("user");
+            long now = System.currentTimeMillis();
+            long todayStart = now - (now % (24L * 60L * 60L * 1000L));
+            long monthAgo = now - 30L * 24L * 60L * 60L * 1000L;
+            int dau = 0;
+            int mau = 0;
+            int verified = 0;
+            int locked = 0;
+            int premium = 0;
+            int totalTasks = 0;
+            int completedTasks = 0;
+            int totalEvents = 0;
+            int focusMinutes = 0;
+            int focusSessions = 0;
+            int[] growth = new int[7];
+            int[] hourBuckets = new int[4];
+            Map<String, Integer> subjects = new HashMap<>();
+            Map<String, Integer> features = new HashMap<>();
+            for (String id : userIds) {
+                long lastSeen = longValue(get("user", id, "lastSeenAt"));
+                if (lastSeen >= todayStart) {
+                    dau++;
+                }
+                if (lastSeen >= monthAgo) {
+                    mau++;
+                }
+                if (Boolean.parseBoolean(get("user", id, "verified"))) {
+                    verified++;
+                }
+                if (Boolean.parseBoolean(get("user", id, "locked"))) {
+                    locked++;
+                }
+                if ("Premium".equalsIgnoreCase(get("user", id, "plan"))) {
+                    premium++;
+                }
+                long createdAt = longValue(get("user", id, "createdAt"));
+                int dayIndex = (int) ((createdAt - (todayStart - 6L * 24L * 60L * 60L * 1000L)) / (24L * 60L * 60L * 1000L));
+                if (dayIndex >= 0 && dayIndex < growth.length) {
+                    growth[dayIndex]++;
+                }
+                int tasks = intValue(get("user", id, "totalTasks"));
+                int completed = intValue(get("user", id, "completedTasks"));
+                int events = intValue(get("user", id, "totalEvents"));
+                int minutes = intValue(get("user", id, "focusMinutes"));
+                int sessions = intValue(get("user", id, "focusSessions"));
+                totalTasks += tasks;
+                completedTasks += completed;
+                totalEvents += events;
+                focusMinutes += minutes;
+                focusSessions += sessions;
+                String subject = empty(get("user", id, "topSubject"), "");
+                if (!subject.isBlank()) {
+                    subjects.put(subject, subjects.getOrDefault(subject, 0) + Math.max(1, tasks + events + sessions));
+                }
+                int hour = intValue(get("user", id, "preferredHour"));
+                if (hour >= 0 && hour <= 23) {
+                    hourBuckets[Math.min(3, hour / 6)]++;
+                }
+                for (String feature : get("user", id, "featureUsage").split(",")) {
+                    String cleaned = feature.trim();
+                    if (!cleaned.isEmpty()) {
+                        features.put(cleaned, features.getOrDefault(cleaned, 0) + 1);
+                    }
+                }
+            }
+            int openIssues = countOpenIssues();
+            int activeAnnouncements = countActiveAnnouncements();
+            int completionRate = totalTasks == 0 ? 0 : Math.round((completedTasks * 100f) / totalTasks);
+            int revenueEstimate = premium * 59000;
+            return "{\"summary\":{"
+                    + "\"users\":" + userIds.size()
+                    + ",\"verified\":" + verified
+                    + ",\"locked\":" + locked
+                    + ",\"dau\":" + dau
+                    + ",\"mau\":" + mau
+                    + ",\"premium\":" + premium
+                    + ",\"revenueEstimate\":" + revenueEstimate
+                    + ",\"totalTasks\":" + totalTasks
+                    + ",\"completedTasks\":" + completedTasks
+                    + ",\"completionRate\":" + completionRate
+                    + ",\"totalEvents\":" + totalEvents
+                    + ",\"focusMinutes\":" + focusMinutes
+                    + ",\"focusSessions\":" + focusSessions
+                    + ",\"openIssues\":" + openIssues
+                    + ",\"activeAnnouncements\":" + activeAnnouncements
+                    + "},\"growth\":" + growthJson(growth)
+                    + ",\"studyHours\":[{\"label\":\"0-5h\",\"value\":" + hourBuckets[0] + "},{\"label\":\"6-11h\",\"value\":" + hourBuckets[1] + "},{\"label\":\"12-17h\",\"value\":" + hourBuckets[2] + "},{\"label\":\"18-23h\",\"value\":" + hourBuckets[3] + "}]"
+                    + ",\"subjects\":" + mapJson(subjects, 5)
+                    + ",\"features\":" + mapJson(features, 5)
+                    + "}";
         }
 
         private static final class UserAccess {
@@ -596,6 +792,98 @@ public class AdminWebServer {
             return json.append("]}").toString();
         }
 
+        synchronized String templatesJson() {
+            StringBuilder json = new StringBuilder("{\"templates\":[");
+            List<String> templateIds = ids("template");
+            templateIds.sort(Comparator.comparingLong((String id) -> longValue(get("template", id, "createdAt"))).reversed());
+            for (String id : templateIds) {
+                comma(json);
+                json.append("{\"id\":\"").append(json(id))
+                        .append("\",\"title\":\"").append(json(get("template", id, "title")))
+                        .append("\",\"audience\":\"").append(json(get("template", id, "audience")))
+                        .append("\",\"description\":\"").append(json(get("template", id, "description")))
+                        .append("\",\"active\":").append(Boolean.parseBoolean(get("template", id, "active")))
+                        .append(",\"createdAt\":\"").append(time(get("template", id, "createdAt"))).append("\"}");
+            }
+            return json.append("]}").toString();
+        }
+
+        synchronized void createTemplate(String title, String audience, String description) {
+            String cleanTitle = limit(empty(title, ""), 120);
+            if (cleanTitle.isBlank()) {
+                throw new IllegalArgumentException("Template cần tên");
+            }
+            String id = UUID.randomUUID().toString();
+            set("template", id, "title", cleanTitle);
+            set("template", id, "audience", limit(empty(audience, "Tất cả"), 80));
+            set("template", id, "description", limit(empty(description, "Chưa có mô tả"), 500));
+            set("template", id, "active", "true");
+            set("template", id, "createdAt", String.valueOf(System.currentTimeMillis()));
+            audit("Tạo template lịch học", cleanTitle);
+            save();
+        }
+
+        synchronized void templateAction(String id, String action) {
+            if (!has("template", id, "title")) {
+                throw new IllegalArgumentException("Không tìm thấy template");
+            }
+            if ("delete".equals(action)) {
+                audit("Xóa template", get("template", id, "title"));
+                removeGroup("template", id);
+            } else if ("toggle".equals(action)) {
+                boolean active = Boolean.parseBoolean(get("template", id, "active"));
+                set("template", id, "active", String.valueOf(!active));
+                audit(active ? "Tắt template" : "Bật template", get("template", id, "title"));
+            } else {
+                throw new IllegalArgumentException("Thao tác template không hợp lệ");
+            }
+            save();
+        }
+
+        synchronized String subjectsJson() {
+            StringBuilder json = new StringBuilder("{\"subjects\":[");
+            List<String> subjectIds = ids("subject");
+            subjectIds.sort(Comparator.comparing((String id) -> get("subject", id, "name")));
+            for (String id : subjectIds) {
+                comma(json);
+                json.append("{\"id\":\"").append(json(id))
+                        .append("\",\"name\":\"").append(json(get("subject", id, "name")))
+                        .append("\",\"category\":\"").append(json(get("subject", id, "category")))
+                        .append("\",\"active\":").append(Boolean.parseBoolean(get("subject", id, "active"))).append("}");
+            }
+            return json.append("]}").toString();
+        }
+
+        synchronized void createSubject(String name, String category) {
+            String cleanName = limit(empty(name, ""), 80);
+            if (cleanName.isBlank()) {
+                throw new IllegalArgumentException("Danh mục cần tên");
+            }
+            String id = key(cleanName.toLowerCase(Locale.US));
+            set("subject", id, "name", cleanName);
+            set("subject", id, "category", limit(empty(category, "Môn học"), 80));
+            set("subject", id, "active", "true");
+            audit("Thêm danh mục môn/tag", cleanName);
+            save();
+        }
+
+        synchronized void subjectAction(String id, String action) {
+            if (!has("subject", id, "name")) {
+                throw new IllegalArgumentException("Không tìm thấy danh mục");
+            }
+            if ("delete".equals(action)) {
+                audit("Xóa danh mục", get("subject", id, "name"));
+                removeGroup("subject", id);
+            } else if ("toggle".equals(action)) {
+                boolean active = Boolean.parseBoolean(get("subject", id, "active"));
+                set("subject", id, "active", String.valueOf(!active));
+                audit(active ? "Tắt danh mục" : "Bật danh mục", get("subject", id, "name"));
+            } else {
+                throw new IllegalArgumentException("Thao tác danh mục không hợp lệ");
+            }
+            save();
+        }
+
         synchronized void audit(String action, String detail) {
             String id = UUID.randomUUID().toString();
             set("audit", id, "action", action);
@@ -622,17 +910,88 @@ public class AdminWebServer {
             return json.append("]}").toString();
         }
 
-        private void seed() {
-            if (!ids("announcement").isEmpty()) {
-                return;
+        private int countOpenIssues() {
+            int open = 0;
+            for (String id : ids("issue")) {
+                if ("open".equals(get("issue", id, "status"))) {
+                    open++;
+                }
             }
-            String id = UUID.randomUUID().toString();
-            set("announcement", id, "title", "Web quản trị đã sẵn sàng");
-            set("announcement", id, "body", "Tài khoản từ app Android sẽ xuất hiện sau khi app đồng bộ với ADMIN_BACKEND_URL.");
-            set("announcement", id, "active", "true");
-            set("announcement", id, "createdAt", String.valueOf(System.currentTimeMillis()));
-            audit("Khởi tạo dữ liệu quản trị", "Thông báo mặc định");
+            return open;
+        }
+
+        private int countActiveAnnouncements() {
+            int active = 0;
+            for (String id : ids("announcement")) {
+                if (Boolean.parseBoolean(get("announcement", id, "active"))) {
+                    active++;
+                }
+            }
+            return active;
+        }
+
+        private String growthJson(int[] growth) {
+            StringBuilder json = new StringBuilder("[");
+            for (int index = 0; index < growth.length; index++) {
+                comma(json);
+                json.append("{\"label\":\"D-").append(growth.length - index - 1)
+                        .append("\",\"value\":").append(growth[index]).append("}");
+            }
+            return json.append("]").toString();
+        }
+
+        private String mapJson(Map<String, Integer> values, int limit) {
+            List<Map.Entry<String, Integer>> entries = new ArrayList<>(values.entrySet());
+            entries.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+            StringBuilder json = new StringBuilder("[");
+            int count = Math.min(limit, entries.size());
+            for (int index = 0; index < count; index++) {
+                Map.Entry<String, Integer> entry = entries.get(index);
+                comma(json);
+                json.append("{\"label\":\"").append(json(entry.getKey()))
+                        .append("\",\"value\":").append(entry.getValue()).append("}");
+            }
+            return json.append("]").toString();
+        }
+
+        private void seed() {
+            if (ids("announcement").isEmpty()) {
+                String id = UUID.randomUUID().toString();
+                set("announcement", id, "title", "Web quản trị đã sẵn sàng");
+                set("announcement", id, "body", "Tài khoản từ app Android sẽ xuất hiện sau khi app đồng bộ với ADMIN_BACKEND_URL.");
+                set("announcement", id, "active", "true");
+                set("announcement", id, "createdAt", String.valueOf(System.currentTimeMillis()));
+                audit("Khởi tạo dữ liệu quản trị", "Thông báo mặc định");
+            }
+            if (ids("template").isEmpty()) {
+                seedTemplate("Lịch ôn thi cuối kỳ", "Sinh viên đại học", "Chia tuần ôn tập theo môn, deadline bài tập và phiên Pomodoro.");
+                seedTemplate("Kế hoạch luyện thi THPT", "Học sinh cấp 3", "Theo dõi môn trọng tâm, lịch kiểm tra thử và mục tiêu hoàn thành đề.");
+                seedTemplate("Routine tự học ngoại ngữ", "Người học kỹ năng", "Lặp lại nghe, đọc, từ vựng và speaking theo ngày.");
+            }
+            if (ids("subject").isEmpty()) {
+                seedSubject("Toán", "Môn học");
+                seedSubject("Lập trình Mobile", "Môn học");
+                seedSubject("Tiếng Anh", "Kỹ năng");
+                seedSubject("Deadline", "Tag");
+                seedSubject("Ôn thi", "Tag");
+            }
             save();
+        }
+
+        private void seedTemplate(String title, String audience, String description) {
+            String id = UUID.randomUUID().toString();
+            set("template", id, "title", title);
+            set("template", id, "audience", audience);
+            set("template", id, "description", description);
+            set("template", id, "active", "true");
+            set("template", id, "createdAt", String.valueOf(System.currentTimeMillis()));
+        }
+
+        private void seedSubject(String name, String category) {
+            String id = key(name.toLowerCase(Locale.US));
+            set("subject", id, "name", name);
+            set("subject", id, "category", category);
+            set("subject", id, "active", "true");
         }
 
         private void load() {
@@ -682,6 +1041,10 @@ public class AdminWebServer {
             values.setProperty(group + "." + id + "." + field, value == null ? "" : value);
         }
 
+        private void setInt(String group, String id, String field, int value) {
+            set(group, id, field, String.valueOf(Math.max(0, value)));
+        }
+
         private List<String> ids(String group) {
             List<String> ids = new ArrayList<>();
             String prefix = group + ".";
@@ -727,6 +1090,14 @@ public class AdminWebServer {
                 return Long.parseLong(value);
             } catch (NumberFormatException exception) {
                 return 0L;
+            }
+        }
+
+        private int intValue(String value) {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException exception) {
+                return 0;
             }
         }
 

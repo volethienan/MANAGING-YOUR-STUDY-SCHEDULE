@@ -6,8 +6,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_form_panel"
         android:orientation="vertical"
-        android:padding="@dimen/screen_padding">
+        android:padding="18dp">
 
         <EditText
             android:id="@+id/inputTitle"
@@ -26,17 +27,6 @@
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input" />
-
-        <EditText
-            android:id="@+id/inputSubject"
-            style="@style/StudyInput"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="Môn học"
-            android:importantForAutofill="no"
-            android:inputType="textCapWords" />
 
         <EditText
             android:id="@+id/inputDate"
@@ -108,14 +98,11 @@
 
         <CheckBox
             android:id="@+id/checkReminder"
+            style="@style/StudyCheck"
             android:layout_width="match_parent"
-            android:layout_height="54dp"
+            android:layout_height="52dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:buttonTint="@color/mint"
-            android:text="Bật nhắc nhở"
-            android:textColor="@color/ink"
-            android:textStyle="bold" />
+            android:text="Bật nhắc nhở" />
 
         <Spinner
             android:id="@+id/spinnerReminderBefore"

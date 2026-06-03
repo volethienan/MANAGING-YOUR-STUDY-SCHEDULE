@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
 import com.example.cuoiky_qllichhoctap.model.StudyTask;
 import com.example.cuoiky_qllichhoctap.model.UserProfile;
+import com.example.cuoiky_qllichhoctap.model.CountdownMilestone;
 import com.example.cuoiky_qllichhoctap.util.DateTimeUtils;
 
 import org.json.JSONArray;
@@ -34,7 +35,7 @@ public class StudyRepository {
     private static final String KEY_MASCOT = "mascot";
     private static final String KEY_STUDY_STATUS = "study_status";
     private static final String DB_NAME = "study_planner.db";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
 
     private final SharedPreferences prefs;
     private final StudyDbHelper dbHelper;
@@ -195,6 +196,40 @@ public class StudyRepository {
 
     public void deleteEvent(String id) {
         db().delete("events", "id = ?", new String[]{id});
+    }
+
+    public List<CountdownMilestone> getCountdownMilestones() {
+        List<CountdownMilestone> milestones = new ArrayList<>();
+        try (Cursor cursor = db().query("countdowns", new String[]{"id", "title", "type", "target_date", "note"}, null, null, null, null, "target_date ASC")) {
+            while (cursor.moveToNext()) {
+                milestones.add(new CountdownMilestone(
+                        cursor.getString(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getLong(3),
+                        cursor.getString(4)
+                ));
+            }
+        }
+        return milestones;
+    }
+
+    public void saveCountdownMilestone(CountdownMilestone milestone) {
+        ContentValues values = new ContentValues();
+        values.put("id", milestone.getId());
+        values.put("title", milestone.getTitle());
+        values.put("type", milestone.getType());
+        values.put("target_date", milestone.getTargetDate());
+        values.put("note", milestone.getNote());
+        db().insertWithOnConflict("countdowns", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    public void deleteCountdownMilestone(String id) {
+        db().delete("countdowns", "id = ?", new String[]{id});
+    }
+
+    public CountdownMilestone newCountdownMilestone(String title, String type, long targetDate, String note) {
+        return new CountdownMilestone(UUID.randomUUID().toString(), title, type, targetDate, note);
     }
 
     public void setTaskCalendarVisibility(String taskId, boolean showOnCalendar) {
@@ -483,6 +518,8 @@ public class StudyRepository {
     private void ensureRuntimeTables() {
         db().execSQL("CREATE TABLE IF NOT EXISTS focus_day_stats (day_key TEXT PRIMARY KEY, minutes INTEGER NOT NULL DEFAULT 0, sessions INTEGER NOT NULL DEFAULT 0)");
         db().execSQL("CREATE TABLE IF NOT EXISTS pomodoro_sessions (id TEXT PRIMARY KEY, task_id TEXT, subject_tag TEXT, mode TEXT, duration_minutes INTEGER, completed_minutes INTEGER, started_at INTEGER, ended_at INTEGER, is_completed INTEGER, sound_type TEXT, created_at INTEGER)");
+        db().execSQL("CREATE TABLE IF NOT EXISTS countdowns (id TEXT PRIMARY KEY, title TEXT NOT NULL, type TEXT NOT NULL, target_date INTEGER NOT NULL, note TEXT)");
+        db().execSQL("CREATE INDEX IF NOT EXISTS idx_countdowns_target_date ON countdowns(target_date)");
         ensureTaskColumn("important", "INTEGER NOT NULL DEFAULT 0");
         ensureTaskColumn("urgent", "INTEGER NOT NULL DEFAULT 0");
         ensureTaskColumn("tag", "TEXT");
@@ -601,6 +638,9 @@ public class StudyRepository {
         saveEvent(newEvent("Họp nhóm Mobile", StudyEvent.TYPE_STUDY, "Mobile", DateTimeUtils.daysFromNow(1, 19, 0), DateTimeUtils.daysFromNow(1, 20, 30), "https://meet.google.com/demo-study", "Chốt demo cuối kỳ"));
         saveEvent(newEvent("Nộp slide thuyết trình", StudyEvent.TYPE_DEADLINE, "Đồ án Study Planner", DateTimeUtils.daysFromNow(3, 22, 0), DateTimeUtils.daysFromNow(3, 22, 30), "https://classroom.google.com/", "Nộp PDF và slide bản cuối"));
         saveEvent(newEvent("Mua bút highlight", StudyEvent.TYPE_PERSONAL, "Chuẩn bị học tập", DateTimeUtils.daysFromNow(1, 17, 30), DateTimeUtils.daysFromNow(1, 18, 0), "Nhà sách gần trường", "Chọn màu pastel để ghi chú"));
+        saveCountdownMilestone(newCountdownMilestone("Thi cuối kỳ Mobile", CountdownMilestone.TYPE_EXAM, DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(10, 0, 0)), "Ôn lại SQLite, Activity và XML layout"));
+        saveCountdownMilestone(newCountdownMilestone("Sinh nhật bạn thân", CountdownMilestone.TYPE_BIRTHDAY, DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(18, 0, 0)), "Chuẩn bị thiệp nhỏ"));
+        saveCountdownMilestone(newCountdownMilestone("Ngày bảo vệ đồ án", CountdownMilestone.TYPE_EVENT, DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(25, 0, 0)), "Chốt demo và slide"));
         saveTask(newTask("Làm bài tập Chương 4", "CSDL", DateTimeUtils.daysFromNow(0, 21, 0), StudyTask.PRIORITY_HIGH, "Hoàn thành trước buổi học"));
         StudyTask androidTask = newTask("Đọc tài liệu Android", "Mobile", DateTimeUtils.daysFromNow(1, 8, 0), StudyTask.PRIORITY_MEDIUM, "Activity, XML layout, SQLite");
         androidTask.setShowOnCalendar(true);
@@ -653,6 +693,8 @@ public class StudyRepository {
             db.execSQL("CREATE TABLE focus_day_stats (day_key TEXT PRIMARY KEY, minutes INTEGER NOT NULL DEFAULT 0, sessions INTEGER NOT NULL DEFAULT 0)");
             db.execSQL("CREATE TABLE pomodoro_sessions (id TEXT PRIMARY KEY, task_id TEXT, subject_tag TEXT, mode TEXT, duration_minutes INTEGER, completed_minutes INTEGER, started_at INTEGER, ended_at INTEGER, is_completed INTEGER, sound_type TEXT, created_at INTEGER)");
             db.execSQL("CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+            db.execSQL("CREATE TABLE countdowns (id TEXT PRIMARY KEY, title TEXT NOT NULL, type TEXT NOT NULL, target_date INTEGER NOT NULL, note TEXT)");
+            db.execSQL("CREATE INDEX idx_countdowns_target_date ON countdowns(target_date)");
         }
 
         @Override
@@ -665,6 +707,8 @@ public class StudyRepository {
                 db.execSQL("CREATE TABLE IF NOT EXISTS focus_day_stats (day_key TEXT PRIMARY KEY, minutes INTEGER NOT NULL DEFAULT 0, sessions INTEGER NOT NULL DEFAULT 0)");
                 db.execSQL("CREATE TABLE IF NOT EXISTS pomodoro_sessions (id TEXT PRIMARY KEY, task_id TEXT, subject_tag TEXT, mode TEXT, duration_minutes INTEGER, completed_minutes INTEGER, started_at INTEGER, ended_at INTEGER, is_completed INTEGER, sound_type TEXT, created_at INTEGER)");
                 db.execSQL("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+                db.execSQL("CREATE TABLE IF NOT EXISTS countdowns (id TEXT PRIMARY KEY, title TEXT NOT NULL, type TEXT NOT NULL, target_date INTEGER NOT NULL, note TEXT)");
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_countdowns_target_date ON countdowns(target_date)");
                 db.execSQL("CREATE INDEX IF NOT EXISTS idx_tasks_due_at ON tasks(due_at)");
                 db.execSQL("CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at)");
                 boolean addedImportant = ensureColumn(db, "tasks", "important", "INTEGER NOT NULL DEFAULT 0");
@@ -685,6 +729,10 @@ public class StudyRepository {
                 if (addedImportant) {
                     db.execSQL("UPDATE tasks SET important = 1 WHERE priority = ?", new Object[]{StudyTask.PRIORITY_HIGH});
                 }
+            }
+            if (oldVersion < 4) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS countdowns (id TEXT PRIMARY KEY, title TEXT NOT NULL, type TEXT NOT NULL, target_date INTEGER NOT NULL, note TEXT)");
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_countdowns_target_date ON countdowns(target_date)");
             }
         }
 

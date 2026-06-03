@@ -3,6 +3,9 @@ package com.example.cuoiky_qllichhoctap.data;
 import android.text.TextUtils;
 
 import com.example.cuoiky_qllichhoctap.BuildConfig;
+import com.example.cuoiky_qllichhoctap.model.PomodoroSession;
+import com.example.cuoiky_qllichhoctap.model.StudyEvent;
+import com.example.cuoiky_qllichhoctap.model.StudyTask;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,6 +17,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,17 +42,48 @@ public class AdminPortalClient {
                 return;
             }
             try {
-                JSONObject body = new JSONObject()
-                        .put("email", email)
-                        .put("name", name)
-                        .put("provider", provider)
-                        .put("verified", true);
-                JSONObject response = post("/api/mobile/users/sync", body);
+                JSONObject response = post("/api/mobile/users/sync", userPayload(email, name, provider, true));
                 boolean locked = response.optBoolean("locked", false);
                 boolean resetRequested = response.optBoolean("passwordResetRequested", false);
                 callback.onResult(!locked, true, resetRequested, locked ? "Tài khoản đã bị quản trị viên khóa" : "");
             } catch (Exception exception) {
                 callback.onResult(true, false, false, exception.getMessage() == null ? "Không đồng bộ được web quản trị" : exception.getMessage());
+            }
+        });
+    }
+
+    public void syncRegisteredUser(String email, String name, String provider, boolean verified) {
+        if (TextUtils.isEmpty(BuildConfig.ADMIN_BACKEND_URL)) {
+            return;
+        }
+        executor.execute(() -> {
+            try {
+                post("/api/mobile/users/sync", userPayload(email, name, provider, verified));
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
+    public void syncLearningSnapshot(String email, String name, String provider, List<StudyTask> tasks, List<StudyEvent> events,
+                                     int focusMinutes, int focusSessions, int todayFocusMinutes, int todayFocusSessions,
+                                     List<PomodoroSession> recentSessions) {
+        if (TextUtils.isEmpty(BuildConfig.ADMIN_BACKEND_URL) || TextUtils.isEmpty(email)) {
+            return;
+        }
+        executor.execute(() -> {
+            try {
+                post("/api/mobile/learning/sync", learningPayload(
+                        email,
+                        name,
+                        provider,
+                        tasks,
+                        events,
+                        focusMinutes,
+                        focusSessions,
+                        todayFocusMinutes,
+                        todayFocusSessions,
+                        recentSessions));
+            } catch (Exception ignored) {
             }
         });
     }
@@ -136,6 +174,101 @@ public class AdminPortalClient {
             throw new IllegalStateException("Admin backend HTTP " + status + ": " + response);
         }
         return new JSONObject(response);
+    }
+
+    private JSONObject userPayload(String email, String name, String provider, boolean verified) throws Exception {
+        return new JSONObject()
+                .put("email", email)
+                .put("name", name)
+                .put("provider", provider)
+                .put("verified", verified);
+    }
+
+    private JSONObject learningPayload(String email, String name, String provider, List<StudyTask> tasks, List<StudyEvent> events,
+                                       int focusMinutes, int focusSessions, int todayFocusMinutes, int todayFocusSessions,
+                                       List<PomodoroSession> recentSessions) throws Exception {
+        int completedTasks = 0;
+        Map<String, Integer> subjects = new HashMap<>();
+        for (StudyTask task : tasks) {
+            if (task.isCompleted()) {
+                completedTasks++;
+            }
+            addCount(subjects, task.getTag());
+        }
+        int studyEvents = 0;
+        int examEvents = 0;
+        int deadlineEvents = 0;
+        int preferredHour = 19;
+        int[] hours = new int[24];
+        Calendar calendar = Calendar.getInstance();
+        for (StudyEvent event : events) {
+            if (StudyEvent.TYPE_EXAM.equals(event.getType())) {
+                examEvents++;
+            } else if (StudyEvent.TYPE_DEADLINE.equals(event.getType())) {
+                deadlineEvents++;
+            } else if (StudyEvent.TYPE_STUDY.equals(event.getType())) {
+                studyEvents++;
+            }
+            addCount(subjects, event.getSubject());
+            calendar.setTimeInMillis(event.getStartAt());
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            if (hour >= 0 && hour < hours.length) {
+                hours[hour]++;
+            }
+        }
+        for (PomodoroSession session : recentSessions) {
+            addCount(subjects, session.getSubjectTag());
+        }
+        int bestHourCount = 0;
+        for (int hour = 0; hour < hours.length; hour++) {
+            if (hours[hour] > bestHourCount) {
+                bestHourCount = hours[hour];
+                preferredHour = hour;
+            }
+        }
+        String features = "tasks";
+        if (!events.isEmpty()) {
+            features += ",schedule";
+        }
+        if (focusSessions > 0) {
+            features += ",pomodoro";
+        }
+        return new JSONObject()
+                .put("email", email)
+                .put("name", name)
+                .put("provider", provider)
+                .put("totalTasks", tasks.size())
+                .put("completedTasks", completedTasks)
+                .put("totalEvents", events.size())
+                .put("studyEvents", studyEvents)
+                .put("examEvents", examEvents)
+                .put("deadlineEvents", deadlineEvents)
+                .put("focusMinutes", focusMinutes)
+                .put("focusSessions", focusSessions)
+                .put("todayFocusMinutes", todayFocusMinutes)
+                .put("todayFocusSessions", todayFocusSessions)
+                .put("topSubject", topKey(subjects))
+                .put("preferredHour", preferredHour)
+                .put("featureUsage", features);
+    }
+
+    private void addCount(Map<String, Integer> values, String key) {
+        String cleaned = key == null ? "" : key.trim();
+        if (!cleaned.isEmpty()) {
+            values.put(cleaned, values.getOrDefault(cleaned, 0) + 1);
+        }
+    }
+
+    private String topKey(Map<String, Integer> values) {
+        String best = "";
+        int bestCount = 0;
+        for (Map.Entry<String, Integer> entry : values.entrySet()) {
+            if (entry.getValue() > bestCount) {
+                best = entry.getKey();
+                bestCount = entry.getValue();
+            }
+        }
+        return best;
     }
 
     private String readAll(InputStream input) throws Exception {

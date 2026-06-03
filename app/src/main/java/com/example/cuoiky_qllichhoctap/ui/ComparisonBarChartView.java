@@ -13,10 +13,11 @@ import com.example.cuoiky_qllichhoctap.R;
 public class ComparisonBarChartView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF rect = new RectF();
     private final int[] colors = {R.color.mint, R.color.yellow, R.color.pink, R.color.blue};
-    private String[] labels = {"Xong", "Mở", "Lịch", "Tập trung"};
-    private int[] values = {0, 0, 0, 0};
-    private String caption = "So sánh nhanh";
+    private String[] labels = {"Xong", "Còn lại"};
+    private int[] values = {0, 0};
+    private String caption = "Số việc hôm nay";
 
     public ComparisonBarChartView(Context context) {
         super(context);
@@ -45,44 +46,44 @@ public class ComparisonBarChartView extends View {
         super.onDraw(canvas);
         int width = getWidth();
         int height = Math.max(getHeight(), dp(230));
-        int left = dp(18);
-        int right = width - dp(14);
-        int top = dp(40);
-        int bottom = height - dp(44);
+        int left = dp(34);
+        int right = width - dp(12);
+        int top = dp(34);
+        int bottom = height - dp(46);
         int max = Math.max(1, max(values));
 
         textPaint.setTextAlign(Paint.Align.LEFT);
-        textPaint.setTextSize(sp(14));
+        textPaint.setTextSize(sp(13));
         textPaint.setColor(color(R.color.ink));
-        canvas.drawText(caption, left, dp(22), textPaint);
+        canvas.drawText(caption, dp(2), dp(18), textPaint);
 
         paint.setStrokeWidth(dp(1));
         paint.setColor(color(R.color.line));
-        for (int i = 0; i <= 3; i++) {
-            float y = bottom - (bottom - top) * i / 3f;
+        textPaint.setTextAlign(Paint.Align.RIGHT);
+        textPaint.setTextSize(sp(10));
+        textPaint.setColor(color(R.color.muted));
+        for (int i = 0; i <= 4; i++) {
+            float y = bottom - (bottom - top) * i / 4f;
+            int axisValue = Math.round(max * i / 4f);
             canvas.drawLine(left, y, right, y, paint);
+            canvas.drawText(String.valueOf(axisValue), left - dp(8), y + dp(4), textPaint);
         }
+        canvas.drawLine(left, top, left, bottom, paint);
 
         int count = Math.max(1, values.length);
         float slot = (right - left) / (float) count;
-        float barWidth = Math.min(dp(42), slot * 0.52f);
+        float barWidth = Math.min(dp(38), slot * 0.44f);
         for (int i = 0; i < count; i++) {
             float center = left + slot * i + slot / 2f;
             float barHeight = (bottom - top) * Math.max(0, values[i]) / (float) max;
             float barTop = bottom - Math.max(dp(8), barHeight);
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(color(colors[i % colors.length]));
-            RectF rect = new RectF(center - barWidth / 2f, barTop, center + barWidth / 2f, bottom);
+            rect.set(center - barWidth / 2f, barTop, center + barWidth / 2f, bottom);
             canvas.drawRoundRect(rect, dp(10), dp(10), paint);
-
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(dp(2));
-            paint.setColor(color(R.color.ink));
-            canvas.drawRoundRect(rect, dp(10), dp(10), paint);
-            paint.setStyle(Paint.Style.FILL);
 
             textPaint.setTextAlign(Paint.Align.CENTER);
-            textPaint.setTextSize(sp(13));
+            textPaint.setTextSize(sp(12));
             textPaint.setColor(color(R.color.ink));
             canvas.drawText(String.valueOf(values[i]), center, barTop - dp(8), textPaint);
             textPaint.setTextSize(sp(11));

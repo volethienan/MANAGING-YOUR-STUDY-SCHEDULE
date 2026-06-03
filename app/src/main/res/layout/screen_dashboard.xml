@@ -419,7 +419,7 @@
                     android:layout_height="56dp"
                     android:layout_marginStart="7dp"
                     android:layout_weight="1"
-                    android:backgroundTint="@color/ink"
+                    android:backgroundTint="@color/accent_blue"
                     android:includeFontPadding="false"
                     android:minWidth="0dp"
                     android:paddingStart="8dp"

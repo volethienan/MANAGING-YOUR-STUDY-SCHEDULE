@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="D-day board cho lịch học"
+                android:text="Tự đặt sự kiện và xem còn bao nhiêu ngày"
                 android:textColor="@color/muted"
                 android:textSize="13sp" />
         </LinearLayout>
@@ -137,7 +137,7 @@
             android:layout_weight="1"
             android:background="@drawable/bg_outline_pill"
             android:gravity="center"
-            android:text="Quá hạn"
+            android:text="Đã qua"
             android:textColor="@color/ink"
             android:textStyle="bold" />
     </LinearLayout>
@@ -161,7 +161,7 @@
         android:layout_height="54dp"
         android:layout_marginTop="12dp"
         android:backgroundTint="@color/mint"
-        android:text="Thêm mốc đếm ngược"
+        android:text="Cài sự kiện đếm ngược"
         android:textColor="@color/ink"
         android:textStyle="bold"
         app:cornerRadius="18dp" />

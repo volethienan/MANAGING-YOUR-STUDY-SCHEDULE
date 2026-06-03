@@ -18,9 +18,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Sắp xếp việc học theo deadline"
+        android:text="Danh sách việc cần làm, tách riêng khỏi lịch"
         android:textColor="@color/muted"
         android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/toggleTodaySchedule"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/bg_outline_pill"
+        android:gravity="center"
+        android:text="Hiện lịch hôm nay: Tắt"
+        android:textColor="@color/ink"
+        android:textStyle="bold" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -131,7 +142,7 @@
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginTop="12dp"
-        android:backgroundTint="@color/ink"
+        android:backgroundTint="@color/accent_blue"
         android:text="Thêm công việc"
         android:textColor="@color/white"
         android:textStyle="bold"

@@ -1,6 +1,9 @@
 const state = {
+    analytics: null,
     users: [],
-    issues: []
+    issues: [],
+    templates: [],
+    subjects: []
 };
 
 const loginView = document.querySelector("#loginView");
@@ -43,18 +46,33 @@ function showDashboard(username) {
 }
 
 async function refreshAll() {
-    await Promise.all([loadStats(), loadUsers(), loadAnnouncements(), loadIssues(), loadAudit()]);
+    await Promise.all([
+        loadAnalytics(),
+        loadUsers(),
+        loadAnnouncements(),
+        loadTemplates(),
+        loadSubjects(),
+        loadIssues(),
+        loadAudit()
+    ]);
 }
 
-async function loadStats() {
-    const stats = await request("/api/stats");
+async function loadAnalytics() {
+    state.analytics = await request("/api/analytics");
+    renderStats();
+    renderOverviewCharts();
+    renderReports();
+}
+
+function renderStats() {
+    const stats = state.analytics.summary;
     const items = [
-        ["Người dùng", stats.users],
-        ["Đã xác thực", stats.verified],
-        ["Đang khóa", stats.locked],
-        ["Cần reset", stats.resetRequests],
-        ["Lỗi mở", stats.openIssues],
-        ["Thông báo bật", stats.activeAnnouncements]
+        ["Tài khoản", stats.users],
+        ["DAU / MAU", `${stats.dau} / ${stats.mau}`],
+        ["Hoàn thành task", `${stats.completionRate}%`],
+        ["Phút Pomodoro", stats.focusMinutes],
+        ["Premium", stats.premium],
+        ["Lỗi mở", stats.openIssues]
     ];
     document.querySelector("#statGrid").innerHTML = items.map(([label, value]) => `
         <article class="stat">
@@ -62,6 +80,30 @@ async function loadStats() {
             <strong>${escapeHtml(String(value))}</strong>
         </article>
     `).join("");
+}
+
+function renderOverviewCharts() {
+    const stats = state.analytics.summary;
+    renderBars("#growthChart", state.analytics.growth);
+    renderRanks("#subjectChart", state.analytics.subjects, "Chưa có môn học nổi bật.");
+    renderRanks("#featureChart", labelFeatures(state.analytics.features), "Chưa có dữ liệu sử dụng.");
+    document.querySelector("#engagementList").innerHTML = `
+        ${metricRow("Task hoàn thành", `${stats.completedTasks}/${stats.totalTasks}`)}
+        ${metricRow("Lịch học đã tạo", stats.totalEvents)}
+        ${metricRow("Phiên Pomodoro", stats.focusSessions)}
+        ${metricRow("Thông báo đang bật", stats.activeAnnouncements)}
+    `;
+}
+
+function renderReports() {
+    const stats = state.analytics.summary;
+    renderBars("#hourChart", state.analytics.studyHours);
+    document.querySelector("#subscriptionReport").innerHTML = `
+        ${metricRow("Người dùng Premium", stats.premium)}
+        ${metricRow("Doanh thu ước tính", formatCurrency(stats.revenueEstimate))}
+        ${metricRow("Tài khoản bị khóa", stats.locked)}
+        ${metricRow("Tài khoản xác thực", stats.verified)}
+    `;
 }
 
 async function loadUsers() {
@@ -85,23 +127,29 @@ function renderUsers() {
     });
     document.querySelector("#userRows").innerHTML = users.length ? users.map(user => `
         <tr>
-            <td class="user-cell"><strong>${escapeHtml(user.name)}</strong><span>${escapeHtml(user.email)}</span></td>
-            <td>${escapeHtml(user.provider)}</td>
+            <td class="user-cell"><strong>${escapeHtml(user.name)}</strong><span>${escapeHtml(user.email)}</span><span>${escapeHtml(user.provider)} · ${escapeHtml(user.lastSeenAt)}</span></td>
+            <td><span class="badge">${escapeHtml(roleLabel(user.role))}</span></td>
+            <td><span class="badge ${user.plan === "Premium" ? "good" : ""}">${escapeHtml(user.plan)}</span></td>
             <td><span class="badge ${user.verified ? "good" : "warn"}">${user.verified ? "Đã xác thực" : "Chưa xác thực"}</span></td>
-            <td>${escapeHtml(user.lastSeenAt)}</td>
+            <td>
+                <strong>${escapeHtml(String(user.completedTasks))}/${escapeHtml(String(user.totalTasks))} task</strong>
+                <span class="table-sub">${escapeHtml(String(user.focusMinutes))} phút · ${escapeHtml(user.topSubject)}</span>
+            </td>
             <td>
                 <span class="badge ${user.locked ? "danger" : "good"}">${user.locked ? "Đang khóa" : "Hoạt động"}</span>
-                ${user.passwordResetRequested ? `<span class="badge warn">Cần reset mật khẩu</span>` : ""}
+                ${user.passwordResetRequested ? `<span class="badge warn">Cần reset</span>` : ""}
             </td>
             <td>
                 <div class="actions">
                     <button class="secondary-button" data-user-action="${user.locked ? "unlock" : "lock"}" data-email="${escapeAttr(user.email)}">${user.locked ? "Mở khóa" : "Khóa"}</button>
-                    <button class="secondary-button" data-user-action="${user.passwordResetRequested ? "clearReset" : "requestReset"}" data-email="${escapeAttr(user.email)}">${user.passwordResetRequested ? "Gỡ reset" : "Yêu cầu reset"}</button>
+                    <button class="secondary-button" data-user-action="${user.plan === "Premium" ? "makeFree" : "makePremium"}" data-email="${escapeAttr(user.email)}">${user.plan === "Premium" ? "Free" : "Premium"}</button>
+                    <button class="secondary-button" data-user-action="${user.role === "Teacher" ? "makeUser" : "makeTeacher"}" data-email="${escapeAttr(user.email)}">${user.role === "Teacher" ? "User" : "Teacher"}</button>
+                    <button class="secondary-button" data-user-action="${user.passwordResetRequested ? "clearReset" : "requestReset"}" data-email="${escapeAttr(user.email)}">${user.passwordResetRequested ? "Gỡ reset" : "Reset"}</button>
                     <button class="danger-button" data-user-action="delete" data-email="${escapeAttr(user.email)}">Xóa</button>
                 </div>
             </td>
         </tr>
-    `).join("") : `<tr><td colspan="6">Chưa có tài khoản phù hợp.</td></tr>`;
+    `).join("") : `<tr><td colspan="7">Chưa có tài khoản phù hợp.</td></tr>`;
 }
 
 async function loadAnnouncements() {
@@ -124,6 +172,44 @@ async function loadAnnouncements() {
             </section>
         `).join("")
         : `<p>Chưa có thông báo.</p>`;
+}
+
+async function loadTemplates() {
+    const payload = await request("/api/templates");
+    state.templates = payload.templates;
+    document.querySelector("#templateList").innerHTML = state.templates.length
+        ? state.templates.map(template => `
+            <section class="list-row">
+                <div class="list-head">
+                    <div>
+                        <h4>${escapeHtml(template.title)}</h4>
+                        <span class="meta">${escapeHtml(template.audience)} · ${escapeHtml(template.createdAt)}</span>
+                    </div>
+                    <span class="badge ${template.active ? "good" : "warn"}">${template.active ? "Đang bật" : "Đang tắt"}</span>
+                </div>
+                <p>${escapeHtml(template.description)}</p>
+                <div class="actions">
+                    <button class="secondary-button" data-template-action="toggle" data-id="${escapeAttr(template.id)}">${template.active ? "Tắt" : "Bật"}</button>
+                    <button class="danger-button" data-template-action="delete" data-id="${escapeAttr(template.id)}">Xóa</button>
+                </div>
+            </section>
+        `).join("")
+        : `<p>Chưa có template.</p>`;
+}
+
+async function loadSubjects() {
+    const payload = await request("/api/subjects");
+    state.subjects = payload.subjects;
+    document.querySelector("#subjectList").innerHTML = state.subjects.length
+        ? state.subjects.map(subject => `
+            <span class="subject-chip ${subject.active ? "" : "inactive"}">
+                <strong>${escapeHtml(subject.name)}</strong>
+                <small>${escapeHtml(subject.category)}</small>
+                <button data-subject-action="toggle" data-id="${escapeAttr(subject.id)}">${subject.active ? "Tắt" : "Bật"}</button>
+                <button data-subject-action="delete" data-id="${escapeAttr(subject.id)}">Xóa</button>
+            </span>
+        `).join("")
+        : `<p>Chưa có danh mục.</p>`;
 }
 
 async function loadIssues() {
@@ -211,7 +297,33 @@ document.querySelector("#announcementForm").addEventListener("submit", async eve
             body: JSON.stringify({title: form.get("title"), body: form.get("body")})
         });
         event.currentTarget.reset();
-        await Promise.all([loadAnnouncements(), loadStats(), loadAudit()]);
+        await Promise.all([loadAnnouncements(), loadAnalytics(), loadAudit()]);
+    });
+});
+
+document.querySelector("#templateForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await runWithStatus("Đang lưu template...", "Đã lưu template.", async () => {
+        await request("/api/templates", {
+            method: "POST",
+            body: JSON.stringify({title: form.get("title"), audience: form.get("audience"), description: form.get("description")})
+        });
+        event.currentTarget.reset();
+        await Promise.all([loadTemplates(), loadAudit()]);
+    });
+});
+
+document.querySelector("#subjectForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await runWithStatus("Đang lưu danh mục...", "Đã lưu danh mục.", async () => {
+        await request("/api/subjects", {
+            method: "POST",
+            body: JSON.stringify({name: form.get("name"), category: form.get("category")})
+        });
+        event.currentTarget.reset();
+        await Promise.all([loadSubjects(), loadAudit()]);
     });
 });
 
@@ -229,13 +341,17 @@ document.addEventListener("click", async event => {
             lock: "khóa",
             unlock: "mở khóa",
             requestReset: "yêu cầu đặt lại mật khẩu",
-            clearReset: "gỡ yêu cầu đặt lại mật khẩu"
+            clearReset: "gỡ yêu cầu đặt lại mật khẩu",
+            makePremium: "nâng lên Premium",
+            makeFree: "chuyển về Free",
+            makeTeacher: "đổi vai trò thành Teacher",
+            makeUser: "đổi vai trò thành User"
         };
         const label = actionLabels[userAction.dataset.userAction] || "cập nhật";
         if (!confirm(`Bạn chắc chắn muốn ${label} tài khoản ${userAction.dataset.email}?`)) {
             return;
         }
-        await act("/api/users/action", {email: userAction.dataset.email, action: userAction.dataset.userAction}, [loadUsers, loadStats, loadAudit]);
+        await act("/api/users/action", {email: userAction.dataset.email, action: userAction.dataset.userAction}, [loadUsers, loadAnalytics, loadAudit]);
         return;
     }
     const announcementAction = event.target.closest("[data-announcement-action]");
@@ -243,7 +359,23 @@ document.addEventListener("click", async event => {
         if (announcementAction.dataset.announcementAction === "delete" && !confirm("Xóa thông báo này?")) {
             return;
         }
-        await act("/api/announcements/action", {id: announcementAction.dataset.id, action: announcementAction.dataset.announcementAction}, [loadAnnouncements, loadStats, loadAudit]);
+        await act("/api/announcements/action", {id: announcementAction.dataset.id, action: announcementAction.dataset.announcementAction}, [loadAnnouncements, loadAnalytics, loadAudit]);
+        return;
+    }
+    const templateAction = event.target.closest("[data-template-action]");
+    if (templateAction) {
+        if (templateAction.dataset.templateAction === "delete" && !confirm("Xóa template này?")) {
+            return;
+        }
+        await act("/api/templates/action", {id: templateAction.dataset.id, action: templateAction.dataset.templateAction}, [loadTemplates, loadAudit]);
+        return;
+    }
+    const subjectAction = event.target.closest("[data-subject-action]");
+    if (subjectAction) {
+        if (subjectAction.dataset.subjectAction === "delete" && !confirm("Xóa danh mục này?")) {
+            return;
+        }
+        await act("/api/subjects/action", {id: subjectAction.dataset.id, action: subjectAction.dataset.subjectAction}, [loadSubjects, loadAudit]);
         return;
     }
     const issueAction = event.target.closest("[data-issue-action]");
@@ -251,7 +383,7 @@ document.addEventListener("click", async event => {
         if (issueAction.dataset.issueAction === "delete" && !confirm("Xóa bản ghi lỗi này?")) {
             return;
         }
-        await act("/api/issues/action", {id: issueAction.dataset.id, action: issueAction.dataset.issueAction}, [loadIssues, loadStats, loadAudit]);
+        await act("/api/issues/action", {id: issueAction.dataset.id, action: issueAction.dataset.issueAction}, [loadIssues, loadAnalytics, loadAudit]);
     }
 });
 
@@ -270,6 +402,50 @@ async function runWithStatus(loadingMessage, successMessage, work) {
     } catch (error) {
         setActionStatus(error.message || "Thao tác thất bại", "error");
     }
+}
+
+function renderBars(selector, items) {
+    const max = Math.max(1, ...items.map(item => item.value));
+    document.querySelector(selector).innerHTML = items.length
+        ? items.map(item => `
+            <div class="bar-row">
+                <span>${escapeHtml(item.label)}</span>
+                <div><i style="width:${Math.max(6, Math.round(item.value / max * 100))}%"></i></div>
+                <strong>${escapeHtml(String(item.value))}</strong>
+            </div>
+        `).join("")
+        : `<p>Chưa có dữ liệu.</p>`;
+}
+
+function renderRanks(selector, items, emptyText) {
+    const max = Math.max(1, ...items.map(item => item.value));
+    document.querySelector(selector).innerHTML = items.length
+        ? items.map(item => `
+            <div class="rank-row">
+                <span>${escapeHtml(item.label)}</span>
+                <div><i style="width:${Math.max(8, Math.round(item.value / max * 100))}%"></i></div>
+                <strong>${escapeHtml(String(item.value))}</strong>
+            </div>
+        `).join("")
+        : `<p>${escapeHtml(emptyText)}</p>`;
+}
+
+function labelFeatures(items) {
+    const labels = {tasks: "Task", schedule: "Lịch học", pomodoro: "Pomodoro", ai: "AI đọc lịch"};
+    return items.map(item => ({label: labels[item.label] || item.label, value: item.value}));
+}
+
+function metricRow(label, value) {
+    return `<div class="metric-row"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
+}
+
+function roleLabel(role) {
+    const labels = {Admin: "Quản trị viên", Teacher: "Giáo viên", User: "Người dùng"};
+    return labels[role] || role || "Người dùng";
+}
+
+function formatCurrency(value) {
+    return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 }
 
 function setActionStatus(message, type = "") {
