@@ -36,12 +36,12 @@ public class OtpMailServer {
     private static final Map<String, Deque<Long>> RATE_LIMITS = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws Exception {
-        int port = intEnv("OTP_BACKEND_PORT", 8080);
+        int port = intEnv("PORT", intEnv("OTP_BACKEND_PORT", 8080));
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/send-otp", OtpMailServer::handleSendOtp);
         server.createContext("/health", OtpMailServer::handleHealth);
         server.start();
-        System.out.println("OTP mail backend started on http://localhost:" + port);
+        System.out.println("OTP mail backend started on port " + port + ". For a real phone, use this computer's LAN IP, for example http://192.168.x.x:" + port);
     }
 
     private static void handleHealth(HttpExchange exchange) throws IOException {
@@ -88,8 +88,8 @@ public class OtpMailServer {
             sendCors(exchange, 200, "{\"ok\":true}");
         } catch (Exception exception) {
             System.err.println("Cannot send OTP email to " + email + ": " + exception.getMessage());
-            String error = "Cannot send OTP email";
-            sendCors(exchange, 500, "{\"ok\":false,\"error\":\"" + error + "\"}");
+            sendCors(exchange, 500, "{\"ok\":false,\"error\":\"Cannot send OTP email\",\"detail\":\""
+                    + jsonEscape(exception.getMessage()) + "\"}");
         }
     }
 
@@ -233,5 +233,16 @@ public class OtpMailServer {
         }
         String normalized = value.replace("\r", " ").replace("\n", " ").trim();
         return normalized.length() <= 60 ? normalized : normalized.substring(0, 60);
+    }
+
+    private static String jsonEscape(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
     }
 }

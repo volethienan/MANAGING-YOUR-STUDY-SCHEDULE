@@ -14,6 +14,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +46,8 @@ public class AdminWebServer {
     private static final Set<String> SESSIONS = new HashSet<>();
     private static final String ADMIN_USERNAME = env("ADMIN_USERNAME", "admin");
     private static final String ADMIN_PASSWORD = env("ADMIN_PASSWORD", "admin123");
+    private static String cachedAccessToken = "";
+    private static long cachedAccessTokenExpiresAt = 0L;
 
     public static void main(String[] args) throws Exception {
         int port = intEnv("ADMIN_WEB_PORT", 8090);
@@ -233,6 +239,12 @@ public class AdminWebServer {
             sendJson(exchange, 200, "{\"ok\":true}");
             return;
         }
+        if ("/api/mobile/users/fcm-token".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String body = body(exchange);
+            STORE.syncFcmToken(field(body, "email"), field(body, "fcmToken"));
+            sendJson(exchange, 200, "{\"ok\":true}");
+            return;
+        }
         if ("/api/mobile/learning/sync".equals(path) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
             String body = body(exchange);
             STORE.syncLearningSnapshot(body);
@@ -420,6 +432,143 @@ public class AdminWebServer {
         return "";
     }
 
+    private static void sendAnnouncementPush(String title, String body, List<String> tokens) {
+        if (tokens.isEmpty()) {
+            STORE.audit("Không gửi FCM", "Chưa có thiết bị nào đăng ký token");
+            return;
+        }
+        try {
+            FirebaseServiceAccount account = firebaseServiceAccount();
+            String accessToken = firebaseAccessToken(account);
+            int sent = 0;
+            for (String token : tokens) {
+                if (sendFcmMessage(account.projectId, accessToken, token, title, body)) {
+                    sent++;
+                }
+            }
+            STORE.audit("Gửi FCM thông báo", sent + "/" + tokens.size() + " thiết bị");
+        } catch (Exception exception) {
+            STORE.audit("Không gửi FCM", exception.getMessage());
+        }
+    }
+
+    private static boolean sendFcmMessage(String projectId, String accessToken, String token, String title, String body) throws IOException {
+        URL url = new URL("https://fcm.googleapis.com/v1/projects/" + projectId + "/messages:send");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setConnectTimeout(8000);
+        connection.setReadTimeout(12000);
+        connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+        connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+        connection.setDoOutput(true);
+        String payload = "{\"message\":{\"token\":\"" + json(token) + "\","
+                + "\"notification\":{\"title\":\"" + json(title) + "\",\"body\":\"" + json(body) + "\"},"
+                + "\"data\":{\"type\":\"announcement\",\"title\":\"" + json(title) + "\",\"body\":\"" + json(body) + "\"}}}";
+        try (OutputStream output = connection.getOutputStream()) {
+            output.write(payload.getBytes(StandardCharsets.UTF_8));
+        }
+        int status = connection.getResponseCode();
+        String response = new String((status >= 200 && status < 300
+                ? connection.getInputStream()
+                : connection.getErrorStream()).readAllBytes(), StandardCharsets.UTF_8);
+        connection.disconnect();
+        if (status >= 200 && status < 300) {
+            return true;
+        }
+        System.err.println("FCM HTTP " + status + ": " + response);
+        return false;
+    }
+
+    private static synchronized String firebaseAccessToken(FirebaseServiceAccount account) throws Exception {
+        long now = System.currentTimeMillis();
+        if (!cachedAccessToken.isBlank() && cachedAccessTokenExpiresAt > now + 60_000L) {
+            return cachedAccessToken;
+        }
+        long iat = now / 1000L;
+        String header = base64Url("{\"alg\":\"RS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
+        String claim = base64Url(("{\"iss\":\"" + json(account.clientEmail) + "\","
+                + "\"scope\":\"https://www.googleapis.com/auth/firebase.messaging\","
+                + "\"aud\":\"https://oauth2.googleapis.com/token\","
+                + "\"iat\":" + iat + ",\"exp\":" + (iat + 3600L) + "}").getBytes(StandardCharsets.UTF_8));
+        String unsignedJwt = header + "." + claim;
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey(account.privateKeyPem));
+        signature.update(unsignedJwt.getBytes(StandardCharsets.UTF_8));
+        String assertion = unsignedJwt + "." + base64Url(signature.sign());
+
+        URL url = new URL("https://oauth2.googleapis.com/token");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setConnectTimeout(8000);
+        connection.setReadTimeout(12000);
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setDoOutput(true);
+        String request = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + assertion;
+        try (OutputStream output = connection.getOutputStream()) {
+            output.write(request.getBytes(StandardCharsets.UTF_8));
+        }
+        int status = connection.getResponseCode();
+        String response = new String((status >= 200 && status < 300
+                ? connection.getInputStream()
+                : connection.getErrorStream()).readAllBytes(), StandardCharsets.UTF_8);
+        connection.disconnect();
+        if (status < 200 || status >= 300) {
+            throw new IllegalStateException("OAuth FCM HTTP " + status + ": " + response);
+        }
+        String token = field(response, "access_token");
+        if (token.isBlank()) {
+            throw new IllegalStateException("OAuth không trả access_token");
+        }
+        cachedAccessToken = token;
+        cachedAccessTokenExpiresAt = now + Math.max(60, intField(response, "expires_in")) * 1000L;
+        return cachedAccessToken;
+    }
+
+    private static FirebaseServiceAccount firebaseServiceAccount() throws IOException {
+        String json = env("FIREBASE_SERVICE_ACCOUNT_JSON", "");
+        if (json.isBlank()) {
+            String path = env("GOOGLE_APPLICATION_CREDENTIALS", "");
+            if (!path.isBlank() && Files.isRegularFile(Paths.get(path))) {
+                json = Files.readString(Paths.get(path), StandardCharsets.UTF_8);
+            }
+        }
+        if (json.isBlank()) {
+            throw new IllegalStateException("Thiếu FIREBASE_SERVICE_ACCOUNT_JSON hoặc GOOGLE_APPLICATION_CREDENTIALS để gửi FCM");
+        }
+        String projectId = field(json, "project_id");
+        String clientEmail = field(json, "client_email");
+        String privateKey = field(json, "private_key");
+        if (projectId.isBlank() || clientEmail.isBlank() || privateKey.isBlank()) {
+            throw new IllegalStateException("Service account Firebase không đủ project_id/client_email/private_key");
+        }
+        return new FirebaseServiceAccount(projectId, clientEmail, privateKey);
+    }
+
+    private static PrivateKey privateKey(String pem) throws Exception {
+        String cleaned = pem
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s", "");
+        byte[] keyBytes = Base64.getDecoder().decode(cleaned);
+        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+    }
+
+    private static String base64Url(byte[] bytes) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private static final class FirebaseServiceAccount {
+        final String projectId;
+        final String clientEmail;
+        final String privateKeyPem;
+
+        FirebaseServiceAccount(String projectId, String clientEmail, String privateKeyPem) {
+            this.projectId = projectId;
+            this.clientEmail = clientEmail;
+            this.privateKeyPem = privateKeyPem;
+        }
+    }
+
     private static Properties loadDotEnv() {
         Properties values = new Properties();
         Path[] candidates = {Paths.get(".env"), Paths.get("..", ".env")};
@@ -487,6 +636,22 @@ public class AdminWebServer {
                     Boolean.parseBoolean(get("user", id, "locked")),
                     Boolean.parseBoolean(get("user", id, "passwordResetRequested"))
             );
+        }
+
+        synchronized void syncFcmToken(String email, String token) {
+            String normalizedEmail = limit(email.trim().toLowerCase(Locale.US), 120);
+            String cleanToken = limit(token, 4096);
+            if (normalizedEmail.isBlank() || cleanToken.isBlank()) {
+                throw new IllegalArgumentException("Email và FCM token là bắt buộc");
+            }
+            String id = key(normalizedEmail);
+            if (!has("user", id, "email")) {
+                syncUser(normalizedEmail, normalizedEmail, "email", true);
+            }
+            set("user", id, "fcmToken", cleanToken);
+            set("user", id, "fcmTokenUpdatedAt", String.valueOf(System.currentTimeMillis()));
+            audit("Đồng bộ FCM token", normalizedEmail);
+            save();
         }
 
         synchronized void importUser(String email, String name, String provider, boolean verified) {
@@ -583,6 +748,7 @@ public class AdminWebServer {
             set("announcement", id, "createdAt", String.valueOf(System.currentTimeMillis()));
             audit("Tạo thông báo", cleanTitle);
             save();
+            sendAnnouncementPush(cleanTitle, cleanBody, fcmTokens());
         }
 
         synchronized void announcementAction(String id, String action) {
@@ -685,6 +851,7 @@ public class AdminWebServer {
                         .append(",\"totalEvents\":").append(intValue(get("user", id, "totalEvents")))
                         .append(",\"focusMinutes\":").append(intValue(get("user", id, "focusMinutes")))
                         .append(",\"focusSessions\":").append(intValue(get("user", id, "focusSessions")))
+                        .append(",\"hasFcmToken\":").append(!get("user", id, "fcmToken").isBlank())
                         .append(",\"topSubject\":\"").append(json(empty(get("user", id, "topSubject"), "Chưa có")))
                         .append("\",\"learningSyncedAt\":\"").append(time(get("user", id, "learningSyncedAt")))
                         .append("\",\"createdAt\":\"").append(time(get("user", id, "createdAt")))
@@ -872,6 +1039,20 @@ public class AdminWebServer {
                 }
             }
             return active;
+        }
+
+        private List<String> fcmTokens() {
+            List<String> tokens = new ArrayList<>();
+            for (String id : ids("user")) {
+                if (Boolean.parseBoolean(get("user", id, "locked"))) {
+                    continue;
+                }
+                String token = get("user", id, "fcmToken");
+                if (!token.isBlank() && !tokens.contains(token)) {
+                    tokens.add(token);
+                }
+            }
+            return tokens;
         }
 
         private String growthJson(int[] growth) {

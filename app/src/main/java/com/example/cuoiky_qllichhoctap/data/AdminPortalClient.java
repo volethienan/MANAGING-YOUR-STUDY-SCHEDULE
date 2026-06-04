@@ -117,6 +117,20 @@ public class AdminPortalClient {
         });
     }
 
+    public void syncFcmToken(String email, String token) {
+        if (TextUtils.isEmpty(BuildConfig.ADMIN_BACKEND_URL) || TextUtils.isEmpty(email) || TextUtils.isEmpty(token)) {
+            return;
+        }
+        executor.execute(() -> {
+            try {
+                post("/api/mobile/users/fcm-token", new JSONObject()
+                        .put("email", safeText(email, 120, ""))
+                        .put("fcmToken", safeText(token, 4096, "")));
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
     public void fetchLatestAnnouncement(AnnouncementCallback callback) {
         executor.execute(() -> {
             if (TextUtils.isEmpty(BuildConfig.ADMIN_BACKEND_URL)) {

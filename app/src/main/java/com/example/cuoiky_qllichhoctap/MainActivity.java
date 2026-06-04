@@ -86,6 +86,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONObject;
 
@@ -214,21 +215,31 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         if (repository.isFirstOpen()) {
             showOnboarding();
+        } else if (canEnterWithFirebaseUser(firebaseUser)) {
+            if (localUser != null && !localUser.getEmail().equalsIgnoreCase(firebaseUser.getEmail())) {
+                authRepository.logout();
+            }
+            String name = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? firebaseUser.getEmail() : firebaseUser.getDisplayName();
+            String provider = isGoogleUser(firebaseUser) ? "google" : "email";
+            enterWithAdminSync(firebaseUser.getEmail(), name, provider, () -> {
+                activateStudyRepository(firebaseUser.getEmail());
+                syncProfileFromFirebase(firebaseUser);
+                repository.setLoggedIn(true);
+                showDashboard();
+            });
         } else if (localUser != null) {
+            if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+                firebaseAuth.signOut();
+            }
             enterWithAdminSync(localUser.getEmail(), localUser.getName(), "email", () -> {
                 activateStudyRepository(localUser.getEmail());
                 syncProfileFromAuthUser(localUser);
                 repository.setLoggedIn(true);
                 showDashboard();
             });
-        } else if (canEnterWithFirebaseUser(firebaseUser)) {
-            String name = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? firebaseUser.getEmail() : firebaseUser.getDisplayName();
-            enterWithAdminSync(firebaseUser.getEmail(), name, "google", () -> {
-                activateStudyRepository(firebaseUser.getEmail());
-                syncProfileFromFirebase(firebaseUser);
-                repository.setLoggedIn(true);
-                showDashboard();
-            });
+        } else if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
+            firebaseAuth.signOut();
+            showLogin();
         } else {
             showLogin();
         }
@@ -461,6 +472,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signInWithEmail(String email, String password) {
+        firebaseAuth.signInWithEmailAndPassword(email.trim(), password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = firebaseAuth.getCurrentUser();
+                        if (user == null || TextUtils.isEmpty(user.getEmail())) {
+                            toast("Firebase không trả về email tài khoản");
+                            return;
+                        }
+                        user.reload().addOnCompleteListener(this, reloadTask -> {
+                            FirebaseUser refreshed = firebaseAuth.getCurrentUser();
+                            if (!canEnterWithFirebaseUser(refreshed)) {
+                                showEmailVerificationRequired(refreshed);
+                                return;
+                            }
+                            String displayName = TextUtils.isEmpty(refreshed.getDisplayName())
+                                    ? firstNameFromEmail(refreshed.getEmail())
+                                    : refreshed.getDisplayName();
+                            authRepository.logout();
+                            enterWithAdminSync(refreshed.getEmail(), displayName, "email", () -> {
+                                activateStudyRepository(refreshed.getEmail());
+                                syncProfileFromFirebase(refreshed);
+                                repository.finishOnboarding();
+                                repository.setLoggedIn(true);
+                                showDashboard();
+                            });
+                        });
+                        return;
+                    }
+                    String firebaseError = task.getException() == null ? "" : task.getException().getMessage();
+                    signInWithLocalEmailFallback(email, password, firebaseError);
+                });
+    }
+
+    private void signInWithLocalEmailFallback(String email, String password, String firebaseError) {
         try {
             AuthUser user = authRepository.login(email, password);
             enterWithAdminSync(user.getEmail(), user.getName(), "email", () -> {
@@ -471,8 +516,56 @@ public class MainActivity extends AppCompatActivity {
                 showDashboard();
             });
         } catch (IllegalArgumentException exception) {
-            toast(exception.getMessage());
+            if (TextUtils.isEmpty(firebaseError)) {
+                toast(exception.getMessage());
+            } else {
+                toast(firebaseError);
+            }
         }
+    }
+
+    private void registerWithFirebaseEmail(String name, String email, String password) {
+        firebaseAuth.createUserWithEmailAndPassword(email.trim(), password)
+                .addOnCompleteListener(this, task -> {
+                    if (!task.isSuccessful()) {
+                        showAuthTaskError(task, "Không đăng ký được bằng Firebase");
+                        return;
+                    }
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user == null) {
+                        toast("Không tìm thấy tài khoản Firebase vừa tạo");
+                        return;
+                    }
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(name.trim())
+                            .build();
+                    adminPortalClient.syncRegisteredUser(email, name, "email", false);
+                    user.updateProfile(profileUpdates)
+                            .addOnCompleteListener(this, profileTask -> sendFirebaseVerificationEmail(user));
+                });
+    }
+
+    private void sendFirebaseVerificationEmail(FirebaseUser user) {
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, mailTask -> {
+                    if (mailTask.isSuccessful()) {
+                        showFirebaseVerificationSent(user);
+                    } else {
+                        showAuthTaskError(mailTask, "Không gửi được email xác thực Firebase");
+                    }
+                });
+    }
+
+    private void showFirebaseVerificationSent(FirebaseUser user) {
+        String email = user == null || TextUtils.isEmpty(user.getEmail()) ? "email của bạn" : user.getEmail();
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Đã gửi email xác thực")
+                .setMessage("Firebase đã gửi link xác thực tới " + email + ". Hãy mở email, bấm link xác thực, rồi quay lại đăng nhập.")
+                .setNegativeButton("Về đăng nhập", (d, which) -> showLogin())
+                .setPositiveButton("Gửi lại", (d, which) -> resendEmailVerification(user))
+                .create();
+        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
+        dialog.show();
     }
 
     private void registerWithOtp(String name, String email, String password) {
@@ -518,6 +611,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         screen.findViewById(R.id.textBack).setOnClickListener(v -> showRegister());
+    }
+
+    private void sendFirebasePasswordResetEmail(String email) {
+        firebaseAuth.sendPasswordResetEmail(email.trim())
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        AlertDialog dialog = new AlertDialog.Builder(this)
+                                .setTitle("Đã gửi email đặt lại mật khẩu")
+                                .setMessage("Hãy mở email từ Firebase để đặt mật khẩu mới, rồi quay lại đăng nhập.")
+                                .setPositiveButton("Về đăng nhập", (d, which) -> showLogin())
+                                .create();
+                        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
+                        dialog.show();
+                    } else {
+                        showAuthTaskError(task, "Không gửi được email đặt lại mật khẩu");
+                    }
+                });
     }
 
     private void sendPasswordResetEmail(String email) {
@@ -566,7 +676,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void deliverOtpEmail(String email, String code, String purpose) {
         new Thread(() -> {
-            String lastError = "";
+            StringBuilder errors = new StringBuilder();
             try {
                 JSONObject payload = new JSONObject();
                 payload.put("email", email);
@@ -580,15 +690,15 @@ public class MainActivity extends AppCompatActivity {
                             runOnUiThread(() -> toast("Đã gửi OTP tới email"));
                             return;
                         }
-                        lastError = baseUrl + " trả về HTTP " + status;
+                        appendOtpError(errors, baseUrl + " trả về HTTP " + status);
                     } catch (Exception exception) {
-                        lastError = baseUrl + ": " + exception.getMessage();
+                        appendOtpError(errors, baseUrl + ": " + exception.getMessage());
                     }
                 }
             } catch (Exception exception) {
-                lastError = exception.getMessage();
+                appendOtpError(errors, exception.getMessage());
             }
-            String detail = lastError;
+            String detail = errors.toString();
             runOnUiThread(() -> {
                 adminPortalClient.reportIssue("otp", email, detail);
                 showOtpSendError(detail);
@@ -596,12 +706,29 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void appendOtpError(StringBuilder errors, String error) {
+        if (errors.length() > 0) {
+            errors.append("\n");
+        }
+        errors.append(error);
+    }
+
     private List<String> otpBackendCandidates() {
         List<String> urls = new ArrayList<>();
-        addOtpBackendUrl(urls, BuildConfig.OTP_BACKEND_URL);
-        addOtpBackendUrl(urls, "http://10.0.2.2:8080");
+        addOtpBackendUrls(urls, BuildConfig.OTP_BACKEND_URL);
         addOtpBackendUrl(urls, "http://127.0.0.1:8080");
+        addOtpBackendUrl(urls, "http://192.168.1.238:8080");
+        addOtpBackendUrl(urls, "http://10.0.2.2:8080");
         return urls;
+    }
+
+    private void addOtpBackendUrls(List<String> urls, String value) {
+        if (TextUtils.isEmpty(value)) {
+            return;
+        }
+        for (String url : value.split(",")) {
+            addOtpBackendUrl(urls, url);
+        }
     }
 
     private void addOtpBackendUrl(List<String> urls, String url) {
@@ -627,27 +754,53 @@ public class MainActivity extends AppCompatActivity {
             output.write(body);
         }
         int status = connection.getResponseCode();
+        if (status < 200 || status >= 300) {
+            String response = readConnectionResponse(connection);
+            connection.disconnect();
+            throw new IOException("HTTP " + status + (TextUtils.isEmpty(response) ? "" : " - " + response));
+        }
         connection.disconnect();
         return status;
     }
 
+    private String readConnectionResponse(HttpURLConnection connection) {
+        try {
+            java.io.InputStream stream = connection.getErrorStream();
+            if (stream == null) {
+                stream = connection.getInputStream();
+            }
+            if (stream == null) {
+                return "";
+            }
+            try (java.io.InputStream input = stream) {
+                byte[] bytes = input.readAllBytes();
+                return new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+            }
+        } catch (IOException ignored) {
+            return "";
+        }
+    }
+
     private void showOtpSendError(String detail) {
-        new AlertDialog.Builder(this)
+        AlertDialog otpDialog = new AlertDialog.Builder(this)
                 .setTitle("Không gửi được OTP")
-                .setMessage("App chưa gọi được backend OTP. Lỗi đã được gửi về web quản trị để theo dõi.\n\n"
-                        + "Nếu dùng Emulator: backend phải chạy và app dùng http://10.0.2.2:8080.\n"
-                        + "Nếu dùng điện thoại thật: cần mở Windows Firewall port 8080 hoặc dùng adb reverse.")
+                .setMessage("App chưa gửi được email OTP thật. Nguyên nhân thường là backend chưa chạy, sai URL backend, Windows Firewall chặn port 8080, hoặc SMTP Gmail chưa cấu hình đúng.\n\n"
+                        + "Backend hiện tại: " + BuildConfig.OTP_BACKEND_URL)
                 .setNeutralButton("Chi tiết kỹ thuật", (dialog, which) -> showTechnicalError("Chi tiết lỗi OTP", detail))
                 .setPositiveButton("Đã hiểu", null)
-                .show();
+                .create();
+        otpDialog.setOnShowListener(shown -> styleStudyDialog(otpDialog));
+        otpDialog.show();
     }
 
     private void showTechnicalError(String title, String detail) {
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(TextUtils.isEmpty(detail) ? "Không rõ lỗi" : detail)
                 .setPositiveButton("OK", null)
-                .show();
+                .create();
+        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
+        dialog.show();
     }
 
     private String trimTrailingSlash(String value) {
@@ -766,10 +919,19 @@ public class MainActivity extends AppCompatActivity {
                 toast("Web quản trị chưa đồng bộ: " + message);
             }
             onAllowed.run();
+            syncFcmTokenToAdmin(email);
             if (passwordResetRequested) {
                 showAdminPasswordResetNotice(email);
             }
         }));
+    }
+
+    private void syncFcmTokenToAdmin(String email) {
+        if (TextUtils.isEmpty(email) || adminPortalClient == null) {
+            return;
+        }
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token -> adminPortalClient.syncFcmToken(email, token));
     }
 
     private void showAdminPasswordResetNotice(String email) {
@@ -3925,12 +4087,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void showEmailVerificationRequired(FirebaseUser user) {
         String email = user == null || TextUtils.isEmpty(user.getEmail()) ? "email của bạn" : user.getEmail();
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Cần xác thực email")
                 .setMessage("Tài khoản " + email + " chưa bấm link xác thực. Hãy mở email từ Firebase rồi đăng nhập lại.")
                 .setNegativeButton("Đã hiểu", null)
-                .setPositiveButton("Gửi lại link", (dialog, which) -> resendEmailVerification(user))
-                .show();
+                .setPositiveButton("Gửi lại link", (d, which) -> resendEmailVerification(user))
+                .create();
+        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
+        dialog.show();
     }
 
     private void resendEmailVerification(FirebaseUser user) {
@@ -3950,6 +4114,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void showAuthTaskError(Task<?> task, String fallback) {
         String message = task.getException() == null ? fallback : task.getException().getMessage();
+        if (!TextUtils.isEmpty(message)) {
+            String lower = message.toLowerCase(Locale.ROOT);
+            if (lower.contains("operation not allowed")
+                    || lower.contains("operation is not allowed")
+                    || lower.contains("sign-in provider is disabled")
+                    || lower.contains("password sign-in is disabled")
+                    || lower.contains("configuration_not_found")) {
+                message = "Firebase Console chưa bật đăng nhập Email/Password. Vào Authentication > Sign-in method và bật Email/Password.";
+            }
+        }
         toast(TextUtils.isEmpty(message) ? fallback : message);
     }
 

@@ -12,6 +12,16 @@ val localProps = Properties().apply {
     }
 }
 
+fun configValue(key: String, fallback: String): String {
+    return localProps.getProperty(key)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(key)?.takeIf { it.isNotBlank() }
+        ?: fallback
+}
+
+fun buildConfigString(value: String): String {
+    return "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+}
+
 android {
     namespace = "com.example.cuoiky_qllichhoctap"
     compileSdk {
@@ -26,10 +36,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "GEMINI_API_KEY", "\"${localProps.getProperty("GEMINI_API_KEY", "")}\"")
-        buildConfigField("String", "OTP_BACKEND_URL", "\"${localProps.getProperty("OTP_BACKEND_URL", "http://10.0.2.2:8080")}\"")
-        buildConfigField("String", "ADMIN_BACKEND_URL", "\"${localProps.getProperty("ADMIN_BACKEND_URL", "http://10.0.2.2:8090")}\"")
-        buildConfigField("String", "FIREBASE_DATABASE_URL", "\"${localProps.getProperty("FIREBASE_DATABASE_URL", "https://mobile-263d4-default-rtdb.firebaseio.com")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", buildConfigString(configValue("GEMINI_API_KEY", "")))
+        buildConfigField("String", "OTP_BACKEND_URL", buildConfigString(configValue("OTP_BACKEND_URL", "http://10.0.2.2:8080")))
+        buildConfigField("String", "ADMIN_BACKEND_URL", buildConfigString(configValue("ADMIN_BACKEND_URL", "http://10.0.2.2:8090")))
+        buildConfigField("String", "FIREBASE_DATABASE_URL", buildConfigString(configValue("FIREBASE_DATABASE_URL", "https://mobile-263d4-default-rtdb.firebaseio.com")))
     }
 
     buildFeatures {
@@ -59,6 +69,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.android.gms:play-services-auth:21.4.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -1,0 +1,153 @@
+<mxfile host="Electron">
+  <diagram name="Use Case tổng quát" id="0">
+    <mxGraphModel dx="1717" dy="1043" grid="0" gridSize="10" guides="0" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="u" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Người dùng" vertex="1">
+          <mxGeometry height="90" width="55" x="109" y="318" as="geometry" />
+        </mxCell>
+        <mxCell id="a" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Người quản trị" vertex="1">
+          <mxGeometry height="85" width="65" x="1219" y="613" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_edit" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Sửa thông tin cá nhân" vertex="1">
+          <mxGeometry height="48" width="135" x="119" y="43" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_account" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Xem thông tin cá nhân" vertex="1">
+          <mxGeometry height="50" width="150" x="194" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_login" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Đăng nhập" vertex="1">
+          <mxGeometry height="45" width="120" x="574" y="118" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_register" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Đăng ký" vertex="1">
+          <mxGeometry height="45" width="120" x="574" y="208" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_reset" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Lấy lại mật khẩu" vertex="1">
+          <mxGeometry height="45" width="145" x="369" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_logout" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Đăng xuất" vertex="1">
+          <mxGeometry height="45" width="115" x="779" y="93" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_schedule" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Quản lý lịch học" vertex="1">
+          <mxGeometry height="50" width="150" x="9" y="523" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_task" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Quản lý nhiệm vụ học tập" vertex="1">
+          <mxGeometry height="50" width="175" x="394" y="383" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_task_detail" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Thông tin chi tiết nhiệm vụ" vertex="1">
+          <mxGeometry height="50" width="175" x="569" y="443" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_pomodoro" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Theo dõi Pomodoro" vertex="1">
+          <mxGeometry height="50" width="155" x="659" y="313" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_countdown" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Quản lý ngày đếm ngược" vertex="1">
+          <mxGeometry height="50" width="180" x="8" y="198" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_announcement" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Xem thông báo hệ thống" vertex="1">
+          <mxGeometry height="50" width="175" x="379" y="528" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_push" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Nhận thông báo trên thanh thông báo" vertex="1">
+          <mxGeometry height="55" width="210" x="894" y="193" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_report" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Gửi phản ánh / báo lỗi" vertex="1">
+          <mxGeometry height="50" width="165" x="179" y="573" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_admin_login" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Đăng nhập web quản trị" vertex="1">
+          <mxGeometry height="50" width="180" x="964" y="433" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_user_manage" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Quản lý người dùng" vertex="1">
+          <mxGeometry height="50" width="165" x="924" y="528" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_import" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Thêm / đồng bộ tài khoản" vertex="1">
+          <mxGeometry height="50" width="185" x="689" y="593" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_admin_reset" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Gửi yêu cầu reset mật khẩu" vertex="1">
+          <mxGeometry height="50" width="195" x="694" y="703" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_lock" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Khóa / mở khóa tài khoản" vertex="1">
+          <mxGeometry height="50" width="180" x="939" y="693" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_send" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Gửi thông báo" vertex="1">
+          <mxGeometry height="50" width="140" x="704" y="523" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_read_report" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Đọc phản ánh / báo lỗi" vertex="1">
+          <mxGeometry height="50" width="170" x="469" y="653" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_audit" parent="1" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" value="Xem lịch sử thao tác" vertex="1">
+          <mxGeometry height="50" width="165" x="954" y="803" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_account" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_login" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_register" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_schedule" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_task" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_pomodoro" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="u" style="html=1;endArrow=none;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="85.75734583942358" y="257.78575609392055" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_announcement" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_report" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="u" style="html=1;endArrow=none;" target="uc_push" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea1" edge="1" parent="1" source="a" style="html=1;endArrow=none;" target="uc_admin_login" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea2" edge="1" parent="1" source="a" style="html=1;endArrow=none;" target="uc_user_manage" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea4" edge="1" parent="1" source="a" style="html=1;endArrow=none;" target="uc_send" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea5" edge="1" parent="1" source="a" style="html=1;endArrow=none;" target="uc_read_report" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ea6" edge="1" parent="1" source="a" style="html=1;endArrow=none;" target="uc_audit" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel1" edge="1" parent="1" source="uc_reset" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_login" value="extend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel2" edge="1" parent="1" source="uc_logout" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_login" value="extend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel3" edge="1" parent="1" source="uc_edit" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_account" value="extend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel4" edge="1" parent="1" source="uc_task" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_task_detail" value="include">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel5" edge="1" parent="1" source="uc_user_manage" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_import" value="include">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel6" edge="1" parent="1" source="uc_user_manage" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_admin_reset" value="include">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel7" edge="1" parent="1" source="uc_user_manage" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_lock" value="include">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel8" edge="1" parent="1" source="uc_send" style="html=1;dashed=1;endArrow=open;endFill=0;" target="uc_push" value="include">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

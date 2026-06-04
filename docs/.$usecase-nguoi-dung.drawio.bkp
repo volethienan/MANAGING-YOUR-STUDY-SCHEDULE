@@ -1,0 +1,233 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Use Case người dùng">
+    <mxGraphModel dx="1400" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="user" value="Người dùng" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="390" width="65" height="95" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_login" value="Đăng nhập" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="290" y="80" width="130" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_register" value="Đăng ký tài khoản" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="285" y="180" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_profile" value="Quản lý thông tin cá nhân" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="285" y="295" width="200" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_schedule" value="Quản lý lịch học" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="515" y="175" width="160" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_task" value="Quản lý nhiệm vụ học tập" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="520" y="330" width="190" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_pomodoro" value="Theo dõi Pomodoro" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="525" y="475" width="170" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_countdown" value="Quản lý ngày đếm ngược" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="300" y="590" width="190" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_notice" value="Xem thông báo hệ thống" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="305" y="710" width="190" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_report" value="Gửi phản ánh / báo lỗi" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="540" y="710" width="180" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_reset" value="Lấy lại mật khẩu" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="500" y="35" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_logout" value="Đăng xuất" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="515" y="100" width="120" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_view_profile" value="Xem thông tin cá nhân" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="770" y="245" width="175" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_edit_profile" value="Sửa thông tin cá nhân" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="770" y="320" width="175" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_add_schedule" value="Thêm lịch học" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="805" y="85" width="135" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_edit_schedule" value="Sửa / xóa lịch học" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="845" y="160" width="155" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_view_schedule" value="Xem chi tiết lịch học" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="815" y="235" width="170" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_ai_schedule" value="Trích xuất lịch học từ ảnh" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="125" width="195" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_add_task" value="Tạo nhiệm vụ mới" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="805" y="390" width="155" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_edit_task" value="Sửa / xóa nhiệm vụ" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="350" width="165" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_done_task" value="Đánh dấu hoàn thành" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="985" y="440" width="175" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_start_pomodoro" value="Bắt đầu phiên học" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="800" y="520" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_save_pomodoro" value="Ghi nhận thời gian học" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="990" y="545" width="175" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc_add_countdown" value="Thêm ngày đếm ngược" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="720" y="620" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_edit_countdown" value="Sửa / xóa ngày đếm ngược" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="935" y="635" width="205" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_push_notice" value="Nhận thông báo trên thanh thông báo" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="760" y="735" width="225" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc_report_content" value="Nhập nội dung phản ánh" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#333333;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="735" width="185" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e_user_login" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_login">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_register" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_register">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_profile" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_profile">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_schedule" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_schedule">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_task" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_task">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_pomodoro" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_pomodoro">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_countdown" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_countdown">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_notice" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_notice">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_report" value="" style="html=1;endArrow=none;" edge="1" parent="1" source="user" target="uc_report">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rel_reset" value="extend" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_reset" target="uc_login">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_logout" value="extend" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_logout" target="uc_login">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_view_profile" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_profile" target="uc_view_profile">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_edit_profile" value="extend" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_edit_profile" target="uc_view_profile">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_add_schedule" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_schedule" target="uc_add_schedule">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_edit_schedule" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_schedule" target="uc_edit_schedule">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_view_schedule" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_schedule" target="uc_view_schedule">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_ai_schedule" value="extend" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_ai_schedule" target="uc_schedule">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_add_task" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_task" target="uc_add_task">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_edit_task" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_task" target="uc_edit_task">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_done_task" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_task" target="uc_done_task">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_start_pomodoro" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_pomodoro" target="uc_start_pomodoro">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_save_pomodoro" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_pomodoro" target="uc_save_pomodoro">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_add_countdown" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_countdown" target="uc_add_countdown">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_edit_countdown" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_countdown" target="uc_edit_countdown">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_push_notice" value="extend" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_push_notice" target="uc_notice">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="rel_report_content" value="include" style="html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="uc_report" target="uc_report_content">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lbl_reset" value="extend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="435" y="58" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_logout" value="extend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="435" y="108" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_view_profile" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="590" y="285" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_edit_profile" value="extend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="940" y="300" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_add_schedule" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="690" y="122" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_edit_schedule" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="180" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_view_schedule" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="710" y="235" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_ai_schedule" value="extend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="860" y="122" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_add_task" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="720" y="385" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_edit_task" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="835" y="350" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_done_task" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="430" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_start_pomodoro" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="715" y="505" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_save_pomodoro" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="835" y="545" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_add_countdown" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="602" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_edit_countdown" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="720" y="650" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_push_notice" value="extend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="575" y="735" width="65" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="lbl_report_content" value="include" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#333333;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="785" y="735" width="65" height="22" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="caption" value="Hình 5 Mô hình Use Case chi tiết của người dùng" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=16;fontStyle=2;fontColor=#4d5d75;" vertex="1" parent="1">
+          <mxGeometry x="435" y="840" width="560" height="30" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
