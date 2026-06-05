@@ -33,3 +33,19 @@ Starting a Gradle Daemon, 2 busy and 1 incompatible and 10 stopped Daemons could
 
 > Task :run
 OTP mail backend started on port 8080. For a real phone, use this computer's LAN IP, for example http://192.168.x.x:8080
+
+Timed out waiting for finished message from client socket connection from /127.0.0.1:50255 to /127.0.0.1:55321. Discarding connection.
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>if 1073807364 EQU 0 goto mainEnd 
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>rem the _cmd.exe /c_ return code! 
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>set EXIT_CODE=1073807364 
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>if 1073807364 EQU 0 set EXIT_CODE=1 
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>if not "" == "" exit 1073807364 
+
+C:\Users\AnThiwn\Desktop\CUOIKY_QLLICHHOCTAP\otp-backend>exit /b 1073807364 

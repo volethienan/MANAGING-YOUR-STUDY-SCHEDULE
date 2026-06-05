@@ -2,7 +2,6 @@ package com.example.cuoiky_qllichhoctap;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -13,7 +12,6 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -27,26 +25,12 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ImageView;
-import android.media.MediaPlayer;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Build;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
-import com.example.cuoiky_qllichhoctap.model.PomodoroSession;
-import java.util.UUID;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -62,59 +46,42 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.example.cuoiky_qllichhoctap.data.GeminiScheduleExtractor;
 import com.example.cuoiky_qllichhoctap.data.AdminPortalClient;
 import com.example.cuoiky_qllichhoctap.data.AuthRepository;
+import com.example.cuoiky_qllichhoctap.data.OtpEmailSender;
 import com.example.cuoiky_qllichhoctap.data.StudyRepository;
-import com.example.cuoiky_qllichhoctap.model.CountdownMilestone;
 import com.example.cuoiky_qllichhoctap.model.StudyEvent;
 import com.example.cuoiky_qllichhoctap.model.StudyTask;
 import com.example.cuoiky_qllichhoctap.model.AuthUser;
 import com.example.cuoiky_qllichhoctap.model.UserProfile;
 import com.example.cuoiky_qllichhoctap.util.DateTimeUtils;
+import com.example.cuoiky_qllichhoctap.util.ReminderScheduler;
+import com.example.cuoiky_qllichhoctap.ui.StudyDialogFactory;
+import com.example.cuoiky_qllichhoctap.ui.StudyDialogFactory.StudyFormDialog;
 import com.example.cuoiky_qllichhoctap.ui.ComparisonBarChartView;
 import com.example.cuoiky_qllichhoctap.ui.DonutChartView;
 import com.example.cuoiky_qllichhoctap.ui.SwipeActionLayout;
-import com.example.cuoiky_qllichhoctap.ui.WeekCalendarView;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.UserInfo;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.messaging.FirebaseMessaging;
-
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.Set;
 
+import static com.example.cuoiky_qllichhoctap.util.StudyStats.*;
+
 public class MainActivity extends AppCompatActivity {
-    private static final int SCREEN_DASHBOARD = 0;
-    private static final int SCREEN_SCHEDULE = 1;
-    private static final int SCREEN_TASKS = 2;
-    private static final int SCREEN_POMODORO = 3;
-    private static final int SCREEN_STATS = 4;
+    static final int SCREEN_DASHBOARD = 0;
+    static final int SCREEN_SCHEDULE = 1;
+    static final int SCREEN_TASKS = 2;
+    static final int SCREEN_POMODORO = 3;
+    static final int SCREEN_STATS = 4;
     private static final int GOOGLE_SIGN_IN_DEVELOPER_ERROR = 10;
-    private static final String CALENDAR_DAY = "Ngày";
-    private static final String CALENDAR_THREE_DAYS = "3 ngày";
-    private static final String CALENDAR_WEEK = "Tuần";
     private static final String TASK_FILTER_ALL = "Tất cả";
     private static final String TASK_FILTER_TODAY = "Hôm nay";
     private static final String TASK_FILTER_SOON = "Sắp hạn";
@@ -123,9 +90,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TASK_FILTER_MATRIX = "Ma trận ưu tiên";
     private static final String TASK_FILTER_TAG_PREFIX = "Môn: ";
     private static final String TASK_FILTER_PRIORITY_PREFIX = "Ưu tiên: ";
-    private static final String COUNTDOWN_FILTER_ALL = "Tất cả";
-    private static final String COUNTDOWN_FILTER_UPCOMING = "Sắp tới";
-    private static final String COUNTDOWN_FILTER_PAST = "Đã qua";
     private static final String[] REPEAT_OPTIONS = {"Không lặp", "Hằng ngày", "Hằng tuần", "Hằng tháng"};
     private static final String[] EVENT_TYPES = {StudyEvent.TYPE_STUDY, StudyEvent.TYPE_EXAM, StudyEvent.TYPE_DEADLINE, StudyEvent.TYPE_PERSONAL};
     private static final String[] EVENT_TYPE_LABELS = {"Lịch học", "Lịch thi", "Deadline", "Cá nhân"};
@@ -136,56 +100,29 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] DASHBOARD_BACKGROUNDS = {"Giấy sáng", "Xanh dịu", "Tím học tập", "Vàng note", "Hồng nhẹ"};
     private static final String[] THEME_COLORS = {"Hoa hồng", "Xanh biển", "Xanh lá", "Vàng", "Tím"};
 
-    private StudyRepository repository;
-    private AuthRepository authRepository;
-    private AdminPortalClient adminPortalClient;
-    private FirebaseAuth firebaseAuth;
-    private GoogleSignInClient googleSignInClient;
-    private FrameLayout contentFrame;
+    StudyRepository repository;
+    AuthRepository authRepository;
+    AdminPortalClient adminPortalClient;
+    OtpEmailSender otpEmailSender;
+    ReminderScheduler reminderScheduler;
+    StudyDialogFactory dialogFactory;
+    FirebaseAuth firebaseAuth;
+    private AuthController authController;
+    FrameLayout contentFrame;
     private LinearLayout bottomNav;
-    private CountDownTimer pomodoroTimer;
-    private long pomodoroRemainingMillis = 25L * 60L * 1000L;
-    private boolean pomodoroRunning;
-    private static final String POMODORO_MODE_FOCUS = "focus";
-    private static final String POMODORO_MODE_SHORT_BREAK = "short_break";
-    private static final String POMODORO_MODE_LONG_BREAK = "long_break";
-    private String currentPomodoroMode = POMODORO_MODE_FOCUS;
-    private int pomodoroCycleCount = 0;
-    private StudyTask currentPomodoroTask = null;
-    private MediaPlayer backgroundAudioPlayer;
-    private AudioTrack whiteNoiseTrack;
-    private Thread whiteNoiseThread;
-    private volatile boolean generatedNoisePlaying = false;
-    private boolean isMuted = false;
-    private float pomodoroSoundVolume = 0.7f;
-    private String pomodoroSoundName = "tiếng mưa";
-    private long pomodoroSessionStartMillis = 0;
+    PomodoroController pomodoroController;
+    private CountdownController countdownController;
+    private ScheduleController scheduleController;
     
-    private long scheduleWeekStartMillis = DateTimeUtils.startOfWeek(System.currentTimeMillis());
-    private String scheduleFilter = "Tất cả";
-    private String scheduleViewMode = CALENDAR_WEEK;
     private boolean showTodayScheduleInTasks = false;
     private final Set<String> checkedTodayScheduleIds = new HashSet<>();
     private String lastShownAnnouncementId = "";
     private Uri pendingCameraUri;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> galleryLauncher;
-    private ActivityResultLauncher<Intent> googleSignInLauncher;
     private ActivityResultLauncher<String> notificationPermissionLauncher;
     private boolean notificationPermissionRequestInFlight;
     private DrawerLayout drawerLayout;
-
-    private static class CountdownItem {
-        final String title;
-        final long targetAt;
-        final CountdownMilestone milestone;
-
-        CountdownItem(CountdownMilestone milestone) {
-            this.title = milestone.getTitle();
-            this.targetAt = milestone.getTargetDate();
-            this.milestone = milestone;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,48 +138,34 @@ public class MainActivity extends AppCompatActivity {
         repository = new StudyRepository(this);
         authRepository = new AuthRepository(this);
         adminPortalClient = new AdminPortalClient();
+        otpEmailSender = new OtpEmailSender();
+        dialogFactory = new StudyDialogFactory(this);
+        pomodoroController = new PomodoroController(this);
+        countdownController = new CountdownController(this);
+        scheduleController = new ScheduleController(this);
+        reminderScheduler = new ReminderScheduler(this, repository, this::eventTypeLabel, new ReminderScheduler.NotificationPermissionGateway() {
+            @Override
+            public boolean hasPermission() {
+                return hasNotificationPermission();
+            }
+
+            @Override
+            public void requestOnce() {
+                requestNotificationPermissionOnce();
+            }
+        });
         firebaseAuth = FirebaseAuth.getInstance();
+        authController = new AuthController(this);
         contentFrame = findViewById(R.id.contentFrame);
         bottomNav = findViewById(R.id.bottomNav);
         drawerLayout = findViewById(R.id.drawerLayout);
-        setupGoogleSignIn();
+        authController.setupGoogleSignIn();
         setupNotificationPermissionLauncher();
         setupImageLaunchers();
         setupBottomNav();
         setupSideMenu();
 
-        AuthUser localUser = authRepository.getCurrentUser();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        if (repository.isFirstOpen()) {
-            showOnboarding();
-        } else if (canEnterWithFirebaseUser(firebaseUser)) {
-            if (localUser != null && !localUser.getEmail().equalsIgnoreCase(firebaseUser.getEmail())) {
-                authRepository.logout();
-            }
-            String name = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? firebaseUser.getEmail() : firebaseUser.getDisplayName();
-            String provider = isGoogleUser(firebaseUser) ? "google" : "email";
-            enterWithAdminSync(firebaseUser.getEmail(), name, provider, () -> {
-                activateStudyRepository(firebaseUser.getEmail());
-                syncProfileFromFirebase(firebaseUser);
-                repository.setLoggedIn(true);
-                showDashboard();
-            });
-        } else if (localUser != null) {
-            if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
-                firebaseAuth.signOut();
-            }
-            enterWithAdminSync(localUser.getEmail(), localUser.getName(), "email", () -> {
-                activateStudyRepository(localUser.getEmail());
-                syncProfileFromAuthUser(localUser);
-                repository.setLoggedIn(true);
-                showDashboard();
-            });
-        } else if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
-            firebaseAuth.signOut();
-            showLogin();
-        } else {
-            showLogin();
-        }
+        authController.showInitialScreen();
     }
 
     private void setupSideMenu() {
@@ -251,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.menuItemAll).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Tất cả"); });
         findViewById(R.id.menuItemToday).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Hôm nay"); });
         findViewById(R.id.menuItemDone).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showTasks("Đã hoàn thành"); });
-        findViewById(R.id.menuItemCountdown).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showCountdown(COUNTDOWN_FILTER_ALL); });
+        findViewById(R.id.menuItemCountdown).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); countdownController.showCountdown(CountdownController.FILTER_ALL); });
         findViewById(R.id.menuItemReportIssue).setOnClickListener(v -> { drawerLayout.closeDrawer(GravityCompat.START); showReportIssueDialog(); });
     }
 
@@ -299,19 +222,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (pomodoroTimer != null) {
-            pomodoroTimer.cancel();
+        if (pomodoroController != null) {
+            pomodoroController.onDestroy();
         }
         super.onDestroy();
     }
 
     @Override
     protected void onPause() {
-        syncLearningSnapshotToAdmin();
+        authController.syncLearningSnapshotToAdmin();
         super.onPause();
     }
 
-    private View inflateScreen(int layoutId, boolean showBottomNav, int selectedNav) {
+    View inflateScreen(int layoutId, boolean showBottomNav, int selectedNav) {
         contentFrame.removeAllViews();
         View screen = getLayoutInflater().inflate(layoutId, contentFrame, false);
         contentFrame.addView(screen);
@@ -324,29 +247,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBottomNav() {
         findViewById(R.id.navDashboard).setOnClickListener(v -> showDashboard());
-        findViewById(R.id.navSchedule).setOnClickListener(v -> showSchedule("Tất cả"));
+        findViewById(R.id.navSchedule).setOnClickListener(v -> scheduleController.showSchedule("Tất cả"));
         findViewById(R.id.navTasks).setOnClickListener(v -> showTasks("Tất cả"));
-        findViewById(R.id.navPomodoro).setOnClickListener(v -> showPomodoro());
+        findViewById(R.id.navPomodoro).setOnClickListener(v -> pomodoroController.showPomodoro());
         findViewById(R.id.navStats).setOnClickListener(v -> showStats());
-    }
-
-    private void setupGoogleSignIn() {
-        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        googleSignInClient = GoogleSignIn.getClient(this, options);
-        googleSignInLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getData() != null) {
-                handleGoogleSignInResult(result.getData());
-                return;
-            }
-            if (result.getResultCode() != RESULT_OK) {
-                toast("Google Sign-In không hoàn tất. Kiểm tra SHA-1/OAuth nếu bạn không tự hủy.");
-                return;
-            }
-            toast("Google không trả về dữ liệu đăng nhập");
-        });
     }
 
     private void setupImageLaunchers() {
@@ -374,618 +278,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showOnboarding() {
-        View screen = inflateScreen(R.layout.screen_onboarding, false, SCREEN_DASHBOARD);
-        screen.findViewById(R.id.btnStart).setOnClickListener(v -> {
-            repository.finishOnboarding();
-            showLogin();
-        });
-    }
-
-    private void showLogin() {
-        View screen = inflateScreen(R.layout.screen_login, false, SCREEN_DASHBOARD);
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        EditText email = screen.findViewById(R.id.inputEmail);
-        EditText password = screen.findViewById(R.id.inputPassword);
-        if (currentUser != null && !TextUtils.isEmpty(currentUser.getEmail())) {
-            email.setText(currentUser.getEmail());
-        }
-
-        View.OnClickListener login = v -> {
-            if (isBlank(email) || isBlank(password)) {
-                toast("Vui lòng nhập email và mật khẩu");
-                return;
-            }
-            if (!isValidEmail(textOf(email))) {
-                toast("Email chưa đúng định dạng");
-                return;
-            }
-            if (textOf(password).length() < 6) {
-                toast("Mật khẩu cần ít nhất 6 ký tự");
-                return;
-            }
-            signInWithEmail(textOf(email), textOf(password));
-        };
-        screen.findViewById(R.id.btnLogin).setOnClickListener(login);
-        screen.findViewById(R.id.btnGoogleLogin).setOnClickListener(v -> startGoogleSignIn());
-        screen.findViewById(R.id.textForgotPassword).setOnClickListener(v -> showForgotPassword());
-        screen.findViewById(R.id.textGoRegister).setOnClickListener(v -> showRegister());
-    }
-
-    private void showRegister() {
-        View screen = inflateScreen(R.layout.screen_register, false, SCREEN_DASHBOARD);
-        EditText name = screen.findViewById(R.id.inputName);
-        EditText email = screen.findViewById(R.id.inputEmail);
-        EditText password = screen.findViewById(R.id.inputPassword);
-        EditText confirm = screen.findViewById(R.id.inputConfirmPassword);
-        CheckBox terms = screen.findViewById(R.id.checkTerms);
-
-        screen.findViewById(R.id.btnRegister).setOnClickListener(v -> {
-            if (isBlank(name) || isBlank(email) || isBlank(password)) {
-                toast("Vui lòng nhập đủ thông tin");
-                return;
-            }
-            if (!isValidEmail(textOf(email))) {
-                toast("Email chưa đúng định dạng");
-                return;
-            }
-            if (textOf(password).length() < 6) {
-                toast("Mật khẩu cần ít nhất 6 ký tự");
-                return;
-            }
-            if (!password.getText().toString().equals(confirm.getText().toString())) {
-                toast("Mật khẩu xác nhận chưa khớp");
-                return;
-            }
-            if (!terms.isChecked()) {
-                toast("Bạn cần đồng ý điều khoản sử dụng");
-                return;
-            }
-            registerWithOtp(textOf(name), textOf(email), textOf(password));
-        });
-        screen.findViewById(R.id.textGoLogin).setOnClickListener(v -> showLogin());
-    }
-
-    private void showForgotPassword() {
-        showForgotPassword("");
-    }
-
-    private void showForgotPassword(String presetEmail) {
-        View screen = inflateScreen(R.layout.screen_forgot_password, false, SCREEN_DASHBOARD);
-        EditText email = screen.findViewById(R.id.inputEmail);
-        if (!TextUtils.isEmpty(presetEmail)) {
-            email.setText(presetEmail);
-            email.setSelection(email.getText().length());
-        }
-        screen.findViewById(R.id.btnSendOtp).setOnClickListener(v -> {
-            if (isBlank(email)) {
-                toast("Vui lòng nhập email");
-                return;
-            }
-            if (!isValidEmail(textOf(email))) {
-                toast("Email chưa đúng định dạng");
-                return;
-            }
-            sendPasswordResetEmail(textOf(email));
-        });
-        screen.findViewById(R.id.textBackLogin).setOnClickListener(v -> showLogin());
-    }
-
-    private void signInWithEmail(String email, String password) {
-        firebaseAuth.signInWithEmailAndPassword(email.trim(), password)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
-                        if (user == null || TextUtils.isEmpty(user.getEmail())) {
-                            toast("Firebase không trả về email tài khoản");
-                            return;
-                        }
-                        user.reload().addOnCompleteListener(this, reloadTask -> {
-                            FirebaseUser refreshed = firebaseAuth.getCurrentUser();
-                            if (!canEnterWithFirebaseUser(refreshed)) {
-                                showEmailVerificationRequired(refreshed);
-                                return;
-                            }
-                            String displayName = TextUtils.isEmpty(refreshed.getDisplayName())
-                                    ? firstNameFromEmail(refreshed.getEmail())
-                                    : refreshed.getDisplayName();
-                            authRepository.logout();
-                            enterWithAdminSync(refreshed.getEmail(), displayName, "email", () -> {
-                                activateStudyRepository(refreshed.getEmail());
-                                syncProfileFromFirebase(refreshed);
-                                repository.finishOnboarding();
-                                repository.setLoggedIn(true);
-                                showDashboard();
-                            });
-                        });
-                        return;
-                    }
-                    String firebaseError = task.getException() == null ? "" : task.getException().getMessage();
-                    signInWithLocalEmailFallback(email, password, firebaseError);
-                });
-    }
-
-    private void signInWithLocalEmailFallback(String email, String password, String firebaseError) {
-        try {
-            AuthUser user = authRepository.login(email, password);
-            enterWithAdminSync(user.getEmail(), user.getName(), "email", () -> {
-                activateStudyRepository(user.getEmail());
-                syncProfileFromAuthUser(user);
-                repository.finishOnboarding();
-                repository.setLoggedIn(true);
-                showDashboard();
-            });
-        } catch (IllegalArgumentException exception) {
-            if (TextUtils.isEmpty(firebaseError)) {
-                toast(exception.getMessage());
-            } else {
-                toast(firebaseError);
-            }
-        }
-    }
-
-    private void registerWithFirebaseEmail(String name, String email, String password) {
-        firebaseAuth.createUserWithEmailAndPassword(email.trim(), password)
-                .addOnCompleteListener(this, task -> {
-                    if (!task.isSuccessful()) {
-                        showAuthTaskError(task, "Không đăng ký được bằng Firebase");
-                        return;
-                    }
-                    FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user == null) {
-                        toast("Không tìm thấy tài khoản Firebase vừa tạo");
-                        return;
-                    }
-                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                            .setDisplayName(name.trim())
-                            .build();
-                    adminPortalClient.syncRegisteredUser(email, name, "email", false);
-                    user.updateProfile(profileUpdates)
-                            .addOnCompleteListener(this, profileTask -> sendFirebaseVerificationEmail(user));
-                });
-    }
-
-    private void sendFirebaseVerificationEmail(FirebaseUser user) {
-        user.sendEmailVerification()
-                .addOnCompleteListener(this, mailTask -> {
-                    if (mailTask.isSuccessful()) {
-                        showFirebaseVerificationSent(user);
-                    } else {
-                        showAuthTaskError(mailTask, "Không gửi được email xác thực Firebase");
-                    }
-                });
-    }
-
-    private void showFirebaseVerificationSent(FirebaseUser user) {
-        String email = user == null || TextUtils.isEmpty(user.getEmail()) ? "email của bạn" : user.getEmail();
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Đã gửi email xác thực")
-                .setMessage("Firebase đã gửi link xác thực tới " + email + ". Hãy mở email, bấm link xác thực, rồi quay lại đăng nhập.")
-                .setNegativeButton("Về đăng nhập", (d, which) -> showLogin())
-                .setPositiveButton("Gửi lại", (d, which) -> resendEmailVerification(user))
-                .create();
-        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
-        dialog.show();
-    }
-
-    private void registerWithOtp(String name, String email, String password) {
-        try {
-            String code = authRepository.beginRegistration(name, email, password);
-            adminPortalClient.syncRegisteredUser(email, name, "email", false);
-            deliverOtpEmail(email, code, "xác thực tài khoản");
-            showOtpVerification(email);
-        } catch (IllegalArgumentException exception) {
-            toast(exception.getMessage());
-        }
-    }
-
-    private void showOtpVerification(String email) {
-        View screen = inflateScreen(R.layout.screen_otp, false, SCREEN_DASHBOARD);
-        setText(screen, R.id.textOtpEmail, email);
-        EditText otp = screen.findViewById(R.id.inputOtp);
-        screen.findViewById(R.id.btnVerifyOtp).setOnClickListener(v -> {
-            if (isBlank(otp)) {
-                toast("Vui lòng nhập mã OTP");
-                return;
-            }
-            try {
-                AuthUser user = authRepository.verifyRegistrationOtp(email, textOf(otp));
-                enterWithAdminSync(user.getEmail(), user.getName(), "email", () -> {
-                    activateStudyRepository(user.getEmail());
-                    syncProfileFromAuthUser(user);
-                    repository.finishOnboarding();
-                    repository.setLoggedIn(true);
-                    showDashboard();
-                });
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
-        });
-        screen.findViewById(R.id.btnResendOtp).setOnClickListener(v -> {
-            try {
-                String code = authRepository.resendRegistrationOtp(email);
-                deliverOtpEmail(email, code, "xác thực tài khoản");
-                toast("Đã gửi lại mã OTP");
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
-        });
-        screen.findViewById(R.id.textBack).setOnClickListener(v -> showRegister());
-    }
-
-    private void sendFirebasePasswordResetEmail(String email) {
-        firebaseAuth.sendPasswordResetEmail(email.trim())
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        AlertDialog dialog = new AlertDialog.Builder(this)
-                                .setTitle("Đã gửi email đặt lại mật khẩu")
-                                .setMessage("Hãy mở email từ Firebase để đặt mật khẩu mới, rồi quay lại đăng nhập.")
-                                .setPositiveButton("Về đăng nhập", (d, which) -> showLogin())
-                                .create();
-                        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
-                        dialog.show();
-                    } else {
-                        showAuthTaskError(task, "Không gửi được email đặt lại mật khẩu");
-                    }
-                });
-    }
-
-    private void sendPasswordResetEmail(String email) {
-        try {
-            String code = authRepository.beginPasswordReset(email);
-            deliverOtpEmail(email, code, "đặt lại mật khẩu");
-            showResetPassword(email);
-        } catch (IllegalArgumentException exception) {
-            toast(exception.getMessage());
-        }
-    }
-
-    private void showResetPassword(String email) {
-        View screen = inflateScreen(R.layout.screen_reset_password, false, SCREEN_DASHBOARD);
-        setText(screen, R.id.textResetEmail, email);
-        EditText otp = screen.findViewById(R.id.inputOtp);
-        EditText password = screen.findViewById(R.id.inputPassword);
-        EditText confirm = screen.findViewById(R.id.inputConfirmPassword);
-        screen.findViewById(R.id.btnResetPassword).setOnClickListener(v -> {
-            if (isBlank(otp) || isBlank(password) || isBlank(confirm)) {
-                toast("Vui lòng nhập đủ mã OTP và mật khẩu mới");
-                return;
-            }
-            if (textOf(password).length() < 6) {
-                toast("Mật khẩu cần ít nhất 6 ký tự");
-                return;
-            }
-            if (!textOf(password).equals(textOf(confirm))) {
-                toast("Mật khẩu xác nhận chưa khớp");
-                return;
-            }
-            try {
-                authRepository.resetPassword(email, textOf(otp), textOf(password));
-                adminPortalClient.notifyPasswordResetComplete(email);
-                new AlertDialog.Builder(this)
-                        .setTitle("Đã cập nhật mật khẩu")
-                        .setMessage("Bạn có thể đăng nhập bằng mật khẩu mới.")
-                        .setPositiveButton("Về đăng nhập", (dialog, which) -> showLogin())
-                        .show();
-            } catch (IllegalArgumentException exception) {
-                toast(exception.getMessage());
-            }
-        });
-        screen.findViewById(R.id.textBackLogin).setOnClickListener(v -> showLogin());
-    }
-
-    private void deliverOtpEmail(String email, String code, String purpose) {
-        new Thread(() -> {
-            StringBuilder errors = new StringBuilder();
-            try {
-                JSONObject payload = new JSONObject();
-                payload.put("email", email);
-                payload.put("code", code);
-                payload.put("purpose", purpose);
-
-                for (String baseUrl : otpBackendCandidates()) {
-                    try {
-                        int status = postOtp(baseUrl, payload);
-                        if (status >= 200 && status < 300) {
-                            runOnUiThread(() -> toast("Đã gửi OTP tới email"));
-                            return;
-                        }
-                        appendOtpError(errors, baseUrl + " trả về HTTP " + status);
-                    } catch (Exception exception) {
-                        appendOtpError(errors, baseUrl + ": " + exception.getMessage());
-                    }
-                }
-            } catch (Exception exception) {
-                appendOtpError(errors, exception.getMessage());
-            }
-            String detail = errors.toString();
-            runOnUiThread(() -> {
-                adminPortalClient.reportIssue("otp", email, detail);
-                showOtpSendError(detail);
-            });
-        }).start();
-    }
-
-    private void appendOtpError(StringBuilder errors, String error) {
-        if (errors.length() > 0) {
-            errors.append("\n");
-        }
-        errors.append(error);
-    }
-
-    private List<String> otpBackendCandidates() {
-        List<String> urls = new ArrayList<>();
-        addOtpBackendUrls(urls, BuildConfig.OTP_BACKEND_URL);
-        addOtpBackendUrl(urls, "http://127.0.0.1:8080");
-        addOtpBackendUrl(urls, "http://192.168.1.238:8080");
-        addOtpBackendUrl(urls, "http://10.0.2.2:8080");
-        return urls;
-    }
-
-    private void addOtpBackendUrls(List<String> urls, String value) {
-        if (TextUtils.isEmpty(value)) {
-            return;
-        }
-        for (String url : value.split(",")) {
-            addOtpBackendUrl(urls, url);
-        }
-    }
-
-    private void addOtpBackendUrl(List<String> urls, String url) {
-        if (TextUtils.isEmpty(url)) {
-            return;
-        }
-        String normalized = trimTrailingSlash(url.trim());
-        if (!urls.contains(normalized)) {
-            urls.add(normalized);
-        }
-    }
-
-    private int postOtp(String baseUrl, JSONObject payload) throws Exception {
-        URL url = new URL(trimTrailingSlash(baseUrl) + "/send-otp");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setConnectTimeout(5000);
-        connection.setReadTimeout(15000);
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-        byte[] body = payload.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        try (OutputStream output = connection.getOutputStream()) {
-            output.write(body);
-        }
-        int status = connection.getResponseCode();
-        if (status < 200 || status >= 300) {
-            String response = readConnectionResponse(connection);
-            connection.disconnect();
-            throw new IOException("HTTP " + status + (TextUtils.isEmpty(response) ? "" : " - " + response));
-        }
-        connection.disconnect();
-        return status;
-    }
-
-    private String readConnectionResponse(HttpURLConnection connection) {
-        try {
-            java.io.InputStream stream = connection.getErrorStream();
-            if (stream == null) {
-                stream = connection.getInputStream();
-            }
-            if (stream == null) {
-                return "";
-            }
-            try (java.io.InputStream input = stream) {
-                byte[] bytes = input.readAllBytes();
-                return new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
-            }
-        } catch (IOException ignored) {
-            return "";
-        }
-    }
-
-    private void showOtpSendError(String detail) {
-        AlertDialog otpDialog = new AlertDialog.Builder(this)
-                .setTitle("Không gửi được OTP")
-                .setMessage("App chưa gửi được email OTP thật. Nguyên nhân thường là backend chưa chạy, sai URL backend, Windows Firewall chặn port 8080, hoặc SMTP Gmail chưa cấu hình đúng.\n\n"
-                        + "Backend hiện tại: " + BuildConfig.OTP_BACKEND_URL)
-                .setNeutralButton("Chi tiết kỹ thuật", (dialog, which) -> showTechnicalError("Chi tiết lỗi OTP", detail))
-                .setPositiveButton("Đã hiểu", null)
-                .create();
-        otpDialog.setOnShowListener(shown -> styleStudyDialog(otpDialog));
-        otpDialog.show();
-    }
-
-    private void showTechnicalError(String title, String detail) {
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(TextUtils.isEmpty(detail) ? "Không rõ lỗi" : detail)
-                .setPositiveButton("OK", null)
-                .create();
-        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
-        dialog.show();
-    }
-
-    private String trimTrailingSlash(String value) {
-        if (TextUtils.isEmpty(value)) {
-            return "";
-        }
-        while (value.endsWith("/")) {
-            value = value.substring(0, value.length() - 1);
-        }
-        return value;
-    }
-
-    private void startGoogleSignIn() {
-        if (googleSignInClient == null || googleSignInLauncher == null) {
-            toast("Google Sign-In chưa sẵn sàng");
-            return;
-        }
-        toast("Đang mở đăng nhập Google...");
-        googleSignInLauncher.launch(googleSignInClient.getSignInIntent());
-    }
-
-    private void handleGoogleSignInResult(Intent data) {
-        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            if (account == null || TextUtils.isEmpty(account.getIdToken())) {
-                toast("Google không trả về ID token");
-                return;
-            }
-            firebaseAuthWithGoogle(account.getIdToken());
-        } catch (ApiException exception) {
-            toast(googleSignInErrorMessage(exception));
-        }
-    }
-
-    private String googleSignInErrorMessage(ApiException exception) {
-        int statusCode = exception.getStatusCode();
-        if (statusCode == GOOGLE_SIGN_IN_DEVELOPER_ERROR) {
-            return "Google Sign-In lỗi cấu hình SHA-1/OAuth. Kiểm tra Firebase Console.";
-        }
-        return "Đăng nhập Google lỗi: " + statusCode;
-    }
-
-    private void firebaseAuthWithGoogle(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (!task.isSuccessful()) {
-                        String message = task.getException() == null
-                                ? "Không đăng nhập được bằng Google"
-                                : task.getException().getMessage();
-                        toast(message);
-                        return;
-                    }
-                    FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user == null || TextUtils.isEmpty(user.getEmail())) {
-                        toast("Google không trả về email tài khoản");
-                        return;
-                    }
-                    String displayName = TextUtils.isEmpty(user.getDisplayName()) ? user.getEmail() : user.getDisplayName();
-                    enterWithAdminSync(user.getEmail(), displayName, "google", () -> {
-                        activateStudyRepository(user.getEmail());
-                        syncProfileFromFirebase(user);
-                        repository.finishOnboarding();
-                        repository.setLoggedIn(true);
-                        toast("Đăng nhập Google thành công");
-                        showDashboard();
-                    });
-                });
-    }
-
     private void setupNotificationPermissionLauncher() {
         notificationPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
             notificationPermissionRequestInFlight = false;
             if (granted) {
                 toast("Đã bật quyền thông báo. Các nhắc nhở sắp tới sẽ được lên lịch lại.");
-                rescheduleAllReminders();
+                reminderScheduler.rescheduleAllReminders();
             } else {
-                showNotificationPermissionDeniedMessage();
+                authController.showNotificationPermissionDeniedMessage();
             }
         });
     }
 
-    private void showNotificationPermissionDeniedMessage() {
-        new AlertDialog.Builder(this)
-                .setTitle("Chưa có quyền thông báo")
-                .setMessage("Nhắc nhở đã được lưu trong lịch/task, nhưng Android sẽ không hiện notification cho tới khi bạn cấp quyền thông báo cho Study Planner.")
-                .setNegativeButton("Để sau", null)
-                .setPositiveButton("Mở cài đặt", (dialog, which) -> openAppNotificationSettings())
-                .show();
-    }
-
-    private void openAppNotificationSettings() {
-        try {
-            Intent intent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                    ? new Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                    .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName())
-                    : new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    .setData(Uri.parse("package:" + getPackageName()));
-            startActivity(intent);
-        } catch (Exception exception) {
-            toast("Không mở được cài đặt thông báo");
-        }
-    }
-
-    private void enterWithAdminSync(String email, String name, String provider, Runnable onAllowed) {
-        adminPortalClient.syncUserAccess(email, name, provider, (allowed, synced, passwordResetRequested, message) -> runOnUiThread(() -> {
-            if (!allowed) {
-                authRepository.logout();
-                firebaseAuth.signOut();
-                toast(TextUtils.isEmpty(message) ? "Tài khoản không được phép truy cập" : message);
-                showLogin();
-                return;
-            }
-            if (!synced && !TextUtils.isEmpty(message)) {
-                toast("Web quản trị chưa đồng bộ: " + message);
-            }
-            onAllowed.run();
-            syncFcmTokenToAdmin(email);
-            if (passwordResetRequested) {
-                showAdminPasswordResetNotice(email);
-            }
-        }));
-    }
-
-    private void syncFcmTokenToAdmin(String email) {
-        if (TextUtils.isEmpty(email) || adminPortalClient == null) {
-            return;
-        }
-        FirebaseMessaging.getInstance().getToken()
-                .addOnSuccessListener(token -> adminPortalClient.syncFcmToken(email, token));
-    }
-
-    private void showAdminPasswordResetNotice(String email) {
-        new AlertDialog.Builder(this)
-                .setTitle("Quản trị yêu cầu đặt lại mật khẩu")
-                .setMessage("Tài khoản " + email + " đang được đánh dấu cần đặt lại mật khẩu. Hãy dùng chức năng Quên mật khẩu để nhận OTP và tạo mật khẩu mới.")
-                .setNegativeButton("Để sau", null)
-                .setPositiveButton("Đặt lại ngay", (dialog, which) -> showForgotPassword(email))
-                .show();
-    }
-
-    private void syncLearningSnapshotToAdmin() {
-        if (adminPortalClient == null || repository == null) {
-            return;
-        }
-        AuthUser localUser = authRepository == null ? null : authRepository.getCurrentUser();
-        FirebaseUser firebaseUser = firebaseAuth == null ? null : firebaseAuth.getCurrentUser();
-        String email = "";
-        String name = "";
-        String provider = "email";
-        if (localUser != null) {
-            email = localUser.getEmail();
-            name = localUser.getName();
-        } else if (firebaseUser != null && !TextUtils.isEmpty(firebaseUser.getEmail())) {
-            email = firebaseUser.getEmail();
-            name = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? email : firebaseUser.getDisplayName();
-            provider = "google";
-        }
-        if (TextUtils.isEmpty(email)) {
-            return;
-        }
-        UserProfile profile = repository.getProfile();
-        if (TextUtils.isEmpty(name) && profile != null && !TextUtils.isEmpty(profile.getName())) {
-            name = profile.getName();
-        }
-        adminPortalClient.syncLearningSnapshot(
-                email,
-                name,
-                provider,
-                repository.getTasks(),
-                repository.getEvents(),
-                repository.getFocusMinutes(),
-                repository.getFocusSessions(),
-                repository.getTodayFocusMinutes(),
-                repository.getTodayFocusSessions(),
-                repository.getRecentPomodoroSessions(20));
-    }
-
-    private void showDashboard() {
+    void showDashboard() {
         View screen = inflateScreen(R.layout.screen_dashboard, true, SCREEN_DASHBOARD);
         UserProfile profile = repository.getProfile();
         List<StudyTask> tasks = repository.getTasks();
         List<StudyEvent> events = repository.getEvents();
-        syncLearningSnapshotToAdmin();
+        authController.syncLearningSnapshotToAdmin();
         int themeColor = getColor(themeColorRes(repository.getThemeColorChoice()));
 
         int todayTotal = countAllTodayTasks(tasks);
@@ -1024,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         StudyTask nextTask = findNearestDeadlineTask(tasks);
-        StudyEvent nextDeadlineEvent = findNearestDeadlineEvent(events);
+        StudyEvent nextDeadlineEvent = findNearestDeadlineEvent(events, repository);
         if (nextTask == null && nextDeadlineEvent == null) {
             setText(screen, R.id.textDeadline, "Không có deadline");
             setText(screen, R.id.textDeadlineMeta, "Bạn đang khá thoáng lịch");
@@ -1061,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
         screen.findViewById(R.id.btnAddEvent).setOnClickListener(v -> showEventDialog(null, this::showDashboard));
         screen.findViewById(R.id.btnAddTask).setOnClickListener(v -> showTaskDialog(null, this::showDashboard));
         screen.findViewById(R.id.btnOcr).setOnClickListener(v -> showImageImportOptions());
-        screen.findViewById(R.id.btnPomodoroQuick).setOnClickListener(v -> showPomodoro());
+        screen.findViewById(R.id.btnPomodoroQuick).setOnClickListener(v -> pomodoroController.showPomodoro());
         tintButton(screen, R.id.btnPomodoroQuick, themeColorRes(repository.getThemeColorChoice()), themeButtonTextColorRes(repository.getThemeColorChoice()));
         fetchAndShowAdminAnnouncement();
     }
@@ -1078,138 +388,6 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton("Đã đọc", null)
                     .show();
         }));
-    }
-
-    private void showSchedule(String filter) {
-        scheduleFilter = filter;
-        View screen = inflateScreen(R.layout.screen_schedule, true, SCREEN_SCHEDULE);
-        normalizeScheduleStart();
-        setupScheduleViewModes(screen);
-        setupScheduleFilters(screen, filter);
-        int visibleDays = scheduleVisibleDays();
-        setText(screen, R.id.textWeekRange, DateTimeUtils.formatDayRange(scheduleWeekStartMillis, visibleDays));
-        screen.findViewById(R.id.btnPrevWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = DateTimeUtils.addDays(scheduleWeekStartMillis, -visibleDays);
-            showSchedule(scheduleFilter);
-        });
-        screen.findViewById(R.id.btnThisWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = startForScheduleMode(scheduleViewMode, System.currentTimeMillis());
-            showSchedule(scheduleFilter);
-        });
-        screen.findViewById(R.id.btnNextWeek).setOnClickListener(v -> {
-            scheduleWeekStartMillis = DateTimeUtils.addDays(scheduleWeekStartMillis, visibleDays);
-            showSchedule(scheduleFilter);
-        });
-
-        List<StudyEvent> visibleEvents = visibleRangeEvents(filter);
-        Set<String> visibleConflictIds = conflictIds(visibleEvents);
-        WeekCalendarView weekCalendar = screen.findViewById(R.id.weekCalendar);
-        weekCalendar.setRange(scheduleWeekStartMillis, visibleDays);
-        weekCalendar.setEvents(visibleEvents, visibleConflictIds);
-        weekCalendar.setOnEventClickListener(this::showEventActions);
-        weekCalendar.setOnEmptySlotClickListener(startAt -> showEventDialog(null, () -> showSchedule(scheduleFilter), startAt));
-        weekCalendar.setOnEventMoveRequestListener((event, newStartAt) -> showMoveEventConfirmation(event, newStartAt));
-
-        TextView conflictTitle = screen.findViewById(R.id.textConflictTitle);
-        LinearLayout eventList = screen.findViewById(R.id.eventList);
-        eventList.removeAllViews();
-
-        List<StudyEvent> conflictEvents = conflictEvents(visibleEvents, visibleConflictIds);
-        conflictTitle.setVisibility(conflictEvents.isEmpty() ? View.GONE : View.VISIBLE);
-        eventList.setVisibility(conflictEvents.isEmpty() ? View.GONE : View.VISIBLE);
-        conflictTitle.setText("Kiểm tra xung đột (" + conflictEvents.size() + ")");
-
-        for (StudyEvent event : conflictEvents) {
-            View row = createEventRow(event, eventList);
-            row.setOnClickListener(v -> showEventActions(event));
-            eventList.addView(row);
-        }
-        screen.findViewById(R.id.btnAddEvent).setOnClickListener(v -> showEventDialog(null, () -> showSchedule(filter)));
-        screen.findViewById(R.id.btnImportImage).setOnClickListener(v -> showImageImportOptions());
-    }
-
-    private void setupScheduleViewModes(View screen) {
-        bindCalendarMode(screen, R.id.modeDay, CALENDAR_DAY);
-        bindCalendarMode(screen, R.id.modeThreeDays, CALENDAR_THREE_DAYS);
-        bindCalendarMode(screen, R.id.modeWeek, CALENDAR_WEEK);
-    }
-
-    private void bindCalendarMode(View screen, int id, String mode) {
-        TextView view = screen.findViewById(id);
-        view.setBackgroundResource(mode.equals(scheduleViewMode) ? R.drawable.bg_selected_pill : R.drawable.bg_outline_pill);
-        view.setOnClickListener(v -> {
-            if (mode.equals(scheduleViewMode)) {
-                return;
-            }
-            scheduleViewMode = mode;
-            scheduleWeekStartMillis = startForScheduleMode(mode, System.currentTimeMillis());
-            showSchedule(scheduleFilter);
-        });
-    }
-
-    private void setupScheduleFilters(View screen, String active) {
-        bindFilter(screen, R.id.filterAll, "Tất cả", active, () -> showSchedule("Tất cả"));
-        bindFilter(screen, R.id.filterStudy, StudyEvent.TYPE_STUDY, active, () -> showSchedule(StudyEvent.TYPE_STUDY));
-        bindFilter(screen, R.id.filterExam, StudyEvent.TYPE_EXAM, active, () -> showSchedule(StudyEvent.TYPE_EXAM));
-        bindFilter(screen, R.id.filterDeadline, StudyEvent.TYPE_DEADLINE, active, () -> showSchedule(StudyEvent.TYPE_DEADLINE));
-        bindFilter(screen, R.id.filterPersonal, StudyEvent.TYPE_PERSONAL, active, () -> showSchedule(StudyEvent.TYPE_PERSONAL));
-    }
-
-    private List<StudyEvent> visibleRangeEvents(String filter) {
-        List<StudyEvent> result = new ArrayList<>();
-        int visibleDays = scheduleVisibleDays();
-        for (StudyEvent event : repository.getEvents()) {
-            if (!DateTimeUtils.isInDayRange(event.getStartAt(), scheduleWeekStartMillis, visibleDays)) {
-                continue;
-            }
-            if (!"Tất cả".equals(filter) && !event.getType().equals(filter)) {
-                continue;
-            }
-            result.add(event);
-        }
-        return result;
-    }
-
-    private int scheduleVisibleDays() {
-        if (CALENDAR_DAY.equals(scheduleViewMode)) {
-            return 1;
-        }
-        if (CALENDAR_THREE_DAYS.equals(scheduleViewMode)) {
-            return 3;
-        }
-        return 7;
-    }
-
-    private void normalizeScheduleStart() {
-        scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
-                ? DateTimeUtils.startOfWeek(scheduleWeekStartMillis)
-                : DateTimeUtils.startOfDay(scheduleWeekStartMillis);
-    }
-
-    private long startForScheduleMode(String mode, long millis) {
-        return CALENDAR_WEEK.equals(mode)
-                ? DateTimeUtils.startOfWeek(millis)
-                : DateTimeUtils.startOfDay(millis);
-    }
-
-    private Set<String> conflictIds(List<StudyEvent> events) {
-        Set<String> ids = new HashSet<>();
-        for (StudyEvent event : events) {
-            if (repository.hasConflict(event)) {
-                ids.add(event.getId());
-            }
-        }
-        return ids;
-    }
-
-    private List<StudyEvent> conflictEvents(List<StudyEvent> events, Set<String> conflictIds) {
-        List<StudyEvent> result = new ArrayList<>();
-        for (StudyEvent event : events) {
-            if (conflictIds.contains(event.getId())) {
-                result.add(event);
-            }
-        }
-        return result;
     }
 
     private void showTasks(String filter) {
@@ -1264,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
             }
             task.setShowOnCalendar(false);
             repository.saveTask(task);
-            syncTaskCalendarEvent(task);
+            reminderScheduler.syncTaskCalendarEvent(task);
         }
     }
 
@@ -1352,244 +530,6 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    private void showCountdown(String filter) {
-        View screen = inflateScreen(R.layout.screen_countdown, true, -1);
-        setupCountdownFilters(screen, filter);
-        List<CountdownItem> items = buildCountdownItems();
-        bindCountdownSummary(screen, items);
-
-        LinearLayout list = screen.findViewById(R.id.countdownList);
-        list.removeAllViews();
-        for (CountdownItem item : items) {
-            if (!matchesCountdownFilter(item, filter)) {
-                continue;
-            }
-            list.addView(createCountdownRow(item, filter, list));
-        }
-        if (list.getChildCount() == 0) {
-            list.addView(emptyState("Chưa có sự kiện đếm ngược phù hợp"));
-        }
-        screen.findViewById(R.id.btnAddCountdown).setOnClickListener(v -> showCreateCountdownDialog(filter));
-    }
-
-    private void setupCountdownFilters(View screen, String active) {
-        bindFilter(screen, R.id.countdownFilterAll, COUNTDOWN_FILTER_ALL, active, () -> showCountdown(COUNTDOWN_FILTER_ALL));
-        bindFilter(screen, R.id.countdownFilterUpcoming, COUNTDOWN_FILTER_UPCOMING, active, () -> showCountdown(COUNTDOWN_FILTER_UPCOMING));
-        bindFilter(screen, R.id.countdownFilterOverdue, COUNTDOWN_FILTER_PAST, active, () -> showCountdown(COUNTDOWN_FILTER_PAST));
-    }
-
-    private List<CountdownItem> buildCountdownItems() {
-        List<CountdownItem> items = new ArrayList<>();
-        for (CountdownMilestone milestone : repository.getCountdownMilestones()) {
-            items.add(new CountdownItem(milestone));
-        }
-        Collections.sort(items, countdownComparator());
-        return items;
-    }
-
-    private Comparator<CountdownItem> countdownComparator() {
-        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
-        return (first, second) -> {
-            boolean firstPast = DateTimeUtils.startOfDay(first.targetAt) < today;
-            boolean secondPast = DateTimeUtils.startOfDay(second.targetAt) < today;
-            if (firstPast != secondPast) {
-                return firstPast ? 1 : -1;
-            }
-            if (firstPast) {
-                return Long.compare(second.targetAt, first.targetAt);
-            }
-            return Long.compare(first.targetAt, second.targetAt);
-        };
-    }
-
-    private boolean matchesCountdownFilter(CountdownItem item, String filter) {
-        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
-        long targetDay = DateTimeUtils.startOfDay(item.targetAt);
-        if (COUNTDOWN_FILTER_UPCOMING.equals(filter)) {
-            return targetDay >= today;
-        }
-        if (COUNTDOWN_FILTER_PAST.equals(filter)) {
-            return targetDay < today;
-        }
-        return true;
-    }
-
-    private void bindCountdownSummary(View screen, List<CountdownItem> items) {
-        int past = 0;
-        CountdownItem nearestUpcoming = null;
-        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
-        for (CountdownItem item : items) {
-            if (DateTimeUtils.startOfDay(item.targetAt) < today) {
-                past++;
-            } else if (nearestUpcoming == null || item.targetAt < nearestUpcoming.targetAt) {
-                nearestUpcoming = item;
-            }
-        }
-        setText(screen, R.id.textCountdownSubtitle, items.isEmpty()
-                ? "Cài sự kiện đầu tiên để bắt đầu đếm ngược"
-                : items.size() + " sự kiện đang theo dõi · " + past + " đã qua");
-        setText(screen, R.id.textCountdownNearest, nearestUpcoming == null
-                ? "Gần nhất\nChưa có sự kiện sắp tới"
-                : "Gần nhất\n" + countdownBadge(nearestUpcoming) + "\n" + nearestUpcoming.title);
-        setText(screen, R.id.textCountdownOverdue, "Đã qua\n" + past + " sự kiện\n" + (past == 0 ? "Sổ vẫn mới" : "Lưu kỷ niệm"));
-    }
-
-    private View createCountdownRow(CountdownItem item, String filter, ViewGroup parent) {
-        LinearLayout row = new LinearLayout(this);
-        row.setLayoutParams(cardLayoutParams());
-        row.setBackgroundResource(countdownBackground(item));
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        row.setMinimumHeight(dp(104));
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(dp(16), dp(14), dp(16), dp(14));
-        row.setRotation(item.title.hashCode() % 2 == 0 ? -0.8f : 0.8f);
-
-        TextView badge = new TextView(this);
-        LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(dp(92), dp(74));
-        badgeParams.setMargins(0, 0, dp(12), 0);
-        badge.setLayoutParams(badgeParams);
-        boolean past = DateTimeUtils.startOfDay(item.targetAt) < DateTimeUtils.startOfDay(System.currentTimeMillis());
-        badge.setBackgroundResource(past ? R.drawable.bg_card_pink : R.drawable.bg_selected_pill);
-        badge.setGravity(android.view.Gravity.CENTER);
-        badge.setText(countdownBadge(item));
-        badge.setTextColor(past ? getColor(R.color.danger) : getColor(R.color.ink));
-        badge.setTextSize(13f);
-        badge.setTypeface(null, android.graphics.Typeface.BOLD);
-        badge.setRotation(past ? -1.5f : 1.5f);
-
-        LinearLayout content = new LinearLayout(this);
-        content.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        content.setOrientation(LinearLayout.VERTICAL);
-
-        TextView title = new TextView(this);
-        title.setText(item.title);
-        title.setTextColor(getColor(R.color.ink));
-        title.setTextSize(16f);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
-        title.setMaxLines(2);
-        title.setEllipsize(TextUtils.TruncateAt.END);
-
-        TextView meta = new TextView(this);
-        meta.setText(countdownMeta(item));
-        meta.setTextColor(getColor(R.color.muted));
-        meta.setTextSize(12f);
-        meta.setMaxLines(2);
-        meta.setEllipsize(TextUtils.TruncateAt.END);
-        LinearLayout.LayoutParams metaParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        metaParams.setMargins(0, dp(5), 0, 0);
-        meta.setLayoutParams(metaParams);
-
-        content.addView(title);
-        content.addView(meta);
-        row.addView(badge);
-        row.addView(content);
-        row.setOnClickListener(v -> showCountdownActions(item.milestone, () -> showCountdown(filter)));
-        return row;
-    }
-
-    private LinearLayout.LayoutParams cardLayoutParams() {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0, 0, 0, dp(12));
-        return params;
-    }
-
-    private int countdownBackground(CountdownItem item) {
-        if (DateTimeUtils.startOfDay(item.targetAt) < DateTimeUtils.startOfDay(System.currentTimeMillis())) {
-            return R.drawable.bg_card;
-        }
-        int choice = Math.abs(item.title.hashCode()) % 4;
-        if (choice == 0) return R.drawable.bg_card_lavender;
-        if (choice == 1) return R.drawable.bg_card_pink;
-        if (choice == 2) return R.drawable.bg_card_mint;
-        return R.drawable.bg_card_yellow;
-    }
-
-    private String countdownBadge(CountdownItem item) {
-        long today = DateTimeUtils.startOfDay(System.currentTimeMillis());
-        long targetDay = DateTimeUtils.startOfDay(item.targetAt);
-        long days = (targetDay - today) / (24L * 60L * 60L * 1000L);
-        if (days < 0) {
-            return "Qua\n" + Math.abs(days) + " ngày";
-        }
-        if (days == 0) {
-            return "Hôm nay\nD-day";
-        }
-        return "Còn\n" + days + " ngày";
-    }
-
-    private String countdownMeta(CountdownItem item) {
-        return "Ngày đếm ngược · " + DateTimeUtils.formatDate(item.targetAt);
-    }
-
-    private void showCreateCountdownDialog(String filter) {
-        showCountdownDialog(null, () -> showCountdown(filter));
-    }
-
-    private void showCountdownActions(CountdownMilestone milestone, Runnable onChanged) {
-        String[] actions = {"Sửa sự kiện", "Xóa sự kiện"};
-        new AlertDialog.Builder(this)
-                .setTitle(milestone.getTitle())
-                .setMessage(countdownDetailText(milestone))
-                .setItems(actions, (dialog, which) -> {
-                    if (which == 0) {
-                        showCountdownDialog(milestone, onChanged);
-                    } else {
-                        confirmDelete("Xóa sự kiện đếm ngược?", milestone.getTitle(), () -> {
-                            repository.deleteCountdownMilestone(milestone.getId());
-                            toast("Đã xóa sự kiện đếm ngược");
-                            onChanged.run();
-                        });
-                    }
-                })
-                .setNegativeButton("Đóng", null)
-                .show();
-    }
-
-    private void showCountdownDialog(CountdownMilestone editingMilestone, Runnable onSaved) {
-        View view = getLayoutInflater().inflate(R.layout.dialog_countdown, null);
-        EditText title = view.findViewById(R.id.inputTitle);
-        EditText targetDate = view.findViewById(R.id.inputTargetDate);
-
-        long defaultTarget = DateTimeUtils.startOfDay(DateTimeUtils.daysFromNow(7, 0, 0));
-        targetDate.setText(DateTimeUtils.formatDate(defaultTarget));
-        if (editingMilestone != null) {
-            title.setText(editingMilestone.getTitle());
-            targetDate.setText(DateTimeUtils.formatDate(editingMilestone.getTargetDate()));
-        }
-        targetDate.setOnClickListener(v -> pickDate(targetDate));
-
-        StudyFormDialog formDialog = createStudyFormDialog(
-                editingMilestone == null ? "Cài sự kiện đếm ngược" : "Sửa sự kiện đếm ngược",
-                view,
-                "Lưu");
-        Dialog dialog = formDialog.dialog;
-        formDialog.positive.setOnClickListener(v -> {
-            String titleValue = textOf(title);
-            if (TextUtils.isEmpty(titleValue)) {
-                toast("Vui lòng nhập tên sự kiện");
-                return;
-            }
-            long target = DateTimeUtils.startOfDay(DateTimeUtils.combineDateAndTime(targetDate.getText().toString(), "00:00", defaultTarget));
-            CountdownMilestone milestone = editingMilestone == null
-                    ? repository.newCountdownMilestone(titleValue, CountdownMilestone.TYPE_EVENT, target, "")
-                    : editingMilestone;
-            milestone.setTitle(titleValue);
-            milestone.setType(CountdownMilestone.TYPE_EVENT);
-            milestone.setTargetDate(target);
-            milestone.setNote("");
-            repository.saveCountdownMilestone(milestone);
-            toast("Đã lưu sự kiện đếm ngược");
-            dialog.dismiss();
-            onSaved.run();
-        });
-        dialog.show();
-    }
-
-    private String countdownDetailText(CountdownMilestone milestone) {
-        return "Ngày: " + DateTimeUtils.formatDate(milestone.getTargetDate())
-                + "\n" + countdownBadge(new CountdownItem(milestone)).replace("\n", " ");
-    }
-
     private void setupTaskFilters(View screen, String active) {
         bindFilter(screen, R.id.filterAll, TASK_FILTER_ALL, active, () -> showTasks(TASK_FILTER_ALL));
         bindFilter(screen, R.id.filterToday, TASK_FILTER_TODAY, active, () -> showTasks(TASK_FILTER_TODAY));
@@ -1639,622 +579,6 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Lọc theo ưu tiên")
                 .setItems(priorities, (dialog, which) -> showTasks(TASK_FILTER_PRIORITY_PREFIX + priorities[which]))
                 .show();
-    }
-
-    private void showPomodoro() {
-        View screen = inflateScreen(R.layout.screen_pomodoro, true, SCREEN_POMODORO);
-        TextView timer = screen.findViewById(R.id.textTimer);
-        TextView modeText = screen.findViewById(R.id.textTaskName);
-        TextView textStartPause = screen.findViewById(R.id.btnStartPause);
-        View btnStartPause = textStartPause;
-        View layoutActions = screen.findViewById(R.id.btnSkip);
-        View btnStop = screen.findViewById(R.id.btnReset);
-        View btnSkip = screen.findViewById(R.id.btnSkip);
-        View btnSelectMode = screen.findViewById(R.id.btnSelectMode);
-        
-        ImageView tomato1 = screen.findViewById(R.id.tomato1);
-        ImageView tomato2 = screen.findViewById(R.id.tomato2);
-        ImageView tomato3 = screen.findViewById(R.id.tomato3);
-        ImageView tomato4 = screen.findViewById(R.id.tomato4);
-
-        if (currentPomodoroTask != null) {
-            modeText.setText(currentPomodoroTask.getTitle());
-        } else {
-            modeText.setText(POMODORO_MODE_FOCUS.equals(currentPomodoroMode) ? "Tập trung tự do" : "Đang nghỉ ngơi");
-        }
-
-        updatePomodoroUi(timer, textStartPause, layoutActions, tomato1, tomato2, tomato3, tomato4);
-
-        btnStartPause.setOnClickListener(v -> {
-            if (pomodoroRunning) {
-                pausePomodoro();
-            } else {
-                startPomodoro(timer, textStartPause, layoutActions, tomato1, tomato2, tomato3, tomato4);
-            }
-            updatePomodoroUi(timer, textStartPause, layoutActions, tomato1, tomato2, tomato3, tomato4);
-        });
-        
-        btnStop.setOnClickListener(v -> {
-            resetPomodoro();
-            updatePomodoroUi(timer, textStartPause, layoutActions, tomato1, tomato2, tomato3, tomato4);
-        });
-
-        btnSkip.setOnClickListener(v -> {
-            skipPomodoroSession(timer, textStartPause, layoutActions, tomato1, tomato2, tomato3, tomato4);
-        });
-
-        btnSelectMode.setOnClickListener(v -> showTaskSelectionDialog(modeText));
-        
-        screen.findViewById(R.id.btnSound).setOnClickListener(v -> showPomodoroSoundPanel());
-        screen.findViewById(R.id.btnHistory).setOnClickListener(v -> showPomodoroHistory());
-    }
-
-    private void startPomodoro(TextView timer, TextView textStartPause, View layoutActions, ImageView t1, ImageView t2, ImageView t3, ImageView t4) {
-        if (pomodoroRemainingMillis == 0) return;
-        if (pomodoroSessionStartMillis == 0) {
-            pomodoroSessionStartMillis = System.currentTimeMillis();
-        }
-        pomodoroRunning = true;
-        pomodoroTimer = new CountDownTimer(pomodoroRemainingMillis, 1000L) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                pomodoroRemainingMillis = millisUntilFinished;
-                updatePomodoroUi(timer, textStartPause, layoutActions, t1, t2, t3, t4);
-            }
-
-            @Override
-            public void onFinish() {
-                pomodoroRemainingMillis = 0;
-                pomodoroRunning = false;
-                handlePomodoroEnd(timer, textStartPause, layoutActions, t1, t2, t3, t4);
-            }
-        }.start();
-        
-        if (POMODORO_MODE_FOCUS.equals(currentPomodoroMode) && !isMuted) {
-            playWhiteNoise();
-        }
-    }
-
-    private void pausePomodoro() {
-        if (pomodoroTimer != null) {
-            pomodoroTimer.cancel();
-        }
-        pomodoroRunning = false;
-        pauseWhiteNoise();
-    }
-
-    private void resetPomodoro() {
-        pausePomodoro();
-        currentPomodoroMode = POMODORO_MODE_FOCUS;
-        pomodoroRemainingMillis = 25L * 60L * 1000L;
-        pomodoroSessionStartMillis = 0;
-        stopWhiteNoise();
-    }
-
-    private void updatePomodoroUi(TextView timer, TextView textStartPause, View layoutActions, ImageView t1, ImageView t2, ImageView t3, ImageView t4) {
-        long totalSeconds = pomodoroRemainingMillis / 1000L;
-        long minutes = totalSeconds / 60L;
-        long seconds = totalSeconds % 60L;
-        timer.setText(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds));
-        
-        textStartPause.setText(pomodoroRunning ? "Tạm dừng" : "Bắt đầu");
-        
-        long durationMin = (POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) ? 25 : (POMODORO_MODE_SHORT_BREAK.equals(currentPomodoroMode) ? 5 : 15);
-        boolean isInitial = (pomodoroRemainingMillis == durationMin * 60 * 1000L);
-        layoutActions.setVisibility(isInitial ? View.GONE : View.VISIBLE);
-        
-        int filled = pomodoroCycleCount % 4;
-        if (pomodoroCycleCount > 0 && filled == 0 && POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) filled = 4;
-        
-        t1.setImageResource(filled >= 1 ? R.drawable.ic_tomato_active : R.drawable.ic_tomato_inactive);
-        t2.setImageResource(filled >= 2 ? R.drawable.ic_tomato_active : R.drawable.ic_tomato_inactive);
-        t3.setImageResource(filled >= 3 ? R.drawable.ic_tomato_active : R.drawable.ic_tomato_inactive);
-        t4.setImageResource(filled >= 4 ? R.drawable.ic_tomato_active : R.drawable.ic_tomato_inactive);
-    }
-    
-    private void handlePomodoroEnd(TextView timer, TextView textStartPause, View layoutActions, ImageView t1, ImageView t2, ImageView t3, ImageView t4) {
-        stopWhiteNoise();
-        long durationMin = (POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) ? 25 : (POMODORO_MODE_SHORT_BREAK.equals(currentPomodoroMode) ? 5 : 15);
-        long completedMin = durationMin - (pomodoroRemainingMillis / 60000L);
-        if (completedMin > 0) {
-            String taskId = currentPomodoroTask != null ? currentPomodoroTask.getId() : "";
-            String tag = currentPomodoroTask != null ? currentPomodoroTask.getTag() : "";
-            PomodoroSession session = new PomodoroSession(UUID.randomUUID().toString(), taskId, tag, currentPomodoroMode, (int)durationMin, (int)completedMin, pomodoroSessionStartMillis, System.currentTimeMillis(), pomodoroRemainingMillis == 0, isMuted ? "none" : pomodoroSoundRawName());
-            repository.savePomodoroSession(session);
-            if (POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) {
-                repository.addFocusSession((int)completedMin);
-            }
-        }
-        
-        if (pomodoroRemainingMillis == 0) {
-            sendPomodoroNotification("Hết giờ!", POMODORO_MODE_FOCUS.equals(currentPomodoroMode) ? "Bạn đã hoàn thành phiên tập trung. Nghỉ ngơi nhé!" : "Hết giờ nghỉ, quay lại học thôi!");
-        }
-
-        if (POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) {
-            pomodoroCycleCount++;
-            if (pomodoroCycleCount > 0 && pomodoroCycleCount % 4 == 0) {
-                currentPomodoroMode = POMODORO_MODE_LONG_BREAK;
-                pomodoroRemainingMillis = 15L * 60L * 1000L;
-                showPomodoroTransitionDialog("Bạn đã hoàn thành 4 phiên!", "Tuyệt vời! Bạn nên nghỉ dài 15 phút trước khi tiếp tục.", 15);
-            } else {
-                currentPomodoroMode = POMODORO_MODE_SHORT_BREAK;
-                pomodoroRemainingMillis = 5L * 60L * 1000L;
-                showPomodoroTransitionDialog("Hoàn thành phiên tập trung!", "Bạn đã học tập trung. Nghỉ 5 phút để lấy lại năng lượng nhé.", 5);
-            }
-        } else {
-            currentPomodoroMode = POMODORO_MODE_FOCUS;
-            pomodoroRemainingMillis = 25L * 60L * 1000L;
-            showPomodoroTransitionDialog("Hết giờ nghỉ", "Quay lại học thôi!", 25);
-        }
-        pomodoroSessionStartMillis = 0;
-        updatePomodoroUi(timer, textStartPause, layoutActions, t1, t2, t3, t4);
-    }
-
-    private void skipPomodoroSession(TextView timer, TextView textStartPause, View layoutActions, ImageView t1, ImageView t2, ImageView t3, ImageView t4) {
-        pausePomodoro();
-        pomodoroSessionStartMillis = 0;
-        if (POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) {
-            currentPomodoroMode = POMODORO_MODE_SHORT_BREAK;
-            pomodoroRemainingMillis = 5L * 60L * 1000L;
-            updatePomodoroUi(timer, textStartPause, layoutActions, t1, t2, t3, t4);
-            showPomodoroTransitionDialog("Đã bỏ qua phiên tập trung", "Phiên này không được tính vào thống kê. Bạn có thể nghỉ ngắn 5 phút rồi quay lại.", 5);
-        } else {
-            currentPomodoroMode = POMODORO_MODE_FOCUS;
-            pomodoroRemainingMillis = 25L * 60L * 1000L;
-            updatePomodoroUi(timer, textStartPause, layoutActions, t1, t2, t3, t4);
-            showPomodoroTransitionDialog("Đã bỏ qua giờ nghỉ", "Quay lại phiên tập trung 25 phút.", 25);
-        }
-    }
-
-    private void showPomodoroTransitionDialog(String title, String message, int nextDuration) {
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(nextDuration == 25 ? "Bắt đầu học" : "Bắt đầu nghỉ", (d, w) -> {
-                showPomodoro();
-                View screen = contentFrame.getChildAt(0);
-                if (screen != null && screen.findViewById(R.id.btnStartPause) != null) {
-                    screen.findViewById(R.id.btnStartPause).performClick();
-                }
-            })
-            .setNegativeButton("Dừng lại", (d, w) -> {
-                resetPomodoro();
-                showPomodoro();
-            })
-            .show();
-    }
-    
-    private void showTaskSelectionDialog(TextView modeText) {
-        java.util.List<StudyTask> tasks = repository.getTasks();
-        java.util.List<StudyTask> pending = new java.util.ArrayList<>();
-        for (StudyTask t : tasks) {
-            if (!t.isCompleted()) pending.add(t);
-        }
-        if (pending.isEmpty()) {
-            toast("Không có công việc nào đang mở");
-            return;
-        }
-        String[] titles = new String[pending.size() + 1];
-        titles[0] = "Không chọn công việc (Tự do)";
-        for (int i=0; i<pending.size(); i++) titles[i+1] = pending.get(i).getTitle();
-        
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Chọn công việc")
-            .setItems(titles, (d, w) -> {
-                if (w == 0) {
-                    currentPomodoroTask = null;
-                    modeText.setText(POMODORO_MODE_FOCUS.equals(currentPomodoroMode) ? "Tập trung tự do" : "Đang nghỉ ngơi");
-                } else {
-                    currentPomodoroTask = pending.get(w - 1);
-                    modeText.setText(currentPomodoroTask.getTitle());
-                }
-            }).show();
-    }
-    
-    private void playWhiteNoise() {
-        if (backgroundAudioPlayer == null) {
-            try {
-                int resId = getResources().getIdentifier(pomodoroSoundRawName(), "raw", getPackageName());
-                if (resId != 0) {
-                    backgroundAudioPlayer = MediaPlayer.create(this, resId);
-                    if (backgroundAudioPlayer != null) {
-                        backgroundAudioPlayer.setLooping(true);
-                        backgroundAudioPlayer.setVolume(pomodoroSoundVolume, pomodoroSoundVolume);
-                        backgroundAudioPlayer.start();
-                    }
-                } else {
-                    startGeneratedWhiteNoise();
-                }
-            } catch (Exception e) {}
-        } else if (!backgroundAudioPlayer.isPlaying()) {
-            backgroundAudioPlayer.setVolume(pomodoroSoundVolume, pomodoroSoundVolume);
-            backgroundAudioPlayer.start();
-        }
-    }
-    
-    private void pauseWhiteNoise() {
-        if (backgroundAudioPlayer != null && backgroundAudioPlayer.isPlaying()) {
-            backgroundAudioPlayer.pause();
-        }
-        stopGeneratedWhiteNoise();
-    }
-    
-    private void stopWhiteNoise() {
-        if (backgroundAudioPlayer != null) {
-            backgroundAudioPlayer.stop();
-            backgroundAudioPlayer.release();
-            backgroundAudioPlayer = null;
-        }
-        stopGeneratedWhiteNoise();
-    }
-
-    private void startGeneratedWhiteNoise() {
-        if (generatedNoisePlaying) {
-            return;
-        }
-        generatedNoisePlaying = true;
-        int sampleRate = 22050;
-        int minBuffer = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        int bufferSize = Math.max(minBuffer, sampleRate / 2);
-        whiteNoiseTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            whiteNoiseTrack.setVolume(pomodoroSoundVolume);
-        } else {
-            whiteNoiseTrack.setStereoVolume(pomodoroSoundVolume, pomodoroSoundVolume);
-        }
-        whiteNoiseTrack.play();
-        whiteNoiseThread = new Thread(() -> {
-            Random random = new Random();
-            short[] buffer = new short[1024];
-            int smooth = 0;
-            while (generatedNoisePlaying && whiteNoiseTrack != null) {
-                for (int i = 0; i < buffer.length; i++) {
-                    int raw = random.nextInt(Short.MAX_VALUE) - (Short.MAX_VALUE / 2);
-                    if ("tiếng thư viện".equals(pomodoroSoundName)) {
-                        smooth = (smooth * 7 + raw) / 8;
-                        buffer[i] = (short) (smooth * 0.45f);
-                    } else if ("tiếng sóng".equals(pomodoroSoundName)) {
-                        smooth = (smooth * 3 + raw) / 4;
-                        buffer[i] = (short) (smooth * 0.35f + random.nextInt(900));
-                    } else {
-                        buffer[i] = (short) (raw * 0.28f);
-                    }
-                }
-                try {
-                    whiteNoiseTrack.write(buffer, 0, buffer.length);
-                } catch (Exception ignored) {
-                    generatedNoisePlaying = false;
-                }
-            }
-        });
-        whiteNoiseThread.start();
-    }
-
-    private void stopGeneratedWhiteNoise() {
-        generatedNoisePlaying = false;
-        if (whiteNoiseThread != null) {
-            whiteNoiseThread.interrupt();
-            whiteNoiseThread = null;
-        }
-        if (whiteNoiseTrack != null) {
-            try {
-                whiteNoiseTrack.stop();
-            } catch (IllegalStateException ignored) {
-            }
-            whiteNoiseTrack.release();
-            whiteNoiseTrack = null;
-        }
-    }
-    
-    private void showPomodoroSettings() {
-        toast("Settings: Có thể điều chỉnh trong bản cập nhật sau.");
-    }
-
-    private void showPomodoroSoundPanel() {
-        Dialog dialog = new Dialog(this);
-        LinearLayout content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(24), dp(14), dp(24), dp(24));
-        GradientDrawable panelBg = new GradientDrawable();
-        panelBg.setColor(Color.parseColor("#F7F7F7"));
-        panelBg.setCornerRadii(new float[]{dp(22), dp(22), dp(22), dp(22), 0, 0, 0, 0});
-        content.setBackground(panelBg);
-
-        View handle = new View(this);
-        LinearLayout.LayoutParams handleParams = new LinearLayout.LayoutParams(dp(60), dp(6));
-        handleParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
-        handleParams.setMargins(0, 0, 0, dp(24));
-        handle.setLayoutParams(handleParams);
-        GradientDrawable handleBg = new GradientDrawable();
-        handleBg.setColor(Color.parseColor("#D8D8D8"));
-        handleBg.setCornerRadius(dp(6));
-        handle.setBackground(handleBg);
-        content.addView(handle);
-
-        LinearLayout header = new LinearLayout(this);
-        header.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        TextView title = new TextView(this);
-        title.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        title.setText("Tập trung vào âm thanh");
-        title.setTextColor(getColor(R.color.ink));
-        title.setTextSize(21f);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
-        Switch soundSwitch = new Switch(this);
-        soundSwitch.setChecked(!isMuted);
-        header.addView(title);
-        header.addView(soundSwitch);
-        content.addView(header);
-
-        TextView nowPlaying = soundCard(pomodoroSoundName, isMuted ? "Đang tắt âm thanh" : pomodoroSoundSubtitle(pomodoroSoundName));
-        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(90));
-        cardParams.setMargins(0, dp(22), 0, dp(22));
-        nowPlaying.setLayoutParams(cardParams);
-        content.addView(nowPlaying);
-
-        TextView volumeLabel = soundSectionLabel("Âm lượng");
-        content.addView(volumeLabel);
-
-        LinearLayout volumeBox = new LinearLayout(this);
-        volumeBox.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        volumeBox.setOrientation(LinearLayout.HORIZONTAL);
-        volumeBox.setPadding(dp(18), 0, dp(18), 0);
-        GradientDrawable volumeBg = new GradientDrawable();
-        volumeBg.setColor(Color.WHITE);
-        volumeBg.setCornerRadius(dp(14));
-        volumeBox.setBackground(volumeBg);
-        LinearLayout.LayoutParams volumeParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(74));
-        volumeParams.setMargins(0, dp(10), 0, dp(24));
-        volumeBox.setLayoutParams(volumeParams);
-
-        TextView low = new TextView(this);
-        low.setText(isMuted ? "🔇" : "🔈");
-        low.setTextSize(22f);
-        low.setGravity(android.view.Gravity.CENTER);
-        volumeBox.addView(low, new LinearLayout.LayoutParams(dp(34), ViewGroup.LayoutParams.MATCH_PARENT));
-
-        SeekBar volume = new SeekBar(this);
-        volume.setMax(100);
-        volume.setProgress(Math.round(pomodoroSoundVolume * 100f));
-        LinearLayout.LayoutParams seekParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        seekParams.setMargins(dp(12), 0, dp(12), 0);
-        volumeBox.addView(volume, seekParams);
-
-        TextView high = new TextView(this);
-        high.setText("🔊");
-        high.setTextSize(22f);
-        high.setGravity(android.view.Gravity.CENTER);
-        volumeBox.addView(high, new LinearLayout.LayoutParams(dp(34), ViewGroup.LayoutParams.MATCH_PARENT));
-        content.addView(volumeBox);
-
-        TextView playlistLabel = soundSectionLabel("Danh sách phát");
-        content.addView(playlistLabel);
-        content.addView(soundChoiceRow("tiếng mưa", "Mưa nhẹ để giữ nhịp tập trung", dialog));
-        content.addView(soundChoiceRow("tiếng sóng", "Sóng biển đều và thư giãn", dialog));
-        content.addView(soundChoiceRow("tiếng củi cháy", "Âm lửa nhỏ ấm và chậm", dialog));
-        content.addView(soundChoiceRow("tiếng rừng ban đêm", "Nền rừng dịu cho buổi tối", dialog));
-        content.addView(soundChoiceRow("tiếng thư viện", "Không gian yên tĩnh khi học", dialog));
-
-        soundSwitch.setOnCheckedChangeListener((buttonView, checked) -> {
-            isMuted = !checked;
-            nowPlaying.setText(soundCardText(pomodoroSoundName, isMuted ? "Đang tắt âm thanh" : pomodoroSoundSubtitle(pomodoroSoundName)));
-            low.setText(isMuted ? "🔇" : "🔈");
-            if (isMuted) {
-                pauseWhiteNoise();
-            } else if (pomodoroRunning && POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) {
-                playWhiteNoise();
-            }
-        });
-        volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                pomodoroSoundVolume = Math.max(0f, progress / 100f);
-                if (backgroundAudioPlayer != null) {
-                    backgroundAudioPlayer.setVolume(pomodoroSoundVolume, pomodoroSoundVolume);
-                }
-                if (whiteNoiseTrack != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        whiteNoiseTrack.setVolume(pomodoroSoundVolume);
-                    } else {
-                        whiteNoiseTrack.setStereoVolume(pomodoroSoundVolume, pomodoroSoundVolume);
-                    }
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
-        dialog.setContentView(content);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-        }
-        dialog.setOnShowListener(d -> {
-            android.view.Window window = dialog.getWindow();
-            if (window != null) {
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                window.setGravity(android.view.Gravity.BOTTOM);
-                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-            }
-        });
-        dialog.show();
-    }
-
-    private TextView soundSectionLabel(String text) {
-        TextView label = new TextView(this);
-        label.setText(text);
-        label.setTextColor(getColor(R.color.ink));
-        label.setTextSize(20f);
-        label.setTypeface(null, android.graphics.Typeface.BOLD);
-        return label;
-    }
-
-    private String pomodoroSoundRawName() {
-        if ("tiếng sóng".equals(pomodoroSoundName)) {
-            return "song_bien";
-        }
-        if ("tiếng củi cháy".equals(pomodoroSoundName)) {
-            return "tieng_cui";
-        }
-        if ("tiếng rừng ban đêm".equals(pomodoroSoundName)) {
-            return "night_forest";
-        }
-        if ("tiếng thư viện".equals(pomodoroSoundName)) {
-            return "tieng_sach";
-        }
-        return "tieng_mua";
-    }
-
-    private String pomodoroSoundSubtitle(String name) {
-        if ("tiếng sóng".equals(name)) {
-            return "Sóng biển";
-        }
-        if ("tiếng củi cháy".equals(name)) {
-            return "Lửa trại";
-        }
-        if ("tiếng rừng ban đêm".equals(name)) {
-            return "Rừng đêm";
-        }
-        if ("tiếng thư viện".equals(name)) {
-            return "Thư viện";
-        }
-        return "Danh sách phát";
-    }
-
-    private String pomodoroSoundIcon(String name) {
-        if ("tiếng sóng".equals(name)) {
-            return "≈";
-        }
-        if ("tiếng củi cháy".equals(name)) {
-            return "♨";
-        }
-        if ("tiếng rừng ban đêm".equals(name)) {
-            return "☾";
-        }
-        if ("tiếng thư viện".equals(name)) {
-            return "▤";
-        }
-        return "☔";
-    }
-
-    private TextView soundCard(String name, String subtitle) {
-        TextView view = new TextView(this);
-        view.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        view.setPadding(dp(18), 0, dp(16), 0);
-        view.setText(soundCardText(name, subtitle));
-        view.setTextColor(getColor(R.color.ink));
-        view.setTextSize(16f);
-        view.setTypeface(null, android.graphics.Typeface.BOLD);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(Color.parseColor("#FFFDEB"));
-        bg.setStroke(dp(2), getColor(R.color.ink));
-        bg.setCornerRadius(dp(8));
-        view.setBackground(bg);
-        return view;
-    }
-
-    private String soundCardText(String name, String subtitle) {
-        return pomodoroSoundIcon(name) + "   " + name + "\n     " + subtitle + "                         ▶";
-    }
-
-    private TextView soundChoiceRow(String name, String subtitle, Dialog dialog) {
-        TextView row = new TextView(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(70));
-        params.setMargins(0, dp(10), 0, 0);
-        row.setLayoutParams(params);
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(18), 0, dp(18), 0);
-        row.setText((pomodoroSoundName.equals(name) ? "●  " : "○  ") + pomodoroSoundIcon(name) + "  " + name + "\n   " + subtitle + "                                      ⋯");
-        row.setTextColor(getColor(R.color.ink));
-        row.setTextSize(15f);
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(Color.WHITE);
-        bg.setCornerRadius(dp(14));
-        row.setBackground(bg);
-        row.setOnClickListener(v -> {
-            pomodoroSoundName = name;
-            if (!isMuted && pomodoroRunning && POMODORO_MODE_FOCUS.equals(currentPomodoroMode)) {
-                stopWhiteNoise();
-                playWhiteNoise();
-            }
-            toast("Đã chọn " + name);
-            dialog.dismiss();
-        });
-        return row;
-    }
-    
-    private void showPomodoroHistory() {
-        List<PomodoroSession> sessions = repository.getRecentPomodoroSessions(12);
-        if (sessions.isEmpty()) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Lịch sử Pomodoro")
-                    .setMessage("Chưa có phiên Pomodoro nào. Hãy bắt đầu một phiên tập trung để ghi nhận lịch sử.")
-                    .setPositiveButton("Đã hiểu", null)
-                    .show();
-            return;
-        }
-        StringBuilder builder = new StringBuilder();
-        builder.append("Hôm nay: ")
-                .append(repository.getTodayFocusMinutes())
-                .append(" phút • ")
-                .append(repository.getTodayFocusSessions())
-                .append(" phiên\n\n");
-        for (PomodoroSession session : sessions) {
-            builder.append("- ")
-                    .append(pomodoroModeLabel(session.getMode()))
-                    .append(" • ")
-                    .append(session.getCompletedMinutes())
-                    .append("/")
-                    .append(session.getDurationMinutes())
-                    .append(" phút");
-            if (!TextUtils.isEmpty(session.getSubjectTag())) {
-                builder.append(" • ").append(session.getSubjectTag());
-            }
-            builder.append(" • ")
-                    .append(DateTimeUtils.formatDateTime(session.getStartedAt()))
-                    .append(session.isCompleted() ? " • xong" : " • dở dang")
-                    .append("\n");
-        }
-        new AlertDialog.Builder(this)
-                .setTitle("Lịch sử Pomodoro")
-                .setMessage(builder.toString().trim())
-                .setPositiveButton("Đóng", null)
-                .show();
-    }
-
-    private String pomodoroModeLabel(String mode) {
-        if (POMODORO_MODE_SHORT_BREAK.equals(mode)) {
-            return "Nghỉ ngắn";
-        }
-        if (POMODORO_MODE_LONG_BREAK.equals(mode)) {
-            return "Nghỉ dài";
-        }
-        return "Tập trung";
-    }
-    
-    private void sendPomodoroNotification(String title, String message) {
-        if (!hasNotificationPermission()) {
-            requestNotificationPermissionOnce();
-            return;
-        }
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        String channelId = "pomodoro_channel";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId, "Pomodoro Alerts", NotificationManager.IMPORTANCE_HIGH);
-            notificationManager.createNotificationChannel(channel);
-        }
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_tomato_active)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-        notificationManager.notify(1, builder.build());
     }
 
     private void showStats() {
@@ -2330,17 +654,7 @@ public class MainActivity extends AppCompatActivity {
         sync.setOnCheckedChangeListener((buttonView, isChecked) -> repository.setSyncEnabled(isChecked));
         screen.findViewById(R.id.btnEditProfile).setOnClickListener(v -> showProfileDialog());
         screen.findViewById(R.id.btnPersonalize).setOnClickListener(v -> showPersonalizationDialog());
-        screen.findViewById(R.id.btnLogout).setOnClickListener(v -> {
-            authRepository.logout();
-            firebaseAuth.signOut();
-            if (googleSignInClient != null) {
-                googleSignInClient.signOut();
-            }
-            repository.setLoggedIn(false);
-            repository = new StudyRepository(this);
-            resetPomodoro();
-            showLogin();
-        });
+        screen.findViewById(R.id.btnLogout).setOnClickListener(v -> authController.logout());
     }
 
     private void showTaskDialog(StudyTask editingTask, Runnable onSaved) {
@@ -2352,7 +666,7 @@ public class MainActivity extends AppCompatActivity {
             title.setSelection(title.getText().length());
         }
 
-        StudyFormDialog formDialog = createStudyFormDialog(
+        StudyFormDialog formDialog = dialogFactory.createStudyFormDialog(
                 editingTask == null ? "Thêm việc cần làm" : "Sửa việc cần làm",
                 dialogView,
                 "Lưu");
@@ -2384,8 +698,8 @@ public class MainActivity extends AppCompatActivity {
                 task.setMarkerValue("");
             }
             repository.saveTask(task);
-            cancelTaskReminder(task);
-            syncTaskCalendarEvent(task);
+            reminderScheduler.cancelTaskReminder(task);
+            reminderScheduler.syncTaskCalendarEvent(task);
             dialog.dismiss();
             onSaved.run();
         });
@@ -2393,12 +707,12 @@ public class MainActivity extends AppCompatActivity {
         title.requestFocus();
     }
 
-    private void showEventDialog(StudyEvent editingEvent, Runnable onSaved) {
+    void showEventDialog(StudyEvent editingEvent, Runnable onSaved) {
         long defaultStart = editingEvent == null ? DateTimeUtils.daysFromNow(1, 9, 30) : editingEvent.getStartAt();
         showEventDialog(editingEvent, onSaved, defaultStart);
     }
 
-    private void showEventDialog(StudyEvent editingEvent, Runnable onSaved, long preferredStartAt) {
+    void showEventDialog(StudyEvent editingEvent, Runnable onSaved, long preferredStartAt) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_event, null);
         EditText title = dialogView.findViewById(R.id.inputTitle);
         EditText date = dialogView.findViewById(R.id.inputDate);
@@ -2409,8 +723,8 @@ public class MainActivity extends AppCompatActivity {
         CheckBox reminder = dialogView.findViewById(R.id.checkReminder);
         Spinner type = dialogView.findViewById(R.id.spinnerType);
         Spinner reminderBefore = dialogView.findViewById(R.id.spinnerReminderBefore);
-        type.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, EVENT_TYPE_LABELS));
-        reminderBefore.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, REMINDER_LABELS));
+        type.setAdapter(studySpinnerAdapter(EVENT_TYPE_LABELS));
+        reminderBefore.setAdapter(studySpinnerAdapter(REMINDER_LABELS));
 
         long defaultStart = preferredStartAt > 0 ? preferredStartAt : DateTimeUtils.daysFromNow(1, 9, 30);
         long defaultEnd = defaultStart + 60L * 60L * 1000L;
@@ -2440,7 +754,7 @@ public class MainActivity extends AppCompatActivity {
         start.setOnClickListener(v -> pickTime(start));
         end.setOnClickListener(v -> pickTime(end));
 
-        StudyFormDialog formDialog = createStudyFormDialog(
+        StudyFormDialog formDialog = dialogFactory.createStudyFormDialog(
                 editingEvent == null ? "Thêm lịch / sự kiện" : "Sửa sự kiện",
                 dialogView,
                 "Lưu");
@@ -2482,14 +796,14 @@ public class MainActivity extends AppCompatActivity {
             if (!conflicts.isEmpty()) {
                 showConflictBeforeSave(event, conflicts, () -> {
                     repository.saveEvent(event);
-                    scheduleEventReminder(event);
+                    reminderScheduler.scheduleEventReminder(event);
                     dialog.dismiss();
                     onSaved.run();
                 });
                 return;
             }
             repository.saveEvent(event);
-            scheduleEventReminder(event);
+            reminderScheduler.scheduleEventReminder(event);
             dialog.dismiss();
             onSaved.run();
         });
@@ -2535,7 +849,7 @@ public class MainActivity extends AppCompatActivity {
         email.setText(profile.getEmail());
         goal.setText(profile.getGoal());
 
-        StudyFormDialog formDialog = createStudyFormDialog("Sửa hồ sơ", dialogView, "Lưu");
+        StudyFormDialog formDialog = dialogFactory.createStudyFormDialog("Sửa hồ sơ", dialogView, "Lưu");
         Dialog dialog = formDialog.dialog;
         formDialog.positive.setOnClickListener(v -> {
             if (isBlank(name) || isBlank(email)) {
@@ -2567,7 +881,7 @@ public class MainActivity extends AppCompatActivity {
         bindSpinner(theme, THEME_COLORS, repository.getThemeColorChoice());
         status.setText(repository.getStudyStatus());
 
-        StudyFormDialog formDialog = createStudyFormDialog("Cá nhân hóa", dialogView, "Lưu");
+        StudyFormDialog formDialog = dialogFactory.createStudyFormDialog("Cá nhân hóa", dialogView, "Lưu");
         Dialog dialog = formDialog.dialog;
         formDialog.positive.setOnClickListener(v -> {
             String studyStatus = textOf(status);
@@ -2602,16 +916,16 @@ public class MainActivity extends AppCompatActivity {
                     } else if (which == 1) {
                         task.setCompleted(!task.isCompleted());
                         repository.saveTask(task);
-                        scheduleTaskReminder(task);
-                        syncTaskCalendarEvent(task);
+                        reminderScheduler.scheduleTaskReminder(task);
+                        reminderScheduler.syncTaskCalendarEvent(task);
                         if (task.isCompleted()) {
-                            toast(encouragementMessage("task"));
+                            toast(encouragementMessage(repository.getMascotChoice(), "task"));
                         }
                         onChanged.run();
                     } else {
                         confirmDelete("Xóa công việc?", task.getTitle(), () -> {
-                            deleteTaskAndLinkedCalendar(task);
-                            cancelTaskReminder(task);
+                            reminderScheduler.deleteTaskAndLinkedCalendar(task);
+                            reminderScheduler.cancelTaskReminder(task);
                             onChanged.run();
                         });
                     }
@@ -2619,7 +933,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showEventActions(StudyEvent event) {
+    void showEventActions(StudyEvent event) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_event_detail, null);
         boolean hasOnlineLink = isWebUrl(event.getRoom());
 
@@ -2659,7 +973,7 @@ public class MainActivity extends AppCompatActivity {
         openLink.setOnClickListener(v -> openUrl(event.getRoom()));
         dialogView.findViewById(R.id.btnEditEvent).setOnClickListener(v -> {
             dialog.dismiss();
-            showEventDialog(event, () -> showSchedule(scheduleFilter));
+            showEventDialog(event, () -> scheduleController.showCurrent());
         });
         dialogView.findViewById(R.id.btnDeleteEvent).setOnClickListener(v -> {
             dialog.dismiss();
@@ -2685,14 +999,14 @@ public class MainActivity extends AppCompatActivity {
                     if (!TextUtils.isEmpty(event.getSourceTaskId())) {
                         repository.setTaskCalendarVisibility(event.getSourceTaskId(), false);
                     }
-                    cancelEventReminder(event);
+                    reminderScheduler.cancelEventReminder(event);
                     toast("Đã xóa lịch");
-                    showSchedule(scheduleFilter);
+                    scheduleController.showCurrent();
                 })
                 .show();
     }
 
-    private void showMoveEventConfirmation(StudyEvent event, long newStartAt) {
+    void showMoveEventConfirmation(StudyEvent event, long newStartAt) {
         long duration = Math.max(30L * 60L * 1000L, event.getEndAt() - event.getStartAt());
         StudyEvent moved = new StudyEvent(
                 event.getId(),
@@ -2713,8 +1027,8 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("Hủy", null)
                 .setPositiveButton("Cập nhật", (dialog, which) -> {
                     repository.saveEvent(moved);
-                    scheduleEventReminder(moved);
-                    showSchedule(scheduleFilter);
+                    reminderScheduler.scheduleEventReminder(moved);
+                    scheduleController.showCurrent();
                 })
                 .show();
     }
@@ -2765,7 +1079,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void confirmDelete(String title, String message, Runnable onConfirm) {
+    void confirmDelete(String title, String message, Runnable onConfirm) {
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
@@ -2774,7 +1088,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showImageImportOptions() {
+    void showImageImportOptions() {
         String[] actions = {"Chụp ảnh", "Tải ảnh từ máy"};
         new AlertDialog.Builder(this)
                 .setTitle("Tạo lịch tự động")
@@ -2879,11 +1193,8 @@ public class MainActivity extends AppCompatActivity {
                     for (StudyEvent event : events) {
                         repository.saveEvent(event);
                     }
-                    scheduleWeekStartMillis = CALENDAR_WEEK.equals(scheduleViewMode)
-                            ? DateTimeUtils.startOfWeek(events.get(0).getStartAt())
-                            : DateTimeUtils.startOfDay(events.get(0).getStartAt());
                     toast("Đã tạo " + events.size() + " lịch từ ảnh");
-                    showSchedule("Tất cả");
+                    scheduleController.showAllAround(events.get(0).getStartAt());
                 })
                 .show();
     }
@@ -2947,10 +1258,10 @@ public class MainActivity extends AppCompatActivity {
             }
             task.setCompleted(isChecked);
             repository.saveTask(task);
-            scheduleTaskReminder(task);
-            syncTaskCalendarEvent(task);
+            reminderScheduler.scheduleTaskReminder(task);
+            reminderScheduler.syncTaskCalendarEvent(task);
             if (isChecked) {
-                toast(encouragementMessage("task"));
+                toast(encouragementMessage(repository.getMascotChoice(), "task"));
             }
             if (onChanged != null) {
                 onChanged.run();
@@ -2959,10 +1270,10 @@ public class MainActivity extends AppCompatActivity {
         actionDone.setOnClickListener(v -> {
             task.setCompleted(!task.isCompleted());
             repository.saveTask(task);
-            scheduleTaskReminder(task);
-            syncTaskCalendarEvent(task);
+            reminderScheduler.scheduleTaskReminder(task);
+            reminderScheduler.syncTaskCalendarEvent(task);
             if (task.isCompleted()) {
-                toast(encouragementMessage("task"));
+                toast(encouragementMessage(repository.getMascotChoice(), "task"));
             }
             if (onChanged != null) {
                 onChanged.run();
@@ -2977,8 +1288,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         actionDelete.setOnClickListener(v -> confirmDelete("Xóa công việc?", task.getTitle(), () -> {
-            deleteTaskAndLinkedCalendar(task);
-            cancelTaskReminder(task);
+            reminderScheduler.deleteTaskAndLinkedCalendar(task);
+            reminderScheduler.cancelTaskReminder(task);
             if (onChanged != null) {
                 onChanged.run();
             }
@@ -3172,7 +1483,7 @@ public class MainActivity extends AppCompatActivity {
         return getColor(R.color.accent_blue);
     }
 
-    private View createEventRow(StudyEvent event, ViewGroup parent) {
+    View createEventRow(StudyEvent event, ViewGroup parent) {
         View row = LayoutInflater.from(this).inflate(R.layout.item_event, parent, false);
         row.setBackgroundResource(eventBackground(event.getType()));
         setText(row, R.id.textTitle, event.getTitle());
@@ -3251,18 +1562,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static class StudyFormDialog {
-        final Dialog dialog;
-        final TextView positive;
-        final TextView negative;
-
-        StudyFormDialog(Dialog dialog, TextView positive, TextView negative) {
-            this.dialog = dialog;
-            this.positive = positive;
-            this.negative = negative;
-        }
-    }
-
     private String normalizeUrl(String url) {
         if (url == null) {
             return "";
@@ -3332,7 +1631,7 @@ public class MainActivity extends AppCompatActivity {
         return "Không khẩn cấp";
     }
 
-    private TextView emptyState(String message) {
+    TextView emptyState(String message) {
         TextView view = new TextView(this);
         view.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(120)));
         view.setGravity(android.view.Gravity.CENTER);
@@ -3342,7 +1641,7 @@ public class MainActivity extends AppCompatActivity {
         return view;
     }
 
-    private void bindFilter(View screen, int id, String value, String active, Runnable action) {
+    void bindFilter(View screen, int id, String value, String active, Runnable action) {
         TextView view = screen.findViewById(id);
         view.setBackgroundResource(value.equals(active) ? R.drawable.bg_selected_pill : R.drawable.bg_outline_pill);
         view.setOnClickListener(v -> action.run());
@@ -3350,11 +1649,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void pickDateTime(EditText target) {
         Calendar calendar = Calendar.getInstance();
-        DatePickerDialog datePicker = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+        DatePickerDialog datePicker = new DatePickerDialog(this, R.style.StudyPickerDialog, (view, year, month, dayOfMonth) -> {
             calendar.set(Calendar.YEAR, year);
             calendar.set(Calendar.MONTH, month);
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-            TimePickerDialog timePicker = new TimePickerDialog(this, (timeView, hourOfDay, minute) -> {
+            TimePickerDialog timePicker = new TimePickerDialog(this, R.style.StudyPickerDialog, (timeView, hourOfDay, minute) -> {
                 calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 calendar.set(Calendar.MINUTE, minute);
                 target.setText(DateTimeUtils.formatDateTime(calendar.getTimeInMillis()));
@@ -3364,9 +1663,9 @@ public class MainActivity extends AppCompatActivity {
         datePicker.show();
     }
 
-    private void pickDate(EditText target) {
+    void pickDate(EditText target) {
         Calendar calendar = Calendar.getInstance();
-        new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+        new DatePickerDialog(this, R.style.StudyPickerDialog, (view, year, month, dayOfMonth) -> {
             calendar.set(Calendar.YEAR, year);
             calendar.set(Calendar.MONTH, month);
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -3376,7 +1675,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void pickTime(EditText target) {
         Calendar calendar = Calendar.getInstance();
-        new TimePickerDialog(this, (view, hourOfDay, minute) -> target.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
+        new TimePickerDialog(this, R.style.StudyPickerDialog, (view, hourOfDay, minute) -> target.setText(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
     }
 
     private void fillEventTimeInputs(EditText date, EditText start, EditText end, long startAt, long endAt) {
@@ -3405,80 +1704,6 @@ public class MainActivity extends AppCompatActivity {
             return filter.substring(TASK_FILTER_PRIORITY_PREFIX.length()).equals(task.getPriority());
         }
         return true;
-    }
-
-    private String greetingForNow() {
-        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        if (hour >= 5 && hour < 11) {
-            return "Chào buổi sáng";
-        }
-        if (hour >= 11 && hour < 18) {
-            return "Chào buổi chiều";
-        }
-        return "Chào buổi tối";
-    }
-
-    private String dashboardSummary(int todayTotal, int todayCompleted, int todayRemaining) {
-        if (todayTotal == 0) {
-            return "Hôm nay chưa có việc học. Bạn có thể thêm một mục tiêu nhỏ để bắt nhịp.";
-        }
-        if (todayRemaining == 0) {
-            return "Bạn đã hoàn thành toàn bộ việc học hôm nay. Rất gọn gàng.";
-        }
-        return "Hôm nay còn " + todayRemaining + " việc cần xử lý, đã xong " + todayCompleted + "/" + todayTotal + ".";
-    }
-
-    private String initialsOf(String fullName) {
-        if (TextUtils.isEmpty(fullName)) {
-            return "SP";
-        }
-        String[] parts = fullName.trim().split("\\s+");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (part.isEmpty()) {
-                continue;
-            }
-            builder.append(part.substring(0, 1).toUpperCase(Locale.getDefault()));
-            if (builder.length() == 2) {
-                break;
-            }
-        }
-        return builder.length() == 0 ? "SP" : builder.toString();
-    }
-
-    private String avatarMark(String avatarChoice, UserProfile profile) {
-        if ("Chữ viết tắt".equals(avatarChoice)) {
-            return initialsOf(profile.getName());
-        }
-        return mascotMark(avatarChoice);
-    }
-
-    private String mascotMark(String choice) {
-        if ("Mèo học tập".equals(choice)) {
-            return "Mèo";
-        }
-        if ("Quyển sách".equals(choice)) {
-            return "Sách";
-        }
-        if ("Bạn học tập".equals(choice)) {
-            return "Bạn";
-        }
-        return "Robot";
-    }
-
-    private String shortStatus(String status) {
-        if (TextUtils.isEmpty(status)) {
-            return "Học tập";
-        }
-        String value = status.trim();
-        String lower = value.toLowerCase(Locale.getDefault());
-        if (lower.contains("sẵn sàng")) {
-            return "Sẵn sàng";
-        }
-        if (lower.contains("học")) {
-            return "Học tập";
-        }
-        return value.length() <= 10 ? value : value.substring(0, 10).trim();
     }
 
     private int dashboardBackgroundColorRes(String choice) {
@@ -3520,196 +1745,21 @@ public class MainActivity extends AppCompatActivity {
         return R.color.white;
     }
 
-    private String encouragementMessage(String type) {
-        String mascot = mascotMark(repository.getMascotChoice());
-        if ("pomodoro".equals(type)) {
-            return mascot + ": Xong 25 phút rồi, nghỉ một nhịp nhé!";
-        }
-        return mascot + ": Tốt lắm, thêm một việc đã gọn!";
+    private void bindSpinner(Spinner spinner, String[] values, String selected) {
+        spinner.setAdapter(studySpinnerAdapter(values));
+        spinner.setSelection(indexOf(values, selected));
     }
 
-    private void bindSpinner(Spinner spinner, String[] values, String selected) {
-        spinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, values));
-        spinner.setSelection(indexOf(values, selected));
+    private ArrayAdapter<String> studySpinnerAdapter(String[] values) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_spinner_study, values);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dropdown_study);
+        return adapter;
     }
 
     private void tintButton(View root, int id, int backgroundColor, int textColor) {
         MaterialButton button = root.findViewById(id);
         button.setBackgroundTintList(ColorStateList.valueOf(getColor(backgroundColor)));
         button.setTextColor(getColor(textColor));
-    }
-
-    private String deadlineMeta(StudyTask task) {
-        String status = task.getDueAt() < System.currentTimeMillis() ? "Quá hạn" : "Đến hạn";
-        return status + " · " + task.getSubject() + " · " + DateTimeUtils.formatDayLabel(task.getDueAt()) + " " + DateTimeUtils.formatTime(task.getDueAt());
-    }
-
-    private String deadlineEventMeta(StudyEvent event) {
-        String status = event.getStartAt() < System.currentTimeMillis() ? "Quá hạn" : "Đến hạn";
-        String subject = TextUtils.isEmpty(event.getSubject()) ? "Nội dung deadline" : event.getSubject();
-        return status + " · " + subject + " · " + DateTimeUtils.formatDayLabel(event.getStartAt()) + " " + DateTimeUtils.formatTime(event.getStartAt());
-    }
-
-    private String statsSubtitle(int completion, int overdue, int todayFocusMinutes) {
-        if (overdue > 0) {
-            return "Có " + overdue + " việc quá hạn cần xử lý trước.";
-        }
-        if (completion >= 80 && todayFocusMinutes > 0) {
-            return "Tiến độ tốt, bạn đang giữ nhịp học khá ổn.";
-        }
-        if (completion == 0) {
-            return "Bắt đầu bằng một việc nhỏ để thống kê có đà.";
-        }
-        return "Theo dõi việc học, lịch và Pomodoro trong một màn hình.";
-    }
-
-    private String statsInsight(int totalTasks, int overdue, int todayTotal, int todayRemaining, int totalEvents, int todayFocusMinutes) {
-        if (totalTasks == 0 && totalEvents == 0) {
-            return "Gợi ý: thêm lịch học và việc đầu tiên để có thống kê trực quan hơn.";
-        }
-        if (overdue > 0) {
-            return "Ưu tiên hôm nay: xử lý việc quá hạn trước, sau đó quay lại các việc sắp tới.";
-        }
-        if (todayTotal > 0 && todayRemaining == 0) {
-            return "Hôm nay đã xong toàn bộ việc học. Có thể dùng Pomodoro để ôn lại hoặc chuẩn bị bài mới.";
-        }
-        if (todayFocusMinutes == 0) {
-            return "Bạn chưa có phiên Pomodoro hôm nay. Một phiên 25 phút là đủ để bắt nhịp.";
-        }
-        return "Nhịp học đang ổn. Tiếp tục giữ lịch, việc học và Pomodoro cân bằng.";
-    }
-
-    private StudyEvent findNextEvent(List<StudyEvent> events) {
-        long now = System.currentTimeMillis();
-        for (StudyEvent event : events) {
-            if (event.getStartAt() >= now) {
-                return event;
-            }
-        }
-        return null;
-    }
-
-    private StudyTask findNextTask(List<StudyTask> tasks) {
-        for (StudyTask task : tasks) {
-            if (!task.isCompleted() && task.getDueAt() >= System.currentTimeMillis()) {
-                return task;
-            }
-        }
-        return null;
-    }
-
-    private StudyTask findNearestDeadlineTask(List<StudyTask> tasks) {
-        for (StudyTask task : tasks) {
-            if (!task.isCompleted()) {
-                return task;
-            }
-        }
-        return null;
-    }
-
-    private StudyEvent findNearestDeadlineEvent(List<StudyEvent> events) {
-        long now = System.currentTimeMillis();
-        StudyEvent fallbackOverdue = null;
-        for (StudyEvent event : events) {
-            if (!StudyEvent.TYPE_DEADLINE.equals(event.getType())) {
-                continue;
-            }
-            if (!TextUtils.isEmpty(event.getSourceTaskId())) {
-                StudyTask sourceTask = repository.getTask(event.getSourceTaskId());
-                if (sourceTask != null && sourceTask.isCompleted()) {
-                    continue;
-                }
-            }
-            if (event.getStartAt() >= now) {
-                return event;
-            }
-            fallbackOverdue = event;
-        }
-        return fallbackOverdue;
-    }
-
-    private List<StudyTask> topPriorityTasks(List<StudyTask> tasks) {
-        List<StudyTask> result = new ArrayList<>();
-        for (StudyTask task : tasks) {
-            if (!task.isCompleted()) {
-                result.add(task);
-            }
-            if (result.size() == 3) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private int countTodayTasks(List<StudyTask> tasks) {
-        int count = 0;
-        for (StudyTask task : tasks) {
-            if (!task.isCompleted() && DateTimeUtils.isToday(task.getDueAt())) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int countAllTodayTasks(List<StudyTask> tasks) {
-        int count = 0;
-        for (StudyTask task : tasks) {
-            if (DateTimeUtils.isToday(task.getDueAt())) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int countCompletedTodayTasks(List<StudyTask> tasks) {
-        int count = 0;
-        for (StudyTask task : tasks) {
-            if (task.isCompleted() && DateTimeUtils.isToday(task.getDueAt())) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int countCompleted(List<StudyTask> tasks) {
-        int count = 0;
-        for (StudyTask task : tasks) {
-            if (task.isCompleted()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int countOverdue(List<StudyTask> tasks) {
-        int count = 0;
-        long now = System.currentTimeMillis();
-        for (StudyTask task : tasks) {
-            if (!task.isCompleted() && task.getDueAt() < now) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int countPending(List<StudyTask> tasks) {
-        int count = 0;
-        for (StudyTask task : tasks) {
-            if (!task.isCompleted()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int countEventsByType(List<StudyEvent> events, String type) {
-        int count = 0;
-        for (StudyEvent event : events) {
-            if (type.equals(event.getType())) {
-                count++;
-            }
-        }
-        return count;
     }
 
     private List<String> uniqueTaskTags() {
@@ -3721,20 +1771,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return tags;
-    }
-
-    private int percentOf(int value, int total) {
-        if (total <= 0) {
-            return 0;
-        }
-        return Math.round(value * 100f / total);
-    }
-
-    private int completionRate(List<StudyTask> tasks) {
-        if (tasks.isEmpty()) {
-            return 0;
-        }
-        return Math.round(countCompleted(tasks) * 100f / tasks.size());
     }
 
     private int priorityBackground(String priority) {
@@ -3783,130 +1819,12 @@ public class MainActivity extends AppCompatActivity {
         return REMINDER_LABELS[index];
     }
 
-    private void scheduleEventReminder(StudyEvent event) {
-        cancelEventReminder(event);
-        if (!event.isReminderEnabled()) {
-            return;
-        }
-        if (!hasNotificationPermission()) {
-            requestNotificationPermissionOnce();
-            return;
-        }
-        long triggerAt = event.getStartAt() - event.getReminderBeforeMinutes() * 60L * 1000L;
-        if (triggerAt <= System.currentTimeMillis()) {
-            return;
-        }
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pendingIntent = reminderPendingIntent(event, PendingIntent.FLAG_UPDATE_CURRENT);
-        setReminderAlarm(alarmManager, triggerAt, pendingIntent);
-    }
-
-    private void cancelEventReminder(StudyEvent event) {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pendingIntent = reminderPendingIntent(event, PendingIntent.FLAG_NO_CREATE);
-        if (pendingIntent != null) {
-            alarmManager.cancel(pendingIntent);
-        }
-    }
-
-    private PendingIntent reminderPendingIntent(StudyEvent event, int modeFlag) {
-        Intent intent = new Intent(this, EventReminderReceiver.class);
-        intent.putExtra(EventReminderReceiver.EXTRA_EVENT_ID, event.getId());
-        intent.putExtra(EventReminderReceiver.EXTRA_TITLE, event.getTitle());
-        intent.putExtra(EventReminderReceiver.EXTRA_MESSAGE, eventReminderMessage(event));
-        int flags = modeFlag | PendingIntent.FLAG_IMMUTABLE;
-        return PendingIntent.getBroadcast(this, EventReminderReceiver.notificationId(event.getId()), intent, flags);
-    }
-
-    private String eventReminderMessage(StudyEvent event) {
-        String message = eventTypeLabel(event.getType()) + " lúc " + DateTimeUtils.formatTime(event.getStartAt());
-        if (!TextUtils.isEmpty(event.getRoom())) {
-            message += " • " + event.getRoom();
-        }
-        return message;
-    }
-
-    private void scheduleTaskReminder(StudyTask task) {
-        cancelTaskReminder(task);
-        if (task.isCompleted() || task.getReminderTime() <= System.currentTimeMillis()) {
-            return;
-        }
-        if (!hasNotificationPermission()) {
-            requestNotificationPermissionOnce();
-            return;
-        }
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pendingIntent = taskReminderPendingIntent(task, PendingIntent.FLAG_UPDATE_CURRENT);
-        setReminderAlarm(alarmManager, task.getReminderTime(), pendingIntent);
-    }
-
-    private void setReminderAlarm(AlarmManager alarmManager, long triggerAt, PendingIntent pendingIntent) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent);
-            } else {
-                alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent);
-            }
-        } catch (SecurityException exception) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent);
-        }
-    }
-
-    private void cancelTaskReminder(StudyTask task) {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pendingIntent = taskReminderPendingIntent(task, PendingIntent.FLAG_NO_CREATE);
-        if (pendingIntent != null) {
-            alarmManager.cancel(pendingIntent);
-        }
-    }
-
-    private void syncTaskCalendarEvent(StudyTask task) {
-        StudyEvent previous = repository.getEventForTask(task.getId());
-        StudyEvent synced = repository.syncTaskDeadlineEvent(task);
-        if (previous != null && (synced == null || !previous.getId().equals(synced.getId()))) {
-            cancelEventReminder(previous);
-        }
-        if (synced != null) {
-            scheduleEventReminder(synced);
-        }
-    }
-
-    private void deleteTaskAndLinkedCalendar(StudyTask task) {
-        StudyEvent linked = repository.getEventForTask(task.getId());
-        if (linked != null) {
-            cancelEventReminder(linked);
-        }
-        repository.deleteTask(task.getId());
-    }
-
-    private PendingIntent taskReminderPendingIntent(StudyTask task, int modeFlag) {
-        Intent intent = new Intent(this, EventReminderReceiver.class);
-        intent.putExtra(EventReminderReceiver.EXTRA_EVENT_ID, "task_" + task.getId());
-        intent.putExtra(EventReminderReceiver.EXTRA_TITLE, task.getTitle());
-        intent.putExtra(EventReminderReceiver.EXTRA_MESSAGE, "Deadline " + DateTimeUtils.formatDateTime(task.getDueAt()) + " • " + task.getTag());
-        int flags = modeFlag | PendingIntent.FLAG_IMMUTABLE;
-        return PendingIntent.getBroadcast(this, EventReminderReceiver.notificationId("task_" + task.getId()), intent, flags);
-    }
-
-    private void rescheduleAllReminders() {
-        if (!hasNotificationPermission()) {
-            requestNotificationPermissionOnce();
-            return;
-        }
-        for (StudyEvent event : repository.getEvents()) {
-            scheduleEventReminder(event);
-        }
-        for (StudyTask task : repository.getTasks()) {
-            scheduleTaskReminder(task);
-        }
-    }
-
-    private boolean hasNotificationPermission() {
+    boolean hasNotificationPermission() {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
     }
 
-    private void requestNotificationPermissionOnce() {
+    void requestNotificationPermissionOnce() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || notificationPermissionRequestInFlight) {
             return;
         }
@@ -3937,7 +1855,7 @@ public class MainActivity extends AppCompatActivity {
         return TextUtils.isEmpty(editText.getText().toString().trim());
     }
 
-    private String textOf(EditText editText) {
+    String textOf(EditText editText) {
         return editText.getText().toString().trim();
     }
 
@@ -3945,228 +1863,15 @@ public class MainActivity extends AppCompatActivity {
         return !TextUtils.isEmpty(value) && android.util.Patterns.EMAIL_ADDRESS.matcher(value).matches();
     }
 
-    private void setText(View root, int id, String text) {
+    void setText(View root, int id, String text) {
         ((TextView) root.findViewById(id)).setText(text);
     }
 
-    private StudyFormDialog createStudyFormDialog(String titleText, View formView, String positiveText) {
-        Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
-
-        LinearLayout shell = new LinearLayout(this);
-        shell.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        shell.setOrientation(LinearLayout.VERTICAL);
-        shell.setBackgroundColor(getColor(R.color.paper_light));
-        shell.setPadding(dp(16), dp(16), dp(16), dp(14));
-
-        TextView title = new TextView(this);
-        title.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        title.setText(titleText);
-        title.setTextColor(getColor(R.color.ink));
-        title.setTextSize(24f);
-        title.setTypeface(null, android.graphics.Typeface.BOLD);
-        title.setPadding(dp(4), dp(2), dp(4), dp(12));
-        shell.addView(title);
-
-        shell.addView(formView);
-
-        LinearLayout actions = new LinearLayout(this);
-        LinearLayout.LayoutParams actionsParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(48));
-        actionsParams.setMargins(0, dp(12), 0, 0);
-        actions.setLayoutParams(actionsParams);
-        actions.setBaselineAligned(false);
-        actions.setOrientation(LinearLayout.HORIZONTAL);
-
-        TextView negative = dialogActionButton("Hủy", R.drawable.bg_outline_pill, R.color.rose);
-        TextView positive = dialogActionButton(positiveText, R.drawable.bg_selected_pill, R.color.ink);
-        actions.addView(negative);
-        actions.addView(positive);
-        shell.addView(actions);
-
-        dialog.setContentView(shell);
-        dialog.setOnShowListener(shown -> {
-            android.view.Window window = dialog.getWindow();
-            if (window != null) {
-                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            }
-        });
-        negative.setOnClickListener(v -> dialog.dismiss());
-        return new StudyFormDialog(dialog, positive, negative);
-    }
-
-    private TextView dialogActionButton(String text, int backgroundRes, int textColorRes) {
-        TextView button = new TextView(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-        params.setMargins(dp(6), 0, dp(6), 0);
-        button.setLayoutParams(params);
-        button.setBackgroundResource(backgroundRes);
-        button.setGravity(android.view.Gravity.CENTER);
-        button.setText(text);
-        button.setTextColor(getColor(textColorRes));
-        button.setTextSize(15f);
-        button.setTypeface(null, android.graphics.Typeface.BOLD);
-        return button;
-    }
-
-    private void styleStudyDialog(AlertDialog dialog) {
-        if (dialog == null) {
-            return;
-        }
-        android.view.Window window = dialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(getColor(R.color.paper_light)));
-        }
-        setDialogPanelBackground(dialog, "parentPanel");
-        setDialogPanelBackground(dialog, "topPanel");
-        setDialogPanelBackground(dialog, "contentPanel");
-        setDialogPanelBackground(dialog, "customPanel");
-        setDialogPanelBackground(dialog, "buttonPanel");
-
-        TextView title = findAndroidDialogText(dialog, "alertTitle");
-        if (title != null) {
-            title.setTextColor(getColor(R.color.ink));
-        }
-        TextView message = dialog.findViewById(android.R.id.message);
-        if (message != null) {
-            message.setTextColor(getColor(R.color.muted));
-        }
-        styleDialogButton(dialog.getButton(AlertDialog.BUTTON_POSITIVE), R.color.accent_blue);
-        styleDialogButton(dialog.getButton(AlertDialog.BUTTON_NEGATIVE), R.color.rose);
-        styleDialogButton(dialog.getButton(AlertDialog.BUTTON_NEUTRAL), R.color.muted);
-    }
-
-    private void setDialogPanelBackground(AlertDialog dialog, String idName) {
-        int id = getResources().getIdentifier(idName, "id", "android");
-        if (id == 0) {
-            return;
-        }
-        View panel = dialog.findViewById(id);
-        if (panel != null) {
-            panel.setBackgroundColor(getColor(R.color.paper_light));
-        }
-    }
-
-    private TextView findAndroidDialogText(AlertDialog dialog, String idName) {
-        int id = getResources().getIdentifier(idName, "id", "android");
-        if (id == 0) {
-            return null;
-        }
-        return dialog.findViewById(id);
-    }
-
-    private void styleDialogButton(android.widget.Button button, int colorRes) {
-        if (button == null) {
-            return;
-        }
-        button.setTextColor(getColor(colorRes));
-        button.setBackgroundColor(Color.TRANSPARENT);
-    }
-
-    private boolean canEnterWithFirebaseUser(FirebaseUser user) {
-        if (user == null) {
-            return false;
-        }
-        return user.isEmailVerified() || isGoogleUser(user);
-    }
-
-    private boolean isGoogleUser(FirebaseUser user) {
-        for (UserInfo info : user.getProviderData()) {
-            if (GoogleAuthProvider.PROVIDER_ID.equals(info.getProviderId())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void showEmailVerificationRequired(FirebaseUser user) {
-        String email = user == null || TextUtils.isEmpty(user.getEmail()) ? "email của bạn" : user.getEmail();
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Cần xác thực email")
-                .setMessage("Tài khoản " + email + " chưa bấm link xác thực. Hãy mở email từ Firebase rồi đăng nhập lại.")
-                .setNegativeButton("Đã hiểu", null)
-                .setPositiveButton("Gửi lại link", (d, which) -> resendEmailVerification(user))
-                .create();
-        dialog.setOnShowListener(shown -> styleStudyDialog(dialog));
-        dialog.show();
-    }
-
-    private void resendEmailVerification(FirebaseUser user) {
-        if (user == null) {
-            toast("Không tìm thấy tài khoản để gửi lại link");
-            return;
-        }
-        user.sendEmailVerification()
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        toast("Đã gửi lại email xác thực");
-                    } else {
-                        showAuthTaskError(task, "Không gửi lại được email xác thực");
-                    }
-                });
-    }
-
-    private void showAuthTaskError(Task<?> task, String fallback) {
-        String message = task.getException() == null ? fallback : task.getException().getMessage();
-        if (!TextUtils.isEmpty(message)) {
-            String lower = message.toLowerCase(Locale.ROOT);
-            if (lower.contains("operation not allowed")
-                    || lower.contains("operation is not allowed")
-                    || lower.contains("sign-in provider is disabled")
-                    || lower.contains("password sign-in is disabled")
-                    || lower.contains("configuration_not_found")) {
-                message = "Firebase Console chưa bật đăng nhập Email/Password. Vào Authentication > Sign-in method và bật Email/Password.";
-            }
-        }
-        toast(TextUtils.isEmpty(message) ? fallback : message);
-    }
-
-    private void activateStudyRepository(String accountEmail) {
-        if (TextUtils.isEmpty(accountEmail)) {
-            return;
-        }
-        repository = new StudyRepository(this, accountEmail);
-        repository.syncSnapshotToFirebase();
-        rescheduleAllReminders();
-    }
-
-    private void syncProfileFromFirebase(FirebaseUser user) {
-        if (user == null) {
-            return;
-        }
-        UserProfile current = repository.getProfile();
-        String name = TextUtils.isEmpty(user.getDisplayName()) ? firstNameFromEmail(user.getEmail()) : user.getDisplayName();
-        String email = TextUtils.isEmpty(user.getEmail()) ? "google-user@firebase.local" : user.getEmail();
-        repository.saveProfile(new UserProfile(name, email, current.getGoal()));
-    }
-
-    private void syncProfileFromAuthUser(AuthUser user) {
-        if (user == null) {
-            return;
-        }
-        UserProfile current = repository.getProfile();
-        repository.saveProfile(new UserProfile(user.getName(), user.getEmail(), current.getGoal()));
-    }
-
-    private String firstNameFromEmail(String email) {
-        if (TextUtils.isEmpty(email)) {
-            return "Google User";
-        }
-        int at = email.indexOf("@");
-        return at > 0 ? email.substring(0, at) : email;
-    }
-
-    private int dp(int value) {
+    int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    private void toast(String message) {
+    void toast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
