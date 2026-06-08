@@ -382,12 +382,31 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             lastShownAnnouncementId = id;
-            new AlertDialog.Builder(this)
-                    .setTitle(TextUtils.isEmpty(title) ? "Thông báo chung" : title)
-                    .setMessage(TextUtils.isEmpty(body) ? "Bạn có một thông báo mới từ quản trị viên." : body)
-                    .setPositiveButton("Đã đọc", null)
-                    .show();
+            showAdminAnnouncementDialog(title, body);
         }));
+    }
+
+    private void showAdminAnnouncementDialog(String title, String body) {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        View view = getLayoutInflater().inflate(R.layout.dialog_admin_announcement, null);
+        TextView titleView = view.findViewById(R.id.textAnnouncementTitle);
+        TextView bodyView = view.findViewById(R.id.textAnnouncementBody);
+        TextView done = view.findViewById(R.id.btnAnnouncementDone);
+
+        titleView.setText(TextUtils.isEmpty(title) ? "Thông báo chung" : title);
+        bodyView.setText(TextUtils.isEmpty(body) ? "Bạn có một thông báo mới từ quản trị viên." : body);
+        done.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.setContentView(view);
+        dialog.setOnShowListener(shown -> {
+            android.view.Window window = dialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+        });
+        dialog.show();
     }
 
     private void showTasks(String filter) {
@@ -417,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
                 continue;
             }
             Runnable refreshTasks = () -> showTasks(filter);
-            View row = createTaskRow(task, true, taskList, refreshTasks);
+            View row = createTaskRow(task, true, taskList, refreshTasks, shouldRefreshAfterCompletionToggle(filter));
             View foreground = row.findViewById(R.id.taskForeground);
             foreground.setOnClickListener(v -> {
                 if (row instanceof SwipeActionLayout && ((SwipeActionLayout) row).isOpen()) {
@@ -547,7 +566,7 @@ public class MainActivity extends AppCompatActivity {
         Runnable refresh = () -> showTasks(TASK_FILTER_MATRIX);
         for (StudyTask task : tasks) {
             if (task.isImportant() == important && task.isUrgent() == urgent) {
-                taskList.addView(createTaskRow(task, true, taskList, refresh));
+                taskList.addView(createTaskRow(task, true, taskList, refresh, false));
             }
         }
         if (taskList.getChildCount() == before) {
@@ -1231,6 +1250,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View createTaskRow(StudyTask task, boolean interactive, ViewGroup parent, Runnable onChanged) {
+        return createTaskRow(task, interactive, parent, onChanged, true);
+    }
+
+    private View createTaskRow(StudyTask task, boolean interactive, ViewGroup parent, Runnable onChanged, boolean refreshAfterCompletionToggle) {
         View row = LayoutInflater.from(this).inflate(R.layout.item_task, parent, false);
         TextView title = row.findViewById(R.id.textTitle);
         TextView meta = row.findViewById(R.id.textMeta);
@@ -1252,7 +1275,11 @@ public class MainActivity extends AppCompatActivity {
         actionDone.setText(task.isCompleted() ? "Mở lại" : "Xong");
         done.setChecked(task.isCompleted());
         done.setEnabled(interactive);
+        final boolean[] suppressDoneListener = {false};
         done.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (suppressDoneListener[0]) {
+                return;
+            }
             if (!interactive) {
                 return;
             }
@@ -1260,10 +1287,11 @@ public class MainActivity extends AppCompatActivity {
             repository.saveTask(task);
             reminderScheduler.scheduleTaskReminder(task);
             reminderScheduler.syncTaskCalendarEvent(task);
+            applyTaskCompletionState(title, meta, details, marker, actionDone, isChecked);
             if (isChecked) {
                 toast(encouragementMessage(repository.getMascotChoice(), "task"));
             }
-            if (onChanged != null) {
+            if (onChanged != null && refreshAfterCompletionToggle) {
                 onChanged.run();
             }
         });
@@ -1275,7 +1303,11 @@ public class MainActivity extends AppCompatActivity {
             if (task.isCompleted()) {
                 toast(encouragementMessage(repository.getMascotChoice(), "task"));
             }
-            if (onChanged != null) {
+            suppressDoneListener[0] = true;
+            done.setChecked(task.isCompleted());
+            suppressDoneListener[0] = false;
+            applyTaskCompletionState(title, meta, details, marker, actionDone, task.isCompleted());
+            if (onChanged != null && refreshAfterCompletionToggle) {
                 onChanged.run();
             }
         });
@@ -1294,15 +1326,28 @@ public class MainActivity extends AppCompatActivity {
                 onChanged.run();
             }
         }));
-        if (task.isCompleted()) {
-            title.setAlpha(0.55f);
-            meta.setAlpha(0.55f);
-            marker.setAlpha(0.55f);
+        applyTaskCompletionState(title, meta, details, marker, actionDone, task.isCompleted());
+        return row;
+    }
+
+    private boolean shouldRefreshAfterCompletionToggle(String filter) {
+        return TASK_FILTER_SOON.equals(filter)
+                || TASK_FILTER_OVERDUE.equals(filter)
+                || TASK_FILTER_DONE.equals(filter);
+    }
+
+    private void applyTaskCompletionState(TextView title, TextView meta, TextView details, TextView marker, TextView actionDone, boolean completed) {
+        float alpha = completed ? 0.55f : 1f;
+        title.setAlpha(alpha);
+        meta.setAlpha(alpha);
+        details.setAlpha(alpha);
+        marker.setAlpha(alpha);
+        actionDone.setText(completed ? "Mở lại" : "Xong");
+        if (completed) {
             title.setPaintFlags(title.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
         } else {
             title.setPaintFlags(title.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
         }
-        return row;
     }
 
     private void bindTaskMarker(TextView marker, StudyTask task) {

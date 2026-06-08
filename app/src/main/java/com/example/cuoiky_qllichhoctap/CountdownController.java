@@ -158,10 +158,45 @@ class CountdownController {
 
         content.addView(title);
         content.addView(meta);
+
+        LinearLayout actions = new LinearLayout(activity);
+        LinearLayout.LayoutParams actionsParams = new LinearLayout.LayoutParams(activity.dp(58), ViewGroup.LayoutParams.WRAP_CONTENT);
+        actionsParams.setMargins(activity.dp(10), 0, 0, 0);
+        actions.setLayoutParams(actionsParams);
+        actions.setOrientation(LinearLayout.VERTICAL);
+
+        TextView edit = countdownActionButton("Sửa", R.drawable.bg_action_edit, R.color.ink);
+        TextView delete = countdownActionButton("Xóa", R.drawable.bg_action_delete, R.color.rose);
+        LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(36));
+        deleteParams.setMargins(0, activity.dp(6), 0, 0);
+        delete.setLayoutParams(deleteParams);
+
+        edit.setOnClickListener(v -> showCountdownDialog(item.milestone, () -> showCountdown(filter)));
+        delete.setOnClickListener(v -> activity.confirmDelete("Xóa sự kiện đếm ngược?", item.title, () -> {
+            activity.repository.deleteCountdownMilestone(item.milestone.getId());
+            activity.toast("Đã xóa sự kiện đếm ngược");
+            showCountdown(filter);
+        }));
+
+        actions.addView(edit);
+        actions.addView(delete);
         row.addView(badge);
         row.addView(content);
+        row.addView(actions);
         row.setOnClickListener(v -> showCountdownActions(item.milestone, () -> showCountdown(filter)));
         return row;
+    }
+
+    private TextView countdownActionButton(String text, int backgroundRes, int colorRes) {
+        TextView button = new TextView(activity);
+        button.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, activity.dp(36)));
+        button.setBackgroundResource(backgroundRes);
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setText(text);
+        button.setTextColor(activity.getColor(colorRes));
+        button.setTextSize(12f);
+        button.setTypeface(null, android.graphics.Typeface.BOLD);
+        return button;
     }
 
     private LinearLayout.LayoutParams cardLayoutParams() {
