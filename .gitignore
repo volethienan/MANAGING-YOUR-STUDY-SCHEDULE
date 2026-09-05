@@ -1,28 +1,26 @@
 *.iml
 .gradle
 /local.properties
+local.properties
 .idea/
 .vscode/
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
+
 /build
 **/build/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
 *.keystore
 *.jks
+
+# Environment secrets (keep .env.example tracked, ignore .env)
 *.env
-google-services.json
-app/google-services.json
+.env
+
+# Runtime data & logs
 admin-web/data/
+*.log
 logs/
 node_modules/
-outputs/
+
 package.json

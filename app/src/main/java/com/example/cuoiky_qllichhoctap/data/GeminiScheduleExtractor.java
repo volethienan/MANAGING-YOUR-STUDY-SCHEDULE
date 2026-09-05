@@ -22,7 +22,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +36,11 @@ public class GeminiScheduleExtractor {
         void onError(String message);
     }
 
-    private static final String ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    private static final String API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+    private static final String DEFAULT_MODELS = "gemini-3.5-flash,gemini-2.5-flash,gemini-2.5-flash-lite";
+    private static final int CONNECT_TIMEOUT_MS = 25000;
+    private static final int READ_TIMEOUT_MS = 90000;
+    private static final int MAX_ATTEMPTS_PER_MODEL = 2;
     private final Context context;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -108,10 +114,40 @@ public class GeminiScheduleExtractor {
                                         .put(new JSONObject().put("inline_data", inlineData))
                                         .put(new JSONObject().put("text", prompt)))));
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(ENDPOINT).openConnection();
+        List<String> attempted = new ArrayList<>();
+        GeminiApiException lastError = null;
+        for (String model : geminiModels()) {
+            attempted.add(model);
+            for (int attempt = 1; attempt <= MAX_ATTEMPTS_PER_MODEL; attempt++) {
+                try {
+                    return postGemini(model, body);
+                } catch (GeminiApiException exception) {
+                    lastError = exception;
+                    if (!exception.isRetryable() || attempt == MAX_ATTEMPTS_PER_MODEL) {
+                        break;
+                    }
+                    sleepQuietly(exception.retryDelayMs(attempt));
+                }
+            }
+        }
+
+        if (lastError != null && lastError.isCapacityError()) {
+            throw new IllegalStateException("Gemini đang quá tải hoặc tạm hết năng lực xử lý. App đã thử "
+                    + String.join(", ", attempted)
+                    + ". Vui lòng thử lại sau ít phút.");
+        }
+        if (lastError != null) {
+            throw new IllegalStateException(lastError.getMessage());
+        }
+        throw new IllegalStateException("Không có model Gemini hợp lệ để trích xuất ảnh");
+    }
+
+    private String postGemini(String model, JSONObject body) throws Exception {
+        URL endpoint = new URL(API_BASE + model + ":generateContent");
+        HttpURLConnection connection = (HttpURLConnection) endpoint.openConnection();
         connection.setRequestMethod("POST");
-        connection.setConnectTimeout(25000);
-        connection.setReadTimeout(45000);
+        connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        connection.setReadTimeout(READ_TIMEOUT_MS);
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("x-goog-api-key", BuildConfig.GEMINI_API_KEY);
         connection.setDoOutput(true);
@@ -122,13 +158,18 @@ public class GeminiScheduleExtractor {
         int code = connection.getResponseCode();
         InputStream stream = code >= 200 && code < 300 ? connection.getInputStream() : connection.getErrorStream();
         String response = readAll(stream);
+        String retryAfter = connection.getHeaderField("Retry-After");
+        connection.disconnect();
         if (code < 200 || code >= 300) {
-            throw new IllegalStateException("Gemini API lỗi " + code + ": " + response);
+            throw new GeminiApiException(model, code, response, retryAfter);
         }
         return response;
     }
 
     private String readAll(InputStream input) throws Exception {
+        if (input == null) {
+            return "";
+        }
         StringBuilder builder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             String line;
@@ -137,6 +178,33 @@ public class GeminiScheduleExtractor {
             }
         }
         return builder.toString();
+    }
+
+    private List<String> geminiModels() {
+        LinkedHashSet<String> models = new LinkedHashSet<>();
+        addModels(models, BuildConfig.GEMINI_MODELS);
+        addModels(models, DEFAULT_MODELS);
+        return new ArrayList<>(models);
+    }
+
+    private void addModels(LinkedHashSet<String> models, String value) {
+        if (value == null) {
+            return;
+        }
+        for (String model : value.split(",")) {
+            String cleaned = model.trim();
+            if (!cleaned.isEmpty()) {
+                models.add(cleaned);
+            }
+        }
+    }
+
+    private void sleepQuietly(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private String extractResponseText(String response) throws Exception {
@@ -217,5 +285,46 @@ public class GeminiScheduleExtractor {
             return StudyEvent.TYPE_DEADLINE;
         }
         return StudyEvent.TYPE_STUDY;
+    }
+
+    private static final class GeminiApiException extends Exception {
+        private final String model;
+        private final int statusCode;
+        private final String response;
+        private final String retryAfter;
+
+        GeminiApiException(String model, int statusCode, String response, String retryAfter) {
+            this.model = model;
+            this.statusCode = statusCode;
+            this.response = response == null ? "" : response;
+            this.retryAfter = retryAfter == null ? "" : retryAfter.trim();
+        }
+
+        boolean isRetryable() {
+            return statusCode == 429 || statusCode == 500 || statusCode == 503 || statusCode == 504;
+        }
+
+        boolean isCapacityError() {
+            return statusCode == 503 || statusCode == 504
+                    || response.toLowerCase(Locale.ROOT).contains("high demand")
+                    || response.toLowerCase(Locale.ROOT).contains("overloaded")
+                    || response.toLowerCase(Locale.ROOT).contains("unavailable");
+        }
+
+        long retryDelayMs(int attempt) {
+            try {
+                long seconds = Long.parseLong(retryAfter);
+                if (seconds > 0) {
+                    return Math.min(seconds * 1000L, 15000L);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            return attempt <= 1 ? 1500L : 3500L;
+        }
+
+        @Override
+        public String getMessage() {
+            return "Gemini API lỗi " + statusCode + " (" + model + "): " + response;
+        }
     }
 }

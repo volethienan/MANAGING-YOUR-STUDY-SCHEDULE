@@ -37,6 +37,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GEMINI_API_KEY", buildConfigString(configValue("GEMINI_API_KEY", "")))
+        buildConfigField("String", "GEMINI_MODELS", buildConfigString(configValue("GEMINI_MODELS", "gemini-3.5-flash,gemini-2.5-flash,gemini-2.5-flash-lite")))
         buildConfigField("String", "OTP_BACKEND_URL", buildConfigString(configValue("OTP_BACKEND_URL", "http://10.0.2.2:8080")))
         buildConfigField("String", "ADMIN_BACKEND_URL", buildConfigString(configValue("ADMIN_BACKEND_URL", "http://10.0.2.2:8090")))
         buildConfigField("String", "FIREBASE_DATABASE_URL", buildConfigString(configValue("FIREBASE_DATABASE_URL", "https://mobile-263d4-default-rtdb.firebaseio.com")))

@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OtpEmailSender {
+    private static final int CONNECT_TIMEOUT_MS = 8000;
+    private static final int READ_TIMEOUT_MS = 60000;
+
     public interface Callback {
         void onSent();
 
@@ -63,9 +66,9 @@ public class OtpEmailSender {
     private List<String> otpBackendCandidates() {
         List<String> urls = new ArrayList<>();
         addOtpBackendUrls(urls, BuildConfig.OTP_BACKEND_URL);
-        addOtpBackendUrl(urls, "http://127.0.0.1:8080");
-        addOtpBackendUrl(urls, "http://192.168.1.238:8080");
+        addOtpBackendUrl(urls, "http://172.20.10.9:8080");
         addOtpBackendUrl(urls, "http://10.0.2.2:8080");
+        addOtpBackendUrl(urls, "http://127.0.0.1:8080");
         return urls;
     }
 
@@ -92,8 +95,8 @@ public class OtpEmailSender {
         URL url = new URL(trimTrailingSlash(baseUrl) + "/send-otp");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
-        connection.setConnectTimeout(5000);
-        connection.setReadTimeout(15000);
+        connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        connection.setReadTimeout(READ_TIMEOUT_MS);
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
         byte[] body = payload.toString().getBytes(StandardCharsets.UTF_8);

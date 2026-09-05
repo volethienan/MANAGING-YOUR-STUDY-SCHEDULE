@@ -226,12 +226,14 @@ App cần file:
 app/google-services.json
 ```
 
+*(File này đã được đính kèm sẵn trong repository, bạn có thể sử dụng trực tiếp để demo).*
+
 Firebase đang dùng:
 
 - Firebase Authentication cho Google Sign-In.
 - Firebase Realtime Database cho đồng bộ dữ liệu học tập.
 
-Cần kiểm tra trong Firebase Console:
+Nếu muốn tự cấu hình Firebase riêng, cần kiểm tra trong Firebase Console:
 
 1. Tạo Android app với package:
 
@@ -249,8 +251,10 @@ com.example.cuoiky_qllichhoctap
 
 OTP backend dùng SMTP để gửi mã OTP qua email.
 
+Từ thư mục gốc dự án:
+
 ```powershell
-cd D:\Project\MANAGING-YOUR-STUDY-SCHEDULE\otp-backend
+cd otp-backend
 $env:SMTP_HOST="smtp.gmail.com"
 $env:SMTP_PORT="587"
 $env:SMTP_USERNAME="your-email@gmail.com"
@@ -287,15 +291,17 @@ Với Gmail cần dùng **App Password**, không dùng mật khẩu đăng nhậ
 
 ## Chạy admin web
 
+Từ thư mục gốc dự án:
+
 ```powershell
-cd D:\Project\MANAGING-YOUR-STUDY-SCHEDULE\admin-web
+cd admin-web
 $env:ADMIN_USERNAME="admin"
 $env:ADMIN_PASSWORD="admin123"
 $env:ADMIN_WEB_PORT="8090"
 ..\gradlew.bat -p . run
 ```
 
-Mở:
+Mở trình duyệt:
 
 ```text
 http://localhost:8090
@@ -309,10 +315,9 @@ admin / admin123
 
 ## Build Android app
 
-Từ thư mục root:
+Từ thư mục gốc dự án:
 
 ```powershell
-cd D:\Project\MANAGING-YOUR-STUDY-SCHEDULE
 .\gradlew.bat :app:assembleDebug
 ```
 
